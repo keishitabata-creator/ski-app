@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.18.1 -->
+<!-- スキー行動予定アプリ 画面側 v4.18.2 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -403,7 +403,7 @@ body.open{overflow:hidden}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.18.1';
+const CLIENT_VERSION='4.18.2';
 const W='日月火水木金土', WK=['月','火','水','木','金','土','日'], SLOTS=['朝','昼','夜'];
 const pad=n=>String(n).padStart(2,'0');
 const iso=dt=>dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate());
@@ -475,11 +475,11 @@ function call(fn,arg){
 const errMsg=e=>String((e&&e.message)||e||'');
 let FRESH=false;   // 最新のデータを受け取ったか（受け取るまで保存はしない）
 const T0=Date.now();   // 画面のプログラムが動き始めた時刻
-let TM={html:null,cache:null,fresh:null,srv:null};
+let TM={html:null,cache:null,fresh:null,srv:null,srvT:''};
 try{const pt=performance.timing;if(pt&&pt.navigationStart)TM.html=Math.round((pt.responseEnd-pt.navigationStart)/100)/10;}catch(e){}
 /** 閲覧の合言葉（外に置いた画面から開くときだけ） */
 function askVKey(note){V.innerHTML='<main><h2>このアプリを開くには合言葉が必要です</h2>'+(note?'<p class="note" style="color:#a0321e">'+esc(note)+'</p>':'')+'<input type="password" id="vk-in" placeholder="合言葉" style="width:100%;font-size:18px;padding:12px;border:1.5px solid var(--line);border-radius:12px;margin:8px 0"><button class="btn pri" data-act="vkGo" style="width:100%;min-height:52px">開く</button><p class="note">管理者に確認してください。一度入れると、この端末では次から聞かれません。</p></main>';}
-function bootReport(){try{const t=TM;const f=x=>x==null?'?':x;const msg='HTML受信 '+f(t.html)+'秒／前回データ表示 '+(t.cache!=null?t.cache+'秒':'なし')+'／最新データ '+f(t.fresh)+'秒（うちサーバー処理 '+f(t.srv)+'秒）／通信 '+(INSIDE_GAS?'Apps Script内':'外部');
+function bootReport(){try{const t=TM;const f=x=>x==null?'?':x;const msg='HTML受信 '+f(t.html)+'秒／前回データ表示 '+(t.cache!=null?t.cache+'秒':'なし')+'／最新データ '+f(t.fresh)+'秒（うちサーバー処理 '+f(t.srv)+'秒：'+(t.srvT||'')+'）／通信 '+(INSIDE_GAS?'Apps Script内':'外部');
   const last=LS.get('bootLogged')||'';if(last===TODAY)return;LS.set('bootLogged',TODAY);
   call('logError',{who:who||'',ver:CLIENT_VERSION,screen:'起動',action:'起動時間（情報）',msg,ua:(navigator.userAgent||'').slice(0,120)}).catch(()=>{});}catch(e){}}
 function cacheSave(d){try{localStorage.setItem('cacheV1',JSON.stringify({t:Date.now(),d}));}catch(e){}}
@@ -488,8 +488,12 @@ function load(quiet){
   if(!quiet&&!S){const c=cacheLoad();if(c){try{ingest(c);FRESH=false;render();TM.cache=Math.round((Date.now()-T0)/100)/10;inflight++;syncShow('最新を確認中…');}catch(e){S=null;}}}
   if(!S&&!quiet)showLoading(true);
   const hadCache=!!S&&!FRESH;
-  call('getAll').then(d=>{if(hadCache){inflight=Math.max(0,inflight-1);}ingest(d);const first=!FRESH;FRESH=true;cacheSave(d);showLoading(false);render();syncShow();if(!who)askWho();if(first&&!quiet){TM.fresh=Math.round((Date.now()-T0)/100)/10;TM.srv=d.srvMs!=null?Math.round(d.srvMs/100)/10:null;bootReport();}})
-   .catch(e=>{showLoading(false);try{reportErr('読み込み',errMsg(e));}catch(x){}
+  const started=Date.now();let done=false;
+  if(hadCache){const tick=setInterval(()=>{if(done||FRESH){clearInterval(tick);return;}const sec=Math.round((Date.now()-started)/1000);
+    const e=document.getElementById('sync');if(e&&inflight>0){e.className='sync on';e.textContent='最新を確認中… '+sec+'秒';}
+    if(sec>=30){clearInterval(tick);inflight=Math.max(0,inflight-1);syncShow();toast('最新のデータを取れませんでした（30秒）。表示は前回のものです。上の「更新」で再読み込みできます');}},1000);}
+  call('getAll').then(d=>{done=true;if(hadCache){inflight=Math.max(0,inflight-1);}ingest(d);const first=!FRESH;FRESH=true;cacheSave(d);showLoading(false);render();syncShow();if(!who)askWho();if(first&&!quiet){TM.fresh=Math.round((Date.now()-T0)/100)/10;TM.srv=d.srvMs!=null?Math.round(d.srvMs/100)/10:null;TM.srvT=d.srvT||'';bootReport();}})
+   .catch(e=>{done=true;showLoading(false);try{reportErr('読み込み',errMsg(e));}catch(x){}
      if(/VKEY/.test(errMsg(e))){showLoading(false);askVKey(vkey?'合言葉が違います':'');return;}
      if(S&&!FRESH){inflight=Math.max(0,inflight-1);syncShow();toast('最新のデータを取れませんでした。表示は前回のものです。');return;}
      V.innerHTML='<main><p class="empty">データを読み込めませんでした。<br>'+esc(errMsg(e))+'</p><button class="btn" data-act="reload" style="width:100%">もう一度読み込む</button></main>';}); }
@@ -1127,7 +1131,7 @@ function renderHelp(){
   '<h3>6. メニュー</h3><p>ROMベーシック（フル／ハーフ）、ROMプラス、エクスプロッシブ、WJのメニューは、管理用スプレッドシートの「メニュー」シートにあります。種目、回数・秒数、セット数、インターバル、左右、やり方の説明を書き換えると、記録画面の目安と初期値が変わります。新しい活動の種類を作って、同じ種類名で種目を登録すれば、メニュー付きの活動を増やせます。</p>'+
   '<h3>7. 動画</h3><p>日付を押した画面の「動画を登録」から送れます。動画は、このアプリを使っている人なら誰でも見られます。</p>'+
   '<h3>記録者を変える</h3><p>画面上の「記録者」の「変更」から選び直せます。この端末に記憶されます。</p>'+
-  '<p class="note">バージョン サーバー'+esc(S.version)+'／画面'+CLIENT_VERSION+'<br>今回の起動：HTML受信 '+(TM.html==null?'?':TM.html)+'秒／前回データの表示 '+(TM.cache!=null?TM.cache+'秒':'なし')+'／最新データ '+(TM.fresh==null?'?':TM.fresh)+'秒（うちサーバー処理 '+(TM.srv==null?'?':TM.srv)+'秒）</p></main>';}
+  '<p class="note">バージョン サーバー'+esc(S.version)+'／画面'+CLIENT_VERSION+'<br>今回の起動：HTML受信 '+(TM.html==null?'?':TM.html)+'秒／前回データの表示 '+(TM.cache!=null?TM.cache+'秒':'なし')+'／最新データ '+(TM.fresh==null?'?':TM.fresh)+'秒（うちサーバー処理 '+(TM.srv==null?'?':TM.srv)+'秒'+(TM.srvT?'：'+esc(TM.srvT):'')+'）</p></main>';}
 
 // ---------- 送信 ----------
 function send(fn,p,after,okMsg){
