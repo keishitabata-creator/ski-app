@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.28.1 -->
+<!-- スキー行動予定アプリ 画面側 v4.32.1 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -430,6 +430,14 @@ html.big .btn{font-size:17px}
 .bopts{display:inline-flex;gap:6px;align-items:center;margin:0 0 0 4px}
 .bchip .atag .fhtag{background:rgba(255,255,255,.35)}
 .sync.info{opacity:.75;padding:3px 10px;background:rgba(255,255,255,.12);color:var(--sub);font-weight:600}
+.tbl.t5 .tr{grid-template-columns:1.8fr .7fr .7fr .7fr .7fr}
+/* v4.31：ROMベーシックの区分は親の下の段に */
+.fhrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 6px 34px;padding:6px 8px;border-left:3px solid var(--line);background:rgba(127,127,127,.06);border-radius:0 8px 8px 0}
+.fhlab{font-size:12.5px;color:var(--sub);font-weight:700;margin-right:4px}
+.fhlab .need,.fhtag.need,.note.need{color:#C42B5E}
+.fhtag.need{background:rgba(196,43,94,.12)}
+.a-club{background:#E3F0E6;color:#1E5B32}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .a-club{background:#1F4A2E;color:#CFF2DB}}
 </style>
 </head>
 <body>
@@ -437,7 +445,7 @@ html.big .btn{font-size:17px}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.28.1';
+const CLIENT_VERSION='4.32.1';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -501,7 +509,7 @@ function applyPart(d){if(!d||!d.partial){ingest(d);return;}
   if(d.coachings){S.coachings=d.coachings;ingest(S);return;}
   if(d.videos){S.videos=d.videos;ingest(S);return;}
   if(d.sess&&!d.dates&&!d.acts){expandSess(d.sess);Object.keys(d.sess).forEach(k=>S.sess[k]=d.sess[k]);if(d.sessFrom&&d.sessFrom<S.sessFrom)S.sessFrom=d.sessFrom;ingest(S);return;}
-  if(d.planDays){const m={};d.planDays.forEach(r=>m[r[0]]=r);S.days=S.days.map(r=>m[r[0]]||r);if(d.patterns)S.patterns=d.patterns;ingest(S);return;}
+  if(d.planDays){const m={};d.planDays.forEach(r=>m[r[0]]=r);S.days=S.days.map(r=>m[r[0]]||r);if(d.patterns)S.patterns=d.patterns;if(!d.dates){ingest(S);return;}}
   expandSess(d.sess);
   (d.dates||[]).forEach(x=>{(S.acts[x]||[]).forEach(a=>delete S.sess[a.id]);
     const L=(d.acts[x]||[]).slice();(S.acts[x]||[]).forEach(a=>{const k=x+'|'+a.slot+'|'+a.kind;if(PENDK[k]&&!L.some(b=>b.slot===a.slot&&b.kind===a.kind)){L.push(a);}});
@@ -529,6 +537,13 @@ let FRESH=false;   // 最新のデータを受け取ったか（受け取るま�
 let FRESH_AT=0;    // 最新データを受け取った時刻
 /** 最新データが古ければ（既定2分）静かに取り直す。画面切替・月移動・アプリに戻ったときに呼ぶ */
 window.__markStale=function(){FRESH_AT=0;};
+/** アプリ内ブラウザ（LINE・Instagram・Facebookなど）で開いていたら、Safari／Chromeで開くよう案内する */
+function inAppBrowser(){const ua=navigator.userAgent||'';return /Line\//i.test(ua)||/FBAN|FBAV|Instagram|Twitter|MicroMessenger/i.test(ua);}
+function inAppGuide(){if(!inAppBrowser()||INSIDE_GAS)return false;
+  const url=location.href.split('#')[0].replace(/[?&]openExternalBrowser=1/,'');const lineUrl=url+(url.indexOf('?')>=0?'&':'?')+'openExternalBrowser=1';
+  V.innerHTML='<main><h2>SafariかChromeで開いてください</h2><p>いまはLINEなどのアプリの中の簡易ブラウザで開いています。この状態では、ホーム画面への追加ができず、表示も崩れます。</p>'+
+    '<a class="btn pri" href="'+esc(lineUrl)+'" style="display:flex;align-items:center;justify-content:center;text-decoration:none;min-height:52px;font-size:17px">Safariで開く</a>'+
+    '<p class="note">開かない場合：右上の「…」→「他のアプリで開く」「Safariで開く」を選んでください。またはこのURLをコピーしてSafariに貼ってください。</p><p class="note" style="word-break:break-all">'+esc(url)+'</p></main>';return true;}
 function refreshIfStale(ms){if(!S||inflight>0||saving)return;if(Date.now()-FRESH_AT<(ms||120000))return;if(sheetKind&&sheetKind!=='who')return;load(true);}
 const T0=Date.now();   // 画面のプログラムが動き始めた時刻
 let TM={html:null,cache:null,fresh:null,srv:null,srvT:''};
@@ -556,14 +571,20 @@ function load(quiet){
 
 // ---------- 予定と記録 ----------
 /** 予定の1件「種類#区分」（区分＝フル／ハーフ。ROMベーシックだけ） */
-const splitKind=k=>{const m=String(k).match(/^(.*?)#(フル|ハーフ)$/);return m?{kind:m[1].trim(),fh:m[2]}:{kind:String(k).trim(),fh:''};};
+const splitKind=k=>{const m=String(k).match(/^(.*?)#(フル|ハーフ|\?)$/);return m?{kind:m[1].trim(),fh:m[2]}:{kind:String(k).trim(),fh:''};};
 const joinKind=x=>x.kind+(x.fh?'#'+x.fh:'');
 const parsePlan=s=>{const out=[];String(s||'').split('／').forEach(p=>{const m=p.match(/^\s*(朝|昼|夜)\s*[:：]\s*(.*)$/);if(!m)return;m[2].split(/[,、]/).map(x=>x.trim()).filter(Boolean).forEach(k=>{const y=splitKind(k);out.push({slot:m[1],kind:y.kind,fh:y.fh});});});return out;};
 const fmtPlan=items=>SLOTS.map(sl=>{const ks=items.filter(y=>y.slot===sl).map(joinKind).filter((y,i,a)=>a.indexOf(y)===i);return ks.length?sl+':'+ks.join(','):'';}).filter(Boolean).join('／');
+/** ROMベーシックの区分を選ぶ段（親の下にぶら下げて表示）。attr＝data属性名、key＝その値の前半 */
+function fhRow(attr,key,cur){const chosen=cur!==undefined;return '<div class="fhrow"><span class="fhlab">└ ROMベーシックの区分'+(chosen?'':'<b class="need">（選んでください）</b>')+'</span>'+[['フル','フル'],['ハーフ','ハーフ'],['','当日決める']].map(([f,l])=>'<button class="opt xs" data-'+attr+'="'+key+'|'+f+'" aria-pressed="'+(chosen&&(cur||'')===f)+'">'+l+'</button>').join('')+'</div>';}
+/** ROMベーシックで区分が未選択の項目があるか */
+const fhMissing=items=>items.some(x=>x.kind==='ROMベーシック'&&x.fh===undefined);
 /** 表示用：ROMベーシック（フル）のように区分を添える */
 const kindLabel=(kind,fh)=>kind+(fh?'（'+fh+'）':'');
 const kAbbrFh=(kind,fh)=>kAbbr(kind)+(fh==='フル'?'フ':fh==='ハーフ'?'ハ':'');
 const isSys=k=>(S.opt.sys||[]).indexOf(k)>=0;
+/** コーチに見せない活動：なし（部活もコーチに見せる） */
+const hiddenForCoach=k=>false;
 const isMenu=k=>!!MENUK[k];
 /** その種類・区分（フル／ハーフ）のメニュー */
 const menuOf=(kind,fh)=>(MENUK[kind]||[]).filter(m=>!m.fh||!fh||m.fh===fh);
@@ -585,7 +606,8 @@ function view(d){
   v.off=!!d.off;
   return v;
 }
-function rowsOf(d,v){v=v||view(d);const acts=(S.acts[d.d]||[]).slice(),out=[];
+function rowsOf(d,v){v=v||view(d);const acts=(S.acts[d.d]||[]).filter(a=>!hiddenForCoach(a.kind)),out=[];
+  if(!canEdit())v=Object.assign({},v,{items:v.items.filter(x=>!hiddenForCoach(x.kind))});
   v.items.forEach(it=>{let i=acts.findIndex(a=>a.slot===it.slot&&a.kind===it.kind);let moved=false;
     if(i<0){i=acts.findIndex(a=>a.kind===it.kind&&!v.items.some(p=>p.slot===a.slot&&p.kind===a.kind));moved=i>=0;}   // 時間帯ちがいの記録を突き合わせる
     const a=i>=0?acts.splice(i,1)[0]:null;out.push({slot:it.slot,kind:it.kind,fh:it.fh||'',planned:true,act:a,moved:moved&&a?a.slot:''});});
@@ -645,8 +667,8 @@ function schoolCount(y){const o={abs:[],miss:[],wark:[],pre:Number((S.warkPre||{
 /** ラーケーション：年度ごとの取得日 */
 const isProt=d=>(S.opt.markProtect||[]).indexOf(markOf(d))>=0;
 const isRace=v=>!v.skip&&v.kb.indexOf('大会')===0&&!has(v.kb,'大会翌日');
-const KC={'エクスプロッシブ':'a-ex','ROMベーシック':'a-rb','ROMプラス':'a-rp','雪上':'a-snow','WJ':'a-wj','TR':'a-tr','OFF':'a-off','休養':'a-off','大会':'a-race','移動':'a-move'};
-const KA={'エクスプロッシブ':'EX','ROMベーシック':'R','ROMプラス':'R+','雪上':'雪','WJ':'WJ','TR':'TR','OFF':'OFF','休養':'休','大会':'大会','移動':'移動'};
+const KC={'エクスプロッシブ':'a-ex','ROMベーシック':'a-rb','ROMプラス':'a-rp','雪上':'a-snow','WJ':'a-wj','TR':'a-tr','OFF':'a-off','休養':'a-off','大会':'a-race','移動':'a-move','部活':'a-club'};
+const KA={'エクスプロッシブ':'EX','ROMベーシック':'R','ROMプラス':'R+','雪上':'雪','WJ':'WJ','TR':'TR','OFF':'OFF','休養':'休','大会':'大会','移動':'移動','部活':'部'};
 const kCls=k=>KC[k]||'a-other';
 const kAbbr=k=>KA[k]||String(k).slice(0,2);
 function resTxt(r){if(!r)return'';return [r.round,r.rank?r.rank+'位'+(r.n?'／'+r.n+'人':''):'',r.score?r.score+'点':''].filter(Boolean).join('　');}
@@ -721,7 +743,7 @@ function dayBody(d,opt){opt=opt||{};const v=view(d),rows=rowsOf(d,v),x=d.d,st=sc
 function sugPat(x){const P=S.patterns||{},names=Object.keys(P);if(!names.length)return null;
   for(let i=0;i<120;i++){for(const y of [addD(x,i),addD(x,-i)]){const dd=DAYS[DIDX[y]];if(dd){const m=dd.src.match(/型：([^）)]+)/);if(m&&P[m[1]])return m[1];}}}return names[0];}
 function pendRows(d){const v=view(d),rows=rowsOf(d,v);const p=rows.filter(r=>r.planned&&!r.act&&!isSys(r.kind));if(p.length||rows.length||v.tripOn||d.d>TODAY)return p.map(r=>({slot:r.slot,kind:r.kind}));
-  if(has(v.school,'学校行事'))return [];const pn=sugPat(d.d);if(!pn)return [];const w=(S.patterns[pn]||{})[wdOf(d.d)]||{};const out=[];SLOTS.forEach(sl=>(w[sl]||[]).forEach(k=>out.push({slot:sl,kind:k,sug:pn})));return out;}
+  if(has(v.school,'学校行事'))return [];const pn=sugPat(d.d);if(!pn)return [];const w=(S.patterns[pn]||{})[wdOf(d.d)]||{};const out=[];SLOTS.forEach(sl=>(w[sl]||[]).forEach(k=>{const y=splitKind(k);out.push({slot:sl,kind:y.kind,fh:y.fh,sug:pn});}));return out;}
 function unrecDays(n,from){const out=[];for(let i=1;i<=n;i++){const x=addD(from||TODAY,-i);if(DIDX[x]===undefined)continue;const k=pendRows(DAYS[DIDX[x]]).length;if(k)out.push({d:x,n:k});}return out;}
 const schMark=(v,d)=>{const st=d?schState(d,v):null;return st?st.l:'';};
 function renderHome(){
@@ -735,9 +757,9 @@ function renderHome(){
   h+='<section class="today"><div class="thead"><span class="tlabel">今日</span><b>'+mdw(TODAY)+'</b></div>'+dayBody(DAYS[DIDX[TODAY]])+'</section>';
   const tm=addD(TODAY,1);if(DIDX[tm]!==undefined)h+='<section class="today tmr"><div class="thead"><span class="tlabel">明日</span><b>'+mdw(tm)+'</b><button class="linkbtn2" data-day="'+tm+'" style="margin-left:auto">開く</button></div>'+dayBody(DAYS[DIDX[tm]],{compact:true})+'</section>';
   const a=monOf(TODAY),b=addD(a,6);let pl=0,dn=0;
-  DAYS.forEach(d=>{if(d.d<a||d.d>b||d.d>TODAY)return;rowsOf(d).forEach(r=>{if(isSys(r.kind))return;if(r.planned)pl++;if(r.act&&r.act.st==='実施')dn++;});});
+  let ex=0;DAYS.forEach(d=>{if(d.d<a||d.d>b||d.d>TODAY)return;rowsOf(d).forEach(r=>{if(isSys(r.kind))return;if(r.planned)pl++;if(r.act&&r.act.st==='実施'){if(r.planned)dn++;else ex++;}});});
   const rate=pl?Math.round(dn/pl*100):null,stk=streak();
-  h+='<h2>今週（'+md(a)+'〜'+md(b)+'）</h2><div class="stats"><div class="st"><b>'+(rate==null?'－':rate+'%')+'</b><span>今週の達成率（'+dn+'／'+pl+'）</span></div><div class="st"><b>'+stk+'</b>日<span>連続記録</span></div><div class="st"><b>'+ROMTOTAL+'</b>回<span>ROMの通算（やった日数）</span></div></div>';
+  h+='<h2>今週（'+md(a)+'〜'+md(b)+'）</h2><div class="stats"><div class="st"><b>'+(rate==null?'－':rate+'%')+'</b><span>今週の達成率（実施'+dn+'／予定'+pl+(ex?'・予定外'+ex:'')+'）</span></div><div class="st"><b>'+stk+'</b>日<span>連続記録</span></div><div class="st"><b>'+ROMTOTAL+'</b>回<span>ROMの通算（やった日数）</span></div></div>';
   // 最近の予定変更（家族の分だけ）
   {const L=(S.recentLogs||[]).filter(x=>x.by&&x.by!==who).slice(0,3);
    if(L.length)h+='<h2>最近の予定変更</h2><div class="list">'+L.map(x=>'<div><span class="s">'+esc(x.at.slice(5,16).replace('/','/'))+'　'+esc(x.by)+'</span><br>'+esc(x.text)+'</div>').join('')+'</div>';}
@@ -854,7 +876,9 @@ function render(){if(!S)return;
   updSavebar();}
 function askWho(){openDay=null;
   SH.innerHTML='<div class="grab"></div><h3 id="sh-title">記録する人を選んでください</h3><p class="note">記録や変更に名前が残ります。この端末で一度選べば、次からは自動で使われます。</p><div class="wrap">'+
-   S.opt.names.map(n=>'<button class="opt" data-who="'+esc(n)+'" aria-pressed="'+(who===n)+'">'+esc(n)+'</button>').join('')+'</div>'+(who?'<div class="acts"><button class="btn" data-act="close">閉じる</button></div>':'');openS('who');}
+   S.opt.names.map(n=>'<button class="opt" data-who="'+esc(n)+'" aria-pressed="'+(who===n)+'">'+esc(n)+'</button>').join('')+'</div>'+
+   (!who&&!INSIDE_GAS&&!(window.navigator.standalone)?'<p class="note" style="margin-top:12px">はじめての方へ：選んだあと、Safariの共有ボタン（□に↑）→「ホーム画面に追加」を押すと、次からアイコンで開けます。</p>':'')+
+   (who?'<div class="acts"><button class="btn" data-act="close">閉じる</button></div>':'');openS('who');}
 function askKey(kind){sheetCtx={kind:kind||'rec'};SH.innerHTML='<div class="grab"></div><h3 id="sh-title">'+(kind==='plan'?'予定を変えるための合言葉':'合言葉')+'を入力してください</h3><p class="note">'+(kind==='plan'?'予定・学校の扱い・遠征を変えるには合言葉が必要です。':'記録には合言葉が必要です。')+'管理者に確認してください。この端末に記憶されます。</p><input type="text" id="k-in" autocomplete="off"><div class="acts"><button class="btn" data-act="close">キャンセル</button><button class="btn pri" data-act="key">決定</button></div>';openS('key');}
 
 // ---------- 1日の画面 ----------
@@ -968,19 +992,22 @@ function openNote(date){const n=S.notes[date]||{};sheetCtx={date};
    '<div class="acts">'+(S.notes[date]?'<button class="btn del" data-act="noteDel">消す</button>':'')+'<button class="btn" data-act="close">キャンセル</button><button class="btn pri" data-act="noteSave">保存</button></div>';openS('note');}
 
 // ---------- 1日の予定を変更 ----------
-function openDayPlan(date){const d=DAYS[DIDX[date]],v=view(d);dplan={date,items:v.items.map(x=>({slot:x.slot,kind:x.kind})),manual:v.manual,trip:v.tripOn,off:!!v.off};drawDayPlan();openS('dplan');}
+function openDayPlan(date){const d=DAYS[DIDX[date]],v=view(d);dplan={date,items:v.items.map(x=>({slot:x.slot,kind:x.kind,fh:x.kind==='ROMベーシック'?(x.fh||''):''})),manual:v.manual,trip:v.tripOn,off:!!v.off,cz:!!CZ[date],cz0:!!CZ[date]};drawDayPlan();openS('dplan');}
 function drawDayPlan(){const c=dplan,ks=S.opt.kinds.concat(c.trip?['大会','移動','休養']:[]);
   let h='<div class="grab"></div><h3 id="sh-title">'+mdw(c.date)+' の予定を変更</h3>'+
     '<div class="lab" style="margin-top:6px">この日の位置づけ</div><div class="wrap"><button class="opt sm sch-off" data-act="dpOffTgl" aria-pressed="'+c.off+'">休養日（OFF）</button></div>'+
     '<p class="note">休養日にしても、トレーニングは別に入れられます（合宿中の休養日に軽く動く場合など）。</p>'+
     '<div class="lab">トレーニングの予定</div><p class="note" style="margin-top:0">時間帯ごとに、やる活動を押して選びます（いくつでも）。'+(c.trip?'遠征・合宿中の日です。変えると、この日は遠征日程のトレーニングより優先されます。':'')+'</p>';
-  SLOTS.forEach(sl=>{h+='<div class="slotrow"><span class="slot big">'+sl+'</span><div class="wrap">'+ks.map(k=>{const it=c.items.find(x=>x.slot===sl&&x.kind===k),on=!!it;
-      let b='<button class="opt sm kopt '+(on?kCls(k):'')+'" data-dpk="'+sl+'|'+esc(k)+'" aria-pressed="'+on+'">'+esc(k)+(on&&it.fh?'<small class="fhtag">'+esc(it.fh)+'</small>':'')+'</button>';
-      if(on&&hasFH(k))b+='<span class="fhpick">'+['フル','ハーフ',''].map(f=>'<button class="opt xs" data-dpfh="'+sl+'|'+esc(k)+'|'+f+'" aria-pressed="'+((it.fh||'')===f)+'">'+(f||'当日決める')+'</button>').join('')+'</span>';
-      return b;}).join('')+'</div></div>';});
+  SLOTS.forEach(sl=>{const rom=c.items.find(x=>x.slot===sl&&x.kind==='ROMベーシック');
+    h+='<div class="slotrow"><span class="slot big">'+sl+'</span><div class="wrap">'+ks.map(k=>{const it=c.items.find(x=>x.slot===sl&&x.kind===k),on=!!it;
+      return '<button class="opt sm kopt '+(on?kCls(k):'')+'" data-dpk="'+sl+'|'+esc(k)+'" aria-pressed="'+on+'">'+esc(k)+(on&&it.fh?'<small class="fhtag">'+esc(it.fh)+'</small>':'')+(on&&k==='ROMベーシック'&&it.fh===undefined?'<small class="fhtag need">区分？</small>':'')+'</button>';}).join('')+'</div>'+
+      (rom?fhRow('dpfh',sl+'|ROMベーシック',rom.fh):'')+'</div>';});
+  // パーソナル（コーチング）の予定
+  h+='<div class="lab">パーソナル（コーチング）</div><div class="wrap"><button class="opt sm '+(c.cz?'sch-cz':'')+'" data-act="dpCzTgl" aria-pressed="'+!!c.cz+'">この日にパーソナルを受ける</button></div>';
   h+='<div class="qrow"><button class="btn qb" data-act="dpClear">トレーニングの予定をなしにする</button></div>';
   if(c.manual)h+='<button class="linkbtn2" data-act="dpReset">手で変えた予定を取り消して、'+(c.trip?'遠征日程':'週の型')+'の予定に戻す</button>';
-  h+='<div class="acts"><button class="btn" data-act="dpBack">戻る</button><button class="btn pri" data-act="dpSave">保存</button></div>';SH.innerHTML=h;}
+  const miss=fhMissing(c.items);
+  h+=(miss?'<p class="note need">ROMベーシックの区分（フル／ハーフ／当日決める）を選ぶと保存できます。</p>':'')+'<div class="acts"><button class="btn" data-act="dpBack">戻る</button><button class="btn pri" data-act="dpSave"'+(miss?' disabled':'')+'>保存</button></div>';SH.innerHTML=h;}
 function openEditPlan(){const d=openDay,v=view(d),td=v.td&&v.tripOn?v.td:null;sheetCtx={date:d.d,hasTd:!!td};
   let h='<div class="grab"></div><h3 id="sh-title">'+mdw(d.d)+' 学校予定・メモ</h3><div class="lab">学校の扱い</div>'+pick('e-kubun',S.opt.schools||['登校','非登校'],d.sk,true)+
     '<label class="lab">学校予定<input type="text" id="e-yotei" value="'+esc(d.sy)+'" maxlength="200"></label><label class="lab">メモ（全員に表示）<input type="text" id="e-memo" value="'+esc(d.memo)+'" maxlength="200"></label>';
@@ -1006,10 +1033,9 @@ function drawPat(){const c=pat,names=Object.keys(S.patterns||{});const [cw,cs]=c
   h+='<p class="note" style="margin-top:10px">マスを押して選び、下のボタンで活動を入れます。</p><div class="pgrid"><span></span>'+WK.map(w=>'<b class="'+(w==='土'?'sat':w==='日'?'sun':'')+'">'+w+'</b>').join('');
   SLOTS.forEach(sl=>{h+='<b class="ps">'+sl+'</b>'+WK.map(w=>{const L=c.week[w][sl];return '<button class="pc'+(c.cell===w+'|'+sl?' sel':'')+'" data-pcell="'+w+'|'+sl+'" aria-label="'+w+'曜 '+sl+'：'+esc(L.join('、')||'なし')+'">'+L.map(k=>{const y=splitKind(k);return '<i class="ck '+kCls(y.kind)+' on">'+esc(kAbbrFh(y.kind,y.fh))+'</i>';}).join('')+'</button>';}).join('');});
   h+='<b class="ps">OFF</b>'+WK.map(w=>'<button class="pc offc'+(c.week[w].off?' on':'')+'" data-poff="'+w+'" aria-pressed="'+(!!c.week[w].off)+'" aria-label="'+w+'曜を休養日にする">'+(c.week[w].off?'OFF':'－')+'</button>').join('');
-  h+='</div><div class="pcellbox"><div class="lab" style="margin-top:0">'+cw+'曜・'+cs+' に入れる活動</div><div class="wrap">'+S.opt.kinds.map(k=>{const cur=c.week[cw][cs].map(splitKind).find(y=>y.kind===k),on=!!cur;
-      let b='<button class="opt sm kopt '+(on?kCls(k):'')+'" data-pk2="'+esc(k)+'" aria-pressed="'+on+'">'+esc(k)+(on&&cur.fh?'<small class="fhtag">'+esc(cur.fh)+'</small>':'')+'</button>';
-      if(on&&hasFH(k))b+='<span class="fhpick">'+['フル','ハーフ',''].map(f=>'<button class="opt xs" data-pkfh="'+esc(k)+'|'+f+'" aria-pressed="'+((cur.fh||'')===f)+'">'+(f||'当日決める')+'</button>').join('')+'</span>';
-      return b;}).join('')+'</div>'+
+  h+='</div><div class="pcellbox"><div class="lab" style="margin-top:0">'+cw+'曜・'+cs+' に入れる活動</div><div class="wrap">'+S.opt.kinds.map(k=>{const raw=c.week[cw][cs].find(y=>splitKind(y).kind===k),cur=raw?splitKind(raw):null,on=!!cur;
+      return '<button class="opt sm kopt '+(on?kCls(k):'')+'" data-pk2="'+esc(k)+'" aria-pressed="'+on+'">'+esc(k)+(on&&cur.fh&&cur.fh!=='?'?'<small class="fhtag">'+esc(cur.fh)+'</small>':'')+(on&&cur.fh==='?'?'<small class="fhtag need">区分？</small>':'')+'</button>';}).join('')+'</div>'+
+      (()=>{const raw=c.week[cw][cs].find(y=>splitKind(y).kind==='ROMベーシック');if(!raw)return '';const f=splitKind(raw).fh;return fhRow('pkfh','ROMベーシック',f==='?'?undefined:f);})()+
     '<div class="qrow"><button class="btn sm2" data-pcopy="wd">'+cw+'曜を平日（月〜金）にコピー</button><button class="btn sm2" data-pcopy="we">土日にコピー</button><button class="btn sm2" data-pcopy="all">全曜日にコピー</button><button class="btn sm2" data-pcopy="clr">'+cw+'曜を空にする</button></div></div>';
   const P=presets();const cur=P.find(p=>p[0]===c.preset)||P[0];if(c.preset!=='custom'){c.a=cur[2];c.b=cur[3];}
   h+='<h4>期間に当てはめる</h4><div class="wrap">'+P.map(p=>'<button class="opt sm" data-ppre="'+p[0]+'" aria-pressed="'+(c.preset===p[0])+'">'+p[1]+'</button>').join('')+'</div>';
@@ -1118,10 +1144,9 @@ function drawSelDays(){const c=sheetCtx,M=[['set','入れ替える'],['add','足
     h+='<div class="acts"><button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="selSchool"'+(c.kubun?'':' disabled')+'>保存</button></div>';SH.innerHTML=h;return;}
   if(c.mode==='set'||c.mode==='add'||c.mode==='remove'){
     h+='<p class="note" style="margin-top:10px">'+(c.mode==='set'?'選んだ日の予定を、これで入れ替えます（もとの予定は消えます）。':c.mode==='add'?'もとの予定を残したまま、これを足します。':'選んだ日から、これを外します。')+'</p>';
-    SLOTS.forEach(sl=>{h+='<div class="slotrow"><span class="slot big">'+sl+'</span><div class="wrap">'+S.opt.kinds.map(k=>{const it=c.items.find(x=>x.slot===sl&&x.kind===k),on=!!it;
-      let b='<button class="opt sm kopt '+(on?kCls(k):'')+'" data-sk="'+sl+'|'+esc(k)+'" aria-pressed="'+on+'">'+esc(k)+(on&&it.fh?'<small class="fhtag">'+esc(it.fh)+'</small>':'')+'</button>';
-      if(on&&hasFH(k)&&c.mode!=='remove')b+='<span class="fhpick">'+['フル','ハーフ',''].map(f=>'<button class="opt xs" data-skfh="'+sl+'|'+esc(k)+'|'+f+'" aria-pressed="'+((it.fh||'')===f)+'">'+(f||'当日決める')+'</button>').join('')+'</span>';
-      return b;}).join('')+'</div></div>';});}
+    SLOTS.forEach(sl=>{const rom=c.items.find(x=>x.slot===sl&&x.kind==='ROMベーシック');h+='<div class="slotrow"><span class="slot big">'+sl+'</span><div class="wrap">'+S.opt.kinds.map(k=>{const it=c.items.find(x=>x.slot===sl&&x.kind===k),on=!!it;
+      return '<button class="opt sm kopt '+(on?kCls(k):'')+'" data-sk="'+sl+'|'+esc(k)+'" aria-pressed="'+on+'">'+esc(k)+(on&&it.fh?'<small class="fhtag">'+esc(it.fh)+'</small>':'')+(on&&k==='ROMベーシック'&&it.fh===undefined&&c.mode!=='remove'?'<small class="fhtag need">区分？</small>':'')+'</button>';}).join('')+'</div>'+
+      (rom&&c.mode!=='remove'?fhRow('skfh',sl+'|ROMベーシック',rom.fh):'')+'</div>';});}
   h+='<p class="note pvw" style="margin-top:12px">'+pv.n+'日を変えます。'+(pv.t?'うち'+pv.t+'日は遠征・合宿中です（合宿中のOFFなども、ここで設定できます）。':'')+'</p>';
   h+='<div class="acts"><button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="selSave">保存</button></div>';
   SH.innerHTML=h;}
@@ -1202,6 +1227,39 @@ function statRange(){
   if(statP==='month'){const a=statBase.slice(0,8)+'01';const d=pdate(a);d.setMonth(d.getMonth()+1);d.setDate(0);return [a,iso(d)];}
   const y=fy(statBase);return [y+'-04-01',(y+1)+'-03-31'];}
 function statLabel(a,b){if(statP==='month')return a.slice(0,4)+'年'+(+a.slice(5,7))+'月';if(statP==='year')return fy(a)+'年度';return md(a)+'〜'+md(b);}
+/** 学校・スポンサー向けPDFの設定画面 */
+let arep=null;
+/* ---- 学業（家族のみ） ---- */
+const GR={loaded:false,list:[],busy:false};
+function ensureGrades(){if(GR.loaded||GR.busy||!canEdit()||who==='本人')return;GR.busy=true;call('getGrades',{who}).then(r=>{GR.busy=false;GR.loaded=true;GR.list=(r&&r.grades)||[];if(tab==='stats')render();}).catch(()=>{GR.busy=false;});}
+let gedit=null;
+function openGrade(){const y=fy(TODAY);gedit=gedit||{term:y+'前期',gpa:'',rank:'',memo:'',file:null};drawGrade();openS('grade');}
+function drawGrade(){const c=gedit,y=fy(TODAY);const terms=[y+'前期',y+'後期',(y-1)+'前期',(y-1)+'後期'];
+  let h='<div class="grab"></div><h3 id="sh-title">学期の成績を登録</h3><div class="lab">学期</div><div class="wrap">'+terms.map(t=>'<button class="opt sm" data-gterm="'+t+'" aria-pressed="'+(c.term===t)+'">'+t+'</button>').join('')+'</div>';
+  h+='<div class="qrow"><label class="lab">評定平均<input type="text" id="g-gpa" inputmode="decimal" placeholder="例：4.3" value="'+esc(c.gpa)+'"></label><label class="lab">学年順位（任意）<input type="text" id="g-rank" placeholder="例：12/240" value="'+esc(c.rank)+'"></label></div>';
+  h+='<label class="lab">通知表の写真（任意）<input type="file" id="g-file" accept="image/*"></label>'+(c.file?'<p class="note">選択中：'+esc(c.file.name)+'</p>':'');
+  h+='<label class="lab">メモ<input type="text" id="g-memo" maxlength="300" value="'+esc(c.memo)+'"></label>';
+  h+='<div class="acts"><button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="gradeSave"'+(saving?' disabled':'')+'>'+(saving?'保存中…':'保存')+'</button></div>';SH.innerHTML=h;
+  const f=document.getElementById('g-file');if(f)f.onchange=()=>{gedit.file=f.files[0]||null;};}
+function saveGrade(){const c=gedit;c.gpa=val('g-gpa');c.rank=val('g-rank');c.memo=val('g-memo');if(!c.term){toast('学期を選んでください');return;}
+  const send=(b64,mime,name)=>{saving=true;drawGrade();call('saveGrade',{who,term:c.term,gpa:c.gpa,rank:c.rank,memo:c.memo,photoB64:b64||'',mime:mime||'',name:name||''}).then(r=>{saving=false;GR.list=(r&&r.grades)||GR.list;GR.loaded=true;closeSheet();gedit=null;render();toast(c.term+'の成績を登録しました');}).catch(e=>{saving=false;drawGrade();toast('保存できませんでした：'+errMsg(e).replace(/^(Exception|Error):\s*/,''));});};
+  if(c.file){if(c.file.size>8*1024*1024){toast('写真は8MBまでにしてください');return;}const r=new FileReader();r.onload=()=>send(String(r.result).split(',')[1],c.file.type,c.file.name);r.readAsDataURL(c.file);}else send('','','');}
+function openActRep(){const y=fy(TODAY);arep=arep||{aud:'school',pre:'fy',a:y+'-04-01',b:(y+1)+'-03-31',label:''};drawActRep();openS('arep');}
+function drawActRep(){const c=arep,y=fy(TODAY);
+  const P=[['fy','今年度（4月〜3月）',y+'-04-01',(y+1)+'-03-31'],['h1','前期（4月〜9月）',y+'-04-01',y+'-09-30'],['h2','後期（10月〜3月）',y+'-10-01',(y+1)+'-03-31'],['season','シーズン（12月〜3月）',y+'-12-01',(y+1)+'-03-31'],['custom','期間を指定','','']];
+  let h='<div class="grab"></div><h3 id="sh-title">学校・スポンサーへの報告PDF</h3>';
+  h+='<div class="lab">宛先</div><div class="wrap">'+[['school','学校（公欠・欠席の一覧つき）'],['sponsor','スポンサー・関係者（大会結果・活動量）']].map(([k,l])=>'<button class="opt sm" data-arepaud="'+k+'" aria-pressed="'+(c.aud===k)+'">'+l+'</button>').join('')+'</div>';
+  h+='<div class="lab">期間</div><div class="wrap">'+P.map(p=>'<button class="opt sm" data-areppre="'+p[0]+'" aria-pressed="'+(c.pre===p[0])+'">'+p[1]+'</button>').join('')+'</div>';
+  if(c.pre==='custom')h+='<div class="qrow"><label class="lab">はじめ<input type="date" id="ar-a" value="'+esc(c.a)+'"></label><label class="lab">おわり<input type="date" id="ar-b" value="'+esc(c.b)+'"></label></div>';
+  else{const p=P.find(x=>x[0]===c.pre);c.a=p[2];c.b=p[3];h+='<p class="note">'+esc(md(c.a)+'〜'+md(c.b))+'</p>';}
+  h+='<label class="lab">見出しに添える言葉（任意）<input type="text" id="ar-label" maxlength="40" value="'+esc(c.label)+'" placeholder="例：2026-27シーズン"></label>';
+  h+='<p class="note">選手名・所属は「設定」シートの「選手名」「所属」に書いておくとPDFの上に出ます。</p>';
+  h+='<div class="acts"><button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="actRepGo"'+(saving?' disabled':'')+'>'+(saving?'PDFを作成中…（10〜30秒）':'PDFを作る')+'</button></div>';SH.innerHTML=h;}
+function makeActRep(){const c=arep;if(c.pre==='custom'){c.a=val('ar-a');c.b=val('ar-b');}c.label=val('ar-label')||'';if(!c.a||!c.b||c.a>c.b){toast('期間を正しく選んでください');return;}
+  saving=true;drawActRep();
+  call('makeActivityReport',{a:c.a,b:c.b,label:c.label,audience:c.aud,who}).then(r=>{saving=false;S.reports=r.reports||S.reports;
+     SH.innerHTML='<div class="grab"></div><h3 id="sh-title">PDFができました</h3><p class="note">'+esc(r.name||'')+'</p><a class="btn pri" href="'+esc(r.url)+'" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none;min-height:52px;font-size:17px">PDFを開く</a><p class="note" style="margin-top:8px">開いたPDFは、共有（送信・印刷）から渡せます。作ったPDFの一覧は実績画面の下にも残ります。</p><div class="acts"><button class="btn" data-act="close">閉じる</button></div>';openS('pdf');render();})
+  .catch(e=>{saving=false;drawActRep();const m=errMsg(e);reportErr('活動報告PDF',m);toast(/[^\x00-\x7F]/.test(m)?m.replace(/^(Exception|Error):\s*/,''):'PDFを作成できませんでした。もう一度お試しください。');});}
 function makeRep(){const b=document.querySelector('[data-act="report"]');if(!b||saving)return;const ym=b.dataset.ym,pa=b.dataset.a,pb=b.dataset.b;saving=true;b.disabled=true;b.textContent='PDFを作成中…（10〜30秒）';
   call('makeReport',ym?{ym,who}:{a:pa,b:pb,label:'パーソナル後',who}).then(r=>{saving=false;S.reports=r.reports||S.reports;render();
      SH.innerHTML='<div class="grab"></div><h3 id="sh-title">PDFができました</h3><p class="note">'+esc(r.name||'コーチ報告')+'</p><a class="btn pri" href="'+esc(r.url)+'" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none;min-height:52px;font-size:17px">PDFを開く</a><p class="note" style="margin-top:8px">開いたPDFは、共有（送信）からコーチに渡せます。作ったPDFの一覧は、この画面の下にも残ります。</p><div class="acts"><button class="btn" data-act="close">閉じる</button></div>';openS('pdf');})
@@ -1212,12 +1270,12 @@ function ensureSess(a){if(!S.sessFrom||a>=S.sessFrom||sessLoading)return false;s
 let repLoading=false;
 function ensureReports(){if(S.reports!==null&&S.reports!==undefined||repLoading)return;repLoading=true;S.reports=[];
   call('listReports').then(r=>{repLoading=false;S.reports=(r&&r.reports)||[];if(tab==='stats')render();}).catch(()=>{repLoading=false;});}
-function renderStats(){ensureReports();
+function renderStats(){ensureReports();ensureGrades();
   const [a,b]=statRange(),cut=b<TODAY?b:TODAY,ds=DAYS.filter(d=>d.d>=a&&d.d<=cut);
   const loading=ensureSess(a);
   const K={};let rom=0;const romDays={};const tot={},logs=[];
-  ds.forEach(d=>{rowsOf(d).forEach(r=>{if(isSys(r.kind)&&r.kind!=='大会')return;const k=K[r.kind]=K[r.kind]||{p:0,d:0,s:0};if(r.planned)k.p++;if(r.act){if(r.act.st==='実施')k.d++;else k.s++;}
-    if(r.act){logs.push([d.d,r]);if(r.act.st==='実施'&&r.kind.indexOf('ROM')===0&&d.d>S.romBase.date&&!romDays[d.d]){romDays[d.d]=1;rom++;}
+  ds.forEach(d=>{rowsOf(d).forEach(r=>{if(isSys(r.kind)&&r.kind!=='大会')return;const k=K[r.kind]=K[r.kind]||{p:0,d:0,s:0,x:0};if(r.planned)k.p++;if(r.act){if(r.act.st==='実施'){if(r.planned)k.d++;else k.x++;}else k.s++;}
+    if(r.act){logs.push([d.d,r]);if(r.act.st==='実施'&&r.kind.indexOf('ROM')===0&&!romDays[d.d]){romDays[d.d]=1;rom++;}
       const s=S.sess[r.act.id];if(s&&r.act.st==='実施')s.items.forEach(i=>{const T=(tot[r.kind]=tot[r.kind]||{})[i.name]=(tot[r.kind]||{})[i.name]||{n:0,s:0,v:0,max:0,u:i.unit};T.n++;T.s+=parseInt(i.sets,10)||0;if(i.unit==='本')T.v+=parseInt(i.v,10)||0;const w=parseFloat(i.w);if(!isNaN(w)&&w>T.max)T.max=w;});}});});
   const R=czRanges();
   let h='<div class="bar"><div class="seg" role="group" aria-label="期間"><button data-sp="week" aria-pressed="'+(statP==='week')+'">週</button><button data-sp="month" aria-pressed="'+(statP==='month')+'">月</button><button data-sp="year" aria-pressed="'+(statP==='year')+'">年度</button><button data-sp="coach" aria-pressed="'+(statP==='coach')+'">パーソナル</button></div>'+
@@ -1229,16 +1287,16 @@ function renderStats(){ensureReports();
     const rp=(S.reports||[]).find(r=>r.name.indexOf(a+'〜'+b)>=0);h+='<p class="note">パーソナル（'+mdw(a)+'）から'+(b===TODAY?'今日まで':'次のパーソナルの前日（'+mdw(b)+'）まで')+'の実績です。</p><div class="qrow"><button class="btn pri qb" data-act="report" data-a="'+a+'" data-b="'+b+'">📄 この期間のコーチ報告PDFを'+(rp?'作り直す':'作成')+'</button></div>'+(rp?'<p class="note"><a href="'+esc(rp.url)+'" target="_blank" rel="noopener">▶ '+esc(rp.name)+' を開く</a></p>':'');}
   if(statP==='month'){const ym=a.slice(0,7),rp=(S.reports||[]).find(r=>r.name.indexOf(ym)>=0);h+='<div class="qrow"><button class="btn pri qb" data-act="report" data-ym="'+ym+'">📄 この月のコーチ報告PDFを'+(rp?'作り直す':'作成')+'</button></div>'+(rp?'<p class="note"><a href="'+esc(rp.url)+'" target="_blank" rel="noopener">▶ '+esc(rp.name)+' を開く</a></p>':'');}
   const kk=S.opt.kinds.concat(['大会']).filter(k=>K[k]).concat(Object.keys(K).filter(k=>S.opt.kinds.indexOf(k)<0&&k!=='大会'));
-  const P=kk.reduce((t,k)=>t+(k==='大会'?0:K[k].p),0),D=kk.reduce((t,k)=>t+(k==='大会'?0:K[k].d),0);
+  const P=kk.reduce((t,k)=>t+(k==='大会'?0:K[k].p),0),D=kk.reduce((t,k)=>t+(k==='大会'?0:K[k].d),0),X=kk.reduce((t,k)=>t+(k==='大会'?0:(K[k].x||0)),0);
   const offN=ds.filter(x=>x.off).length;
-  h+='<div class="stats"><div class="st"><b>'+D+'／'+P+'</b><span>実施した活動／予定'+(b>TODAY?'（今日まで）':'')+'</span></div><div class="st"><b>'+rom+'</b>日<span>ROMをやった日（通算 '+ROMTOTAL+'回）</span></div><div class="st"><b>'+offN+'</b>日<span>休養日（OFF）</span></div></div>';
+  h+='<div class="stats"><div class="st"><b>'+D+'／'+P+'</b><span>実施／予定'+(b>TODAY?'（今日まで）':'')+(X?'　予定外 '+X:'')+'</span></div><div class="st"><b>'+rom+'</b>日<span>ROMをやった日（通算 '+ROMTOTAL+'回）</span></div><div class="st"><b>'+offN+'</b>日<span>休養日（OFF）</span></div></div>';
   if(statP==='year'){const y=fy(a),sc=schoolCount(y),lim=S.warkLimit||5,left=lim-sc.used;
     h+='<h2>学校の休み（'+y+'年度）</h2><div class="tbl"><div class="tr th"><span>区分</span><span>日数</span><span>日付</span></div>'+
       '<div class="tr"><span><span class="sch sch-ab">公欠</span></span><span>'+sc.abs.length+'日</span><span>'+(sc.abs.map(md).join('、')||'－')+'</span></div>'+
       '<div class="tr"><span><span class="sch sch-ab2">欠席</span></span><span>'+sc.miss.length+'日</span><span>'+(sc.miss.map(md).join('、')||'－')+'</span></div>'+
       '<div class="tr"><span><span class="sch sch-wk">ワ</span></span><span>'+sc.used+'日'+(left<0?'（上限超過）':'（残り'+left+'回）')+'</span><span>'+((sc.pre?'記録前 '+sc.pre+'回　':'')+(sc.wark.map(md).join('、')||(sc.pre?'':'－')))+'</span></div></div>'+
       '<p class="note">公欠は欠席日数に入りません。ラーケーションは1日＝1回として、年度'+lim+'回まで。アプリに登録していない分は「設定」シートの「ラーケーションの使用済み回数」に「2026:2」のように書きます。</p>';}
-  h+='<h2>活動の予定と実施</h2>'+(kk.length?'<div class="tbl t4"><div class="tr th"><span>活動</span><span>予定</span><span>実施</span><span>やらず</span></div>'+kk.map(k=>'<div class="tr"><span><span class="atag sm '+kCls(k)+'">'+esc(k)+'</span></span><span>'+K[k].p+'</span><span>'+K[k].d+'</span><span>'+(K[k].s||'')+'</span></div>').join('')+'</div><p class="note">1日に同じ時間帯・同じ活動があれば1回と数えます。予定にない活動の記録は「実施」だけに数えます。</p>':'<p class="note">この期間の予定・記録はありません。</p>');
+  h+='<h2>活動の予定と実施</h2>'+(kk.length?'<div class="tbl t5"><div class="tr th"><span>活動</span><span>予定</span><span>実施</span><span>予定外</span><span>やらず</span></div>'+kk.map(k=>'<div class="tr"><span><span class="atag sm '+kCls(k)+'">'+esc(k)+'</span></span><span>'+K[k].p+'</span><span>'+K[k].d+'</span><span>'+(K[k].x||'')+'</span><span>'+(K[k].s||'')+'</span></div>').join('')+'</div><p class="note">実施＝予定どおりにやった数（時間帯が違っても同じ日・同じ活動なら数えます）。予定外＝予定になかった活動をやった数。達成率は 実施÷予定 です。</p>':'<p class="note">この期間の予定・記録はありません。</p>');
   const fhN={};ds.forEach(d=>rowsOf(d).forEach(r=>{if(r.act&&r.act.st==='実施'){const s2=S.sess[r.act.id];if(s2&&s2.fh){(fhN[r.kind]=fhN[r.kind]||{})[s2.fh]=((fhN[r.kind]||{})[s2.fh]||0)+1;}}}));
   Object.keys(tot).forEach(k=>{const T=tot[k],ord=n=>{const i=(MENUK[k]||[]).findIndex(m=>m.name===n);return i<0?999:i;},names=Object.keys(T).sort((x,y)=>ord(x)-ord(y)),wj=names.every(n=>T[n].u==='本');
     h+='<h2><span class="atag '+kCls(k)+'">'+esc(k)+'</span> の合計（'+K[k].d+'回'+(fhN[k]?'：'+Object.keys(fhN[k]).map(x=>x+' '+fhN[k][x]+'回').join('／'):'')+'）</h2><div class="tbl"><div class="tr th"><span>種目</span><span>'+(wj?'合計本数':'回数・セット')+'</span><span>'+(wj?'実施回数':'最大重量')+'</span></div>'+
@@ -1253,6 +1311,11 @@ function renderStats(){ensureReports();
   const dk=Object.keys(byDay).sort().reverse();
   h+='<h2>記録の一覧</h2>'+(dk.length?'<div class="list">'+dk.map(x=>{const n=S.notes[x];return '<div class="rl"><button class="linkbtn2" data-day="'+x+'" style="min-height:auto;padding:0">'+mdw(x)+'</button>'+byDay[x].map(r=>'<div class="arow mini"><span class="slot">'+r.slot+'</span><span class="atag sm '+kCls(r.kind)+'">'+esc(r.kind)+(fhOf(r.act,r.fh)?'<small class="fhtag">'+esc(fhOf(r.act,r.fh))+'</small>':'')+'</span><span class="asum">'+esc(actSum(r.act))+'</span></div>').join('')+(n?'<small class="memo">体調 '+esc(n.cond||'－')+'　'+esc(n.note||'')+'</small>':'')+'</div>';}).join('')+'</div>':'<p class="note">この期間の記録はありません。</p>');
   if(loading)h+='<p class="note">古い期間の内容を読み込んでいます…</p>';
+  if(canEdit()&&who!=='本人'){h+='<h2>学業（家族だけに表示）</h2>';
+    if(!GR.loaded)h+='<p class="note">読み込み中…</p>';
+    else{h+=(GR.list.length?'<div class="tbl t4"><div class="tr th"><span>学期</span><span>評定平均</span><span>順位</span><span>通知表</span></div>'+GR.list.map(g=>'<div class="tr"><span>'+esc(g.term)+'</span><span>'+esc(g.gpa||'－')+'</span><span>'+esc(g.rank||'')+'</span><span>'+(g.url?'<a href="'+esc(g.url)+'" target="_blank" rel="noopener">写真</a>':'')+'</span></div>').join('')+'</div>':'<p class="note">まだ登録がありません。</p>')+
+      '<button class="btn" data-act="gradeOpen" style="width:100%">✎ 学期の成績を登録・更新</button><p class="note">学校・スポンサー向けPDFには評定平均だけが載ります。本人・コーチの画面には出ません。</p>';}}
+  if(canEdit())h+='<h2>学校・スポンサーへの報告PDF</h2><p class="note">年間・半期・任意の期間で、遠征・合宿・大会の予定と実績（学校向けは公欠・欠席・ラーケーションの日付一覧つき）をPDFにします。</p><button class="btn" data-act="actRepOpen" style="width:100%">📄 活動報告PDFを作る</button>';
   h+='<button class="btn" data-act="reload" style="width:100%;margin-top:14px">最新の状態に更新</button></main>';
   V.innerHTML=h;}
 
@@ -1269,6 +1332,8 @@ function renderHelp(){
   '<h3>実績を事実に合わせる（v4.22）</h3><ul class="hl"><li>カレンダーの「Rフ」「Rハ」は、記録前は予定の区分、記録後は実際にやった区分です</li><li>朝の予定を夜にやった場合も、同じ日・同じ活動なら予定の実施と数え、「（夜に実施）」と注記します</li><li>記録があるのに予定が空だった日は、日の画面の「記録どおりに予定を入れる」、または「⋯」→「記録どおりに予定を埋める」で、記録した活動を予定として入れられます（達成率・報告の「予定」が事実に合います）</li><li>過去の日の予定も「予定を変更」「複数日を選ぶ」「週の型（期間を指定）」で変えられます</li><li>記録のフル／ハーフをまとめて直すときは、「複数日を選ぶ」→日を選ぶ→「記録のフル／ハーフを直す」（種目・回数はその区分のメニューの標準値になります）</li></ul>'+
   '<h3>月次チェック（月末の締め）</h3><p>スプレッドシートのメニュー「行動予定アプリ」→「月次チェック」で、その月の点検表（1日1行）ができます。予定・実績・体調・問題（未記録／予定外／時間帯ちがい／区分ちがい／標準より少ない／明細なし）が並び、「どうする」の列に<b>おすすめが入っています</b>。違う日だけ▼で「そのまま／記録が正しい／予定が正しい／この日は休み／本人に聞く」から選び、メニュー「月次チェックの修正を反映」を押すだけです。</p><p>「本人に聞く」にした日は、本人のアプリのホームに知らせが出て、「まとめて記録」の先頭に「父から確認」として並びます。まとめて記録では、ROMベーシックの行に予定の区分（フル／ハーフ）が出て、✓にすると区分の切替と「内容を直して記録」（セット数を減らしたときなど）が使えます。セット数を個別に直すときは「月次チェック_○○_種目」シートに数を書きます。</p>'+
   '<h3>標準値（メニュー）をアプリで変える</h3><p>活動名を押して「今日のメニュー」→「標準値（回数・セット数）を変える」で、フル／ハーフそれぞれの回数・セット数を−／＋で直せます。記録画面でセット数を直したあと「この内容を標準値にする」を押しても同じです。変えた値は目安と初回の初期値になり、すでに記録した内容は変わりません。コーチは変えられません。</p>'+
+  '<h3>学校・スポンサーへの報告PDF</h3><p>「実績」画面の一番下の「活動報告PDFを作る」。宛先（学校／スポンサー）と期間（今年度・上期・下期・シーズン・期間指定）を選ぶだけです。学校向けは遠征・合宿・大会の予定と実績、公欠・欠席・ラーケーションの日付一覧、今後の予定。スポンサー向けは大会結果とトレーニングの量。選手名・所属は「設定」シートに書いておくと載ります。</p><h3>予定変更画面の見方</h3><p>ROMベーシックを選ぶと、その下に「└ ROMベーシックの区分：フル／ハーフ／当日決める」の段が出ます。どれかを選ぶまで保存できません（週の型・複数日も同じ）。「この日にパーソナルを受ける」で、未来の日にパーソナルを予定できます。</p>'+
+  '<h3>部活（演劇部）と学業</h3><p>活動の種類「部活」で、予定と参加の記録ができます（内容：練習／公演／大会／合宿）。カレンダーは「部」。コーチにも見えます。学業（学期・評定平均・順位・通知表の写真）は「実績」画面の一番下で父・母だけが登録・閲覧でき、本人・コーチには見えません。学校・スポンサー向けPDFには、全期間を通じた評定平均と学期ごとの評定平均が載ります。</p>'+
   '<h3>続ける・共有する（v4.22）</h3><ul class="hl"><li>ホームに「今週の達成率」「連続記録」が出ます。連続記録は、記録した日と記録の要らない日（予定なし・休養日）をつなぎ、予定があって未記録の日で途切れます</li><li>家族が予定を変えると、ホームの「最近の予定変更」に3日間出ます</li><li>「設定」シートの「未記録の通知メール」に宛先を書くと、毎晩21時に、その日の未記録があればメールが届きます</li><li>活動名を押すと今日のメニュー（目安）が見られます。記録は［記録］か、その画面の「記録する」から</li><li>文字が小さいときは、この画面の「文字を大きくする」</li></ul>'+
   '<h3>休養日（OFF）</h3><p>休養日は「その日の位置づけ」で、トレーニングの予定とは別に持っています。合宿中でも休養日にでき、休養日に軽く動く予定を入れることもできます。設定は、日を押して「予定を変更」→「休養日（OFF）」、複数日を選んで「休養日にする」、週の型の「OFF」の行、のいずれかです。カレンダーには上段に「OFF」（合宿中なら「合宿／OFF」）と出ます。</p>'+
   '<h3>3. 予定を変える</h3><ul class="hl"><li>1日だけ変える：日付を押して「予定を変更」</li><li>何日かを選んで変える：「予定」画面の「複数日を選ぶ」（またはカレンダーの日を長押し）→ 日を押して選ぶ →「選んだ日の予定を変更」。入れ替える／足す／外す／休養日にする／休養日をやめる／予定を消す／学校の扱い から選べます</li><li>まとめて変える：「まとめて変更」で、この週をくり返す／前の週と同じにする／期間を休養日にする／やめる／期間の予定を消す／期間に活動を追加／外す</li><li>学校予定やメモ：日付を押して「学校予定・メモを変更」</li></ul><p>コーチの方は予定を変更できません（記録と閲覧はできます）。</p>'+
@@ -1459,7 +1524,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.bakind){const sel=brec.addSel=brec.addSel||[],i=sel.indexOf(ds.bakind);if(i>=0)sel.splice(i,1);else sel.push(ds.bakind);drawBrec();return;}
   if(ds.act==='baClose'){brec.addAt=-1;brec.addSel=[];drawBrec();return;}
   if(ds.act==='brecMore'){brec.span+=14;buildBrec();drawBrec();return;}
-  if(ds.act==='brecGo'){const list=[];brec.days.forEach(x=>x.rows.forEach(r=>{if(r.st)list.push(recPayload(x.d,r.slot,r.kind,r.st==='ok'?'実施':'やらなかった',r.fh));}));if(!list.length)return;
+  if(ds.act==='brecGo'){const list=[];brec.days.forEach(x=>x.rows.forEach(r=>{if(r.st){const p=recPayload(x.d,r.slot,r.kind,r.st==='ok'?'実施':'やらなかった',r.fh);if(r.sug)p.sug=true;list.push(p);}}));if(!list.length)return;
     const n1=list.filter(p=>p.st!=='やらなかった').length,nd={};list.forEach(p=>nd[p.date]=1);
     closeSheet();sendRec('saveActivities',{list},Object.keys(nd).length+'日分・'+list.length+'件を記録しました（やった'+n1+(list.length-n1?'・やらなかった'+(list.length-n1):'')+'）');return;}
   if(ds.bfh){const [di,ri,f]=ds.bfh.split('|');brec.days[+di].rows[+ri].fh=f;drawBrec();return;}
@@ -1475,10 +1540,12 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.act==='selSchool'){const c=sheetCtx,kubun=c.kubun,dates=c.dates.slice();if(!kubun)return;
     closeSheet();selMode=false;SEL={};sendPlan('bulkSchool',{dates,kubun},null);return;}
   if(ds.sk){const [sl,k]=kp(ds.sk),c=sheetCtx,i=c.items.findIndex(x=>x.slot===sl&&x.kind===k);
-    if(i>=0)c.items.splice(i,1);else c.items.push({slot:sl,kind:k,fh:''});drawSelDays();return;}
+    if(i>=0)c.items.splice(i,1);else c.items.push({slot:sl,kind:k,fh:k==='ROMベーシック'?undefined:''});drawSelDays();return;}
   if(ds.skfh){const [sl,k,f]=ds.skfh.split('|'),it=sheetCtx.items.find(x=>x.slot===sl&&x.kind===k);if(it)it.fh=f||'';drawSelDays();return;}
-  if(ds.act==='selSave'){const c=sheetCtx,mode=c.mode,items=c.items.slice(),dates=c.dates.slice();
-    if((mode==='set'||mode==='add'||mode==='remove')&&!items.length){toast('活動を選んでください');return;}
+  if(ds.act==='selSave'){const c=sheetCtx,mode=c.mode,dates=c.dates.slice();
+    if((mode==='set'||mode==='add'||mode==='remove')&&!c.items.length){toast('活動を選んでください');return;}
+    if((mode==='set'||mode==='add')&&fhMissing(c.items)){toast('ROMベーシックの区分（フル／ハーフ／当日決める）を選んでください');return;}
+    const items=c.items.map(x=>({slot:x.slot,kind:x.kind,fh:x.fh||''}));
     const make=mode==='off'?(d,cur)=>({items:cur,off:true}):mode==='unoff'?(d,cur)=>({items:cur,off:false})
       :mode==='clear'?(d,cur,o)=>({items:[],off:o}):mode==='set'?(d,cur,o)=>({items,off:o})
       :mode==='add'?(d,cur,o)=>({items:cur.concat(items.filter(x=>!cur.some(y=>y.slot===x.slot&&y.kind===x.kind))),off:o})
@@ -1493,12 +1560,15 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
       if(!cond&&!note)delete S.notes[c.date];else S.notes[c.date]={cond,note,by:who,at:''};ingest(S);});return;}
   // 1日の予定
   if(ds.dplan){const back=openDay?openDay.d:'';openDayPlan(ds.dplan);dplan.back=back;return;}
-  if(ds.dpk){const [sl,k]=kp(ds.dpk),i=dplan.items.findIndex(x=>x.slot===sl&&x.kind===k);if(i>=0)dplan.items.splice(i,1);else{if(k==='OFF')dplan.items=dplan.items.filter(x=>x.slot!==sl);else dplan.items=dplan.items.filter(x=>!(x.slot===sl&&x.kind==='OFF'));dplan.items.push({slot:sl,kind:k,fh:''});}drawDayPlan();return;}
+  if(ds.dpk){const [sl,k]=kp(ds.dpk),i=dplan.items.findIndex(x=>x.slot===sl&&x.kind===k);if(i>=0)dplan.items.splice(i,1);else{if(k==='OFF')dplan.items=dplan.items.filter(x=>x.slot!==sl);else dplan.items=dplan.items.filter(x=>!(x.slot===sl&&x.kind==='OFF'));dplan.items.push({slot:sl,kind:k,fh:k==='ROMベーシック'?undefined:''});}drawDayPlan();return;}
   if(ds.act==='dpOffTgl'){dplan.off=!dplan.off;drawDayPlan();return;}
   if(ds.dpfh){const [sl,k,f]=ds.dpfh.split('|');const it=dplan.items.find(x=>x.slot===sl&&x.kind===k);if(it)it.fh=f||'';drawDayPlan();return;}
+  if(ds.act==='dpCzTgl'){dplan.cz=!dplan.cz;drawDayPlan();return;}
   if(ds.act==='dpClear'){dplan.items=[];drawDayPlan();toast('「保存」を押すと確定します');return;}
   if(ds.act==='dpBack'){const x=dplan.back;closeSheet();if(x)openDaySheet(x);return;}
-  if(ds.act==='dpSave'||ds.act==='dpReset'){const c=dplan,reset=ds.act==='dpReset',items=c.items.slice(),off=!!c.off;closeSheet();if(c.back)openDaySheet(c.back);
+  if(ds.act==='dpSave'||ds.act==='dpReset'){const c=dplan,reset=ds.act==='dpReset';if(!reset&&fhMissing(c.items)){toast('ROMベーシックの区分（フル／ハーフ／当日決める）を選んでください');return;}
+    const items=c.items.map(x=>({slot:x.slot,kind:x.kind,fh:x.fh||''})),off=!!c.off;closeSheet();if(c.back)openDaySheet(c.back);
+    if(!reset&&c.cz!==c.cz0)sendPlan('saveCoaching',{date:c.date,memo:'',clear:!c.cz},c.cz?md(c.date)+'にパーソナルを入れました':md(c.date)+'のパーソナルを外しました',null);
     sendPlan('saveDayItems',{date:c.date,items,off,reset},reset?'元の予定に戻しました':md(c.date)+'の予定を変更しました',reset?null:()=>planLocal([c.date],()=>({items,off}),'手動'));return;}
   if(ds.act==='editPlan'){openEditPlan();return;}
   if(ds.act==='planSave'){const c=sheetCtx,p={date:c.date,day:{kubun:val('e-kubun'),yotei:val('e-yotei'),memo:val('e-memo')}};
@@ -1512,13 +1582,14 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.act==='patOpen'){openPat();return;}
   if(ds.pat!==undefined){openPat(ds.pat);return;}
   if(ds.pcell){readPat();pat.cell=ds.pcell;drawPat();return;}
-  if(ds.pk2){readPat();const [w,sl]=pat.cell.split('|'),L=pat.week[w][sl],i=L.findIndex(x=>splitKind(x).kind===ds.pk2);if(i>=0)L.splice(i,1);else L.push(ds.pk2);drawPat();return;}
+  if(ds.pk2){readPat();const [w,sl]=pat.cell.split('|'),L=pat.week[w][sl],i=L.findIndex(x=>splitKind(x).kind===ds.pk2);if(i>=0)L.splice(i,1);else L.push(ds.pk2==='ROMベーシック'?'ROMベーシック#?':ds.pk2);drawPat();return;}
   if(ds.pkfh){readPat();const [k,f]=ds.pkfh.split('|'),[w,sl]=pat.cell.split('|'),L=pat.week[w][sl],i=L.findIndex(x=>splitKind(x).kind===k);if(i>=0)L[i]=joinKind({kind:k,fh:f||''});drawPat();return;}
   if(ds.poff){readPat();pat.week[ds.poff].off=!pat.week[ds.poff].off;drawPat();return;}
   if(ds.pcopy){readPat();const w=pat.cell.split('|')[0],src=pat.week[w];const to=ds.pcopy==='wd'?['月','火','水','木','金']:ds.pcopy==='we'?['土','日']:ds.pcopy==='all'?WK:[w];
     to.forEach(t=>{SLOTS.forEach(sl=>pat.week[t][sl]=ds.pcopy==='clr'?[]:src[sl].slice());pat.week[t].off=ds.pcopy==='clr'?false:!!src.off;});drawPat();toast(ds.pcopy==='clr'?w+'曜を空にしました':w+'曜の予定をコピーしました');return;}
   if(ds.ppre){readPat();pat.preset=ds.ppre;if(ds.ppre==='custom'){pat.a='';pat.b='';}drawPat();return;}
   if(ds.act==='pSave'||ds.act==='pApply'){readPat();const c=pat;if(!c.name){toast('型の名前を入れてください');return;}
+    {const un=[];WK.forEach(w=>SLOTS.forEach(sl=>(c.week[w][sl]||[]).forEach(k=>{if(/#\?$/.test(k))un.push(w+'曜 '+sl);})));if(un.length){toast('ROMベーシックの区分（フル／ハーフ／当日決める）を選んでください：'+un.slice(0,3).join('、')+(un.length>3?' ほか':''));return;}}
     const p={name:c.name,oldName:c.oldName,week:c.week};
     if(ds.act==='pApply'){if(!c.a||!c.b||c.a>c.b){toast('当てはめる期間を選んでください');return;}const pv=preview(c.a,c.b,c.ow,c.prot);if(!confirm(md(c.a)+'〜'+md(c.b)+'の'+pv.n+'日の予定を、型「'+c.name+'」にします。よろしいですか？'+(pv.s?'\n（試験・学校行事の'+pv.s+'日は変えません）':'')))return;p.apply={a:c.a,b:c.b,overwrite:c.ow,protect:c.prot};}
     if(ds.act==='pApply'){closeSheet();sendPlan('savePattern',p,null);}
@@ -1569,6 +1640,13 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
     const memo=val('cz-m');statCz=-1;
     sendPlan('saveCoaching',{date:dt,memo,clear:false},md(dt)+'をパーソナルの日として登録しました',()=>{S.coachings=(S.coachings||[]).concat([{d:dt,kind:'パーソナル',memo,by:who}]).sort((a,b)=>a.d<b.d?-1:1);ingest(S);});return;}
   if(ds.act==='report'){makeRep();return;}
+  if(ds.act==='actRepOpen'){openActRep();return;}
+  if(ds.act==='gradeOpen'){openGrade();return;}
+  if(ds.gterm){gedit.gpa=val('g-gpa');gedit.rank=val('g-rank');gedit.memo=val('g-memo');gedit.term=ds.gterm;drawGrade();return;}
+  if(ds.act==='gradeSave'){if(saving)return;saveGrade();return;}
+  if(ds.arepaud){arep.aud=ds.arepaud;drawActRep();return;}
+  if(ds.areppre){if(arep.pre==='custom'){arep.a=val('ar-a')||arep.a;arep.b=val('ar-b')||arep.b;}arep.pre=ds.areppre;drawActRep();return;}
+  if(ds.act==='actRepGo'){if(saving)return;makeActRep();return;}
   if(ds.act==='vidAdd'){openVid(openDay.d);return;}
   if(ds.act==='vidGo'){uploadVid();return;}
   if(ds.act==='vidBack'){if(upBusy)return;const x=sheetCtx&&sheetCtx.date;closeSheet();if(x)openDaySheet(x);return;}
@@ -1603,7 +1681,7 @@ document.addEventListener('change',e=>{const id=e.target.id||'';
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetKind&&sheetKind!=='who'&&!saving)closeSheet();});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&S&&!sheetKind&&!saving&&!draftDiff().length)load(true);});
 window.addEventListener('focus',()=>{if(!draftDiff().length)refreshIfStale(60000);});
-if(INSIDE_GAS||API_URL)load(false);
+if(inAppGuide()){}else if(INSIDE_GAS||API_URL)load(false);
 else V.innerHTML='<main><p class="empty">このページは、デプロイしたウェブアプリのURLから開くか、通信先（API_URL）を設定してください。</p></main>';
 })();
 
