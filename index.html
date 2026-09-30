@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.27.0 -->
+<!-- スキー行動予定アプリ 画面側 v4.28.1 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -238,13 +238,18 @@ section.today{background:var(--card);border:2px solid var(--accent);border-radiu
 section.today.tmr{border:1px solid var(--line)}
 section.today .tlabel{flex:0 0 auto}
 /* カレンダーの印 */
-.cks{position:absolute;left:2px;right:2px;bottom:2px;display:flex;flex-wrap:wrap;gap:1px}
+.cks{position:static;margin-top:auto;padding-top:3px;display:flex;flex-wrap:wrap;gap:2px 1px;max-width:100%}
 .ck{font-style:normal;font-size:9.5px;font-weight:800;line-height:1.35;border-radius:3px;padding:0 2px;background:transparent;border:1px solid currentColor;opacity:.9}
 .ck.on{border-color:transparent}.ck.ng{background:repeating-linear-gradient(135deg,transparent 0 3px,rgba(0,0,0,.12) 3px 5px);text-decoration:line-through}
 .ck:not(.on):not(.ng){background:var(--card)!important}
 .ck.more{border:0;background:none}
-.cell{padding-bottom:28px}
-.mini .cell{padding-bottom:16px}.mini .ck{font-size:8px;padding:0 1px}
+.cell{padding-bottom:3px;min-height:74px;height:auto;overflow:visible}
+.cal{align-items:stretch}
+.cell .cl{-webkit-line-clamp:2}
+.cell .cn{white-space:normal;overflow-wrap:anywhere}
+.cell .ab,.cell .czb{position:static;align-self:flex-start;margin-top:2px}
+.cell .czb.two{top:auto}
+.mini .cell{padding-bottom:2px}.mini .ck{font-size:8px;padding:0 1px}
 /* 記録画面 */
 .acthead{border-radius:12px;padding:10px 14px;margin:2px 0 8px;display:flex;flex-direction:column}
 .acthead small{font-size:13px;font-weight:700;opacity:.85}.acthead b{font-size:23px;font-weight:900;line-height:1.25}
@@ -348,8 +353,9 @@ header.top{position:relative}
 body.open{overflow:hidden}
 .sheet{overscroll-behavior:contain;max-height:88vh}
 /* 画面が狭いときは、ボタンを行の下に大きく出す */
-@media (max-width:390px){
-  .arow{grid-template-areas:"s t t" "m m m" "b b b";gap:4px 6px}
+@media (max-width:560px){
+  .arow{grid-template-areas:"s t t" "m m m" "b b b";gap:4px 6px;grid-template-columns:auto minmax(0,1fr) 0}
+  .arow .atag{white-space:normal;overflow-wrap:anywhere}
   .arow .abtn{justify-content:stretch;margin-top:2px}
   .arow .abtn .btn{flex:1}
   .arow.mini{grid-template-areas:"s t m"}
@@ -383,7 +389,7 @@ body.open{overflow:hidden}
 .arow.done .asum{color:#1E5B32}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .arow.done{background:#17331F;border-color:#2F6B45}
   :root:not([data-theme="light"]) .arow.done .asum{color:#BFE9CD}}
-@media (max-width:390px){.arow.done{grid-template-areas:"o s t" "m m m" "b b b";grid-template-columns:auto auto 1fr}}
+@media (max-width:560px){.arow.done{grid-template-areas:"o s t" "m m m" "b b b";grid-template-columns:auto auto 1fr}}
 /* v4.7：休養日 */
 .cl.off{background:var(--none);color:var(--sub);font-weight:800}
 .pc.offc{min-height:34px;font-size:11px;font-weight:800;color:var(--sub);align-items:center;justify-content:center}
@@ -431,7 +437,7 @@ html.big .btn{font-size:17px}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.27.0';
+const CLIENT_VERSION='4.28.1';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -484,8 +490,9 @@ function ingest(d){
      if(open)d.brk=lab(open);});}
   if(S.opt.names.length&&who&&S.opt.names.indexOf(who)<0)who='';
   // ROMの回数
+  // ROMの通算は「ROMをやった日」の数。同じ日にROMベーシックとROMプラスをやっても1回（その日の最初の記録に回数がつく）
   ROMN={};let n=Number(S.romBase.count)||0;const L=[];Object.keys(S.acts).sort().forEach(dd=>(S.acts[dd]||[]).forEach(a=>{if(a.st==='実施'&&a.kind.indexOf('ROM')===0&&dd>S.romBase.date)L.push([dd,SLOTS.indexOf(a.slot),a.id]);}));
-  L.sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:a[1]-b[1]).forEach(x=>{n++;ROMN[x[2]]=n;});ROMTOTAL=n;
+  L.sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:a[1]-b[1]);let lastD='';L.forEach(x=>{if(x[0]!==lastD){n++;lastD=x[0];ROMN[x[2]]=n;}else ROMN[x[2]]=-n;});ROMTOTAL=n;
 }
 /** 保存した日の分だけを反映（全部を読み直さない） */
 function applyPart(d){if(!d||!d.partial){ingest(d);return;}
@@ -651,7 +658,7 @@ function sessSum(a){const s=S.sess[a.id];if(!s)return a.c||'';const n=s.items.le
 function fhOf(a,planFh){if(a&&S.sess[a.id]&&S.sess[a.id].fh)return S.sess[a.id].fh;return planFh||'';}
 /** 活動名＋区分の表示（HTML） */
 function kindTag(kind,fh,cls){return '<span class="atag '+(cls||'')+' '+kCls(kind)+'">'+esc(kind)+(fh?'<small class="fhtag">'+esc(fh)+'</small>':'')+'</span>';}
-function actSum(a){if(!a)return'';if(a.st==='やらなかった')return 'やらなかった'+(a.memo?'（'+a.memo+'）':'');const s=sessSum(a);return (s||'実施')+(ROMN[a.id]?'（ROM '+ROMN[a.id]+'回目）':'')+(a.memo?'　'+a.memo:'');}
+function actSum(a){if(!a)return'';if(a.st==='やらなかった')return 'やらなかった'+(a.memo?'（'+a.memo+'）':'');const s=sessSum(a);const r=ROMN[a.id];return (s||'実施')+(r>0?'（ROM '+r+'回目）':r<0?'（ROM '+(-r)+'回目・同日2回目）':'')+(a.memo?'　'+a.memo:'');}
 // ---------- 骨組み ----------
 const root=document.getElementById('root');
 const ICON={home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',plan:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>',race:'<path d="M3 20l6-12 4 7 3-5 5 10z"/>',stats:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/>'};
@@ -730,7 +737,7 @@ function renderHome(){
   const a=monOf(TODAY),b=addD(a,6);let pl=0,dn=0;
   DAYS.forEach(d=>{if(d.d<a||d.d>b||d.d>TODAY)return;rowsOf(d).forEach(r=>{if(isSys(r.kind))return;if(r.planned)pl++;if(r.act&&r.act.st==='実施')dn++;});});
   const rate=pl?Math.round(dn/pl*100):null,stk=streak();
-  h+='<h2>今週（'+md(a)+'〜'+md(b)+'）</h2><div class="stats"><div class="st"><b>'+(rate==null?'－':rate+'%')+'</b><span>今週の達成率（'+dn+'／'+pl+'）</span></div><div class="st"><b>'+stk+'</b>日<span>連続記録</span></div><div class="st"><b>'+ROMTOTAL+'</b>回<span>ROMの通算</span></div></div>';
+  h+='<h2>今週（'+md(a)+'〜'+md(b)+'）</h2><div class="stats"><div class="st"><b>'+(rate==null?'－':rate+'%')+'</b><span>今週の達成率（'+dn+'／'+pl+'）</span></div><div class="st"><b>'+stk+'</b>日<span>連続記録</span></div><div class="st"><b>'+ROMTOTAL+'</b>回<span>ROMの通算（やった日数）</span></div></div>';
   // 最近の予定変更（家族の分だけ）
   {const L=(S.recentLogs||[]).filter(x=>x.by&&x.by!==who).slice(0,3);
    if(L.length)h+='<h2>最近の予定変更</h2><div class="list">'+L.map(x=>'<div><span class="s">'+esc(x.at.slice(5,16).replace('/','/'))+'　'+esc(x.by)+'</span><br>'+esc(x.text)+'</div>').join('')+'</div>';}
@@ -912,6 +919,7 @@ function drawAct(){const c=act,menu=isMenu(c.kind),wj=menu&&(MENUK[c.kind]||[]).
     } else {const tc=S.opt.tc[c.kind]||[];if(tc.length)h+='<div class="lab">やった内容（いくつでも）</div><div class="wrap">'+tc.map(t=>'<button class="opt sm" data-asel="'+esc(t)+'" aria-pressed="'+(c.sel.indexOf(t)>=0)+'">'+esc(t)+'</button>').join('')+'</div>';}
   }
   h+='<label class="lab" for="ac-memo">'+(c.st==='実施'?'メモ（気づき・コーチの指示など）':'やらなかった理由（なくてもよい）')+'</label><input type="text" id="ac-memo" maxlength="300" value="'+esc(c.memo)+'">';
+  if(canEdit()&&menu&&!wj&&c.st==='実施')h+='<button class="linkbtn2" data-act="aAsStd">✎ この内容（回数・セット数）を標準値にする</button>';
   h+='<div class="acts">'+(c.id?'<button class="btn del" data-act="aDel">消す</button>':'')+'<button class="btn" data-act="aBack">戻る</button><button class="btn pri" data-act="aSave"'+(saving?' disabled':'')+'>'+(saving?'保存中…':'保存')+'</button></div>';
   SH.innerHTML=h;}
 function actPayload(c){const menu=isMenu(c.kind);
@@ -919,14 +927,22 @@ function actPayload(c){const menu=isMenu(c.kind);
   if(menu&&c.st==='実施')p.sess={fh:c.fh,items:c.items.map(x=>({name:x.name,v:x.v,unit:x.unit,sets:x.sets,w:x.w}))};
   p.log=md(c.date)+' '+c.slot+' '+c.kind+'：'+(c.st==='やらなかった'?'やらなかった':(p.sess?(c.fh?c.fh+'／':'')+p.sess.items.filter(x=>x.sets||(x.unit==='本'&&+x.v)).map(x=>x.name+(x.unit==='本'?x.v+'本':(x.v?x.v+x.unit+'×':'')+x.sets+'セット'+(x.w?'・'+x.w+'kg':''))).join('、'):(p.c||'実施')))+(c.memo?'／'+c.memo:'');
   return p;}
-function romMsg(date,slot,kind){if(kind.indexOf('ROM')!==0)return kind+'を記録しました';const a=(S.acts[date]||[]).find(x=>x.slot===slot&&x.kind===kind);return a&&ROMN[a.id]?kind+'を記録しました（ROM '+ROMN[a.id]+'回目）':kind+'を記録しました';}
+function romMsg(date,slot,kind){if(kind.indexOf('ROM')!==0)return kind+'を記録しました';const a=(S.acts[date]||[]).find(x=>x.slot===slot&&x.kind===kind);const r=a?ROMN[a.id]:0;return r>0?kind+'を記録しました（ROM '+r+'回目）':r<0?kind+'を記録しました（ROM '+(-r)+'回目・同じ日の2回目）':kind+'を記録しました';}
 /** 今日のメニュー（目安）を見る。記録はここから */
 function openMenuView(date,slot,kind,fh){const f=fh||plannedFh(date,slot,kind)||((lastSess(kind,date)||{s:{}}).s.fh)||(hasFH(kind)?'フル':'');const M=menuOf(kind,f);
   let h='<div class="grab"></div><div class="acthead '+kCls(kind)+'"><small>'+mdw(date)+'</small><b id="sh-title">'+slot+'　'+esc(kind)+(f?'（'+f+'）':'')+'</b></div>';
   h+='<p class="note">今日のメニューの目安です。やったら「記録する」を押してください。</p><div class="mlist">'+M.map(m=>'<div class="mi"><div class="mn"><b>'+esc(m.name)+'</b>'+(specOf(m)?'<span class="tgt">目安：'+esc(specOf(m))+'</span>':'')+(m.how?'<span class="how">'+esc(m.how)+'</span>':'')+'</div></div>').join('')+'</div>';
   const a=(S.acts[date]||[]).find(x=>x.slot===slot&&x.kind===kind);
+  if(canEdit()&&M.length&&!M.every(m=>m.unit==='本'))h+='<button class="linkbtn2" data-mstd="'+slot+'|'+esc(kind)+'" data-fh="'+esc(f)+'" data-d="'+date+'">✎ 標準値（回数・セット数）を変える</button>';
   h+='<div class="acts"><button class="btn" data-act="close">閉じる</button>'+(date<=TODAY?'<button class="btn pri" data-anew="'+slot+'|'+esc(kind)+'" data-fh="'+esc(f)+'" data-d="'+date+'"'+(a?' data-aopen="'+esc(a.id)+'"':'')+'>'+(a?'記録を直す':'記録する')+'</button>':'')+'</div>';
   sheetCtx={date};SH.innerHTML=h;openS('mview');}
+/** 標準値（メニュー）をアプリで変える画面 */
+let mstd=null;
+function openMenuStd(date,slot,kind,fh){const M=menuOf(kind,fh);mstd={date,slot,kind,fh,items:M.map(m=>({name:m.name,v:m.v||'',unit:m.unit||'',sets:+m.sets||0}))};drawMenuStd();openS('mstd');}
+function drawMenuStd(){const c=mstd;let h='<div class="grab"></div><div class="acthead '+kCls(c.kind)+'"><small>標準値の変更</small><b id="sh-title">'+esc(c.kind)+(c.fh?'（'+esc(c.fh)+'）':'')+'</b></div>';
+  h+='<p class="note">ここで変えた値が、目安と初回の初期値になります（'+(c.fh?c.fh+'だけ':'この種類')+'）。すでに記録した内容は変わりません。</p><div class="mlist">'+c.items.map((x,i)=>'<div class="mi"><div class="mn"><b>'+esc(x.name)+'</b></div><div class="mc">'+(x.unit?'<label class="vbox"><input type="text" inputmode="numeric" data-mv="'+i+'" value="'+esc(x.v)+'" aria-label="回数・秒数"><span>'+esc(x.unit)+'</span></label>':'')+'<button class="stp" data-mst="-" data-i="'+i+'" aria-label="減らす">−</button><span class="sv"><b>'+x.sets+'</b>セット</span><button class="stp" data-mst="+" data-i="'+i+'" aria-label="増やす">＋</button></div></div>').join('')+'</div>';
+  h+='<div class="acts"><button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="mstdSave"'+(saving?' disabled':'')+'>'+(saving?'保存中…':'標準値を保存')+'</button></div>';SH.innerHTML=h;}
+function readMenuStd(){if(!mstd)return;document.querySelectorAll('[data-mv]').forEach(e=>{mstd.items[+e.dataset.mv].v=e.value.trim();});}
 /** 予定で決めた区分（フル／ハーフ）。無ければ '' */
 function plannedFh(date,slot,kind){const d=DAYS[DIDX[date]];if(!d)return '';const it=view(d).items.find(x=>x.slot===slot&&x.kind===kind);return (it&&it.fh)||'';}
 function quickDone(date,slot,kind){const menu=isMenu(kind),wj=menu&&(MENUK[kind]||[]).every(m=>m.unit==='本');
@@ -1199,9 +1215,9 @@ function ensureReports(){if(S.reports!==null&&S.reports!==undefined||repLoading)
 function renderStats(){ensureReports();
   const [a,b]=statRange(),cut=b<TODAY?b:TODAY,ds=DAYS.filter(d=>d.d>=a&&d.d<=cut);
   const loading=ensureSess(a);
-  const K={};let rom=0;const tot={},logs=[];
+  const K={};let rom=0;const romDays={};const tot={},logs=[];
   ds.forEach(d=>{rowsOf(d).forEach(r=>{if(isSys(r.kind)&&r.kind!=='大会')return;const k=K[r.kind]=K[r.kind]||{p:0,d:0,s:0};if(r.planned)k.p++;if(r.act){if(r.act.st==='実施')k.d++;else k.s++;}
-    if(r.act){logs.push([d.d,r]);if(r.act.st==='実施'&&r.kind.indexOf('ROM')===0&&d.d>S.romBase.date)rom++;
+    if(r.act){logs.push([d.d,r]);if(r.act.st==='実施'&&r.kind.indexOf('ROM')===0&&d.d>S.romBase.date&&!romDays[d.d]){romDays[d.d]=1;rom++;}
       const s=S.sess[r.act.id];if(s&&r.act.st==='実施')s.items.forEach(i=>{const T=(tot[r.kind]=tot[r.kind]||{})[i.name]=(tot[r.kind]||{})[i.name]||{n:0,s:0,v:0,max:0,u:i.unit};T.n++;T.s+=parseInt(i.sets,10)||0;if(i.unit==='本')T.v+=parseInt(i.v,10)||0;const w=parseFloat(i.w);if(!isNaN(w)&&w>T.max)T.max=w;});}});});
   const R=czRanges();
   let h='<div class="bar"><div class="seg" role="group" aria-label="期間"><button data-sp="week" aria-pressed="'+(statP==='week')+'">週</button><button data-sp="month" aria-pressed="'+(statP==='month')+'">月</button><button data-sp="year" aria-pressed="'+(statP==='year')+'">年度</button><button data-sp="coach" aria-pressed="'+(statP==='coach')+'">パーソナル</button></div>'+
@@ -1215,7 +1231,7 @@ function renderStats(){ensureReports();
   const kk=S.opt.kinds.concat(['大会']).filter(k=>K[k]).concat(Object.keys(K).filter(k=>S.opt.kinds.indexOf(k)<0&&k!=='大会'));
   const P=kk.reduce((t,k)=>t+(k==='大会'?0:K[k].p),0),D=kk.reduce((t,k)=>t+(k==='大会'?0:K[k].d),0);
   const offN=ds.filter(x=>x.off).length;
-  h+='<div class="stats"><div class="st"><b>'+D+'／'+P+'</b><span>実施した活動／予定'+(b>TODAY?'（今日まで）':'')+'</span></div><div class="st"><b>'+rom+'</b>回<span>ROM（通算 '+ROMTOTAL+'回）</span></div><div class="st"><b>'+offN+'</b>日<span>休養日（OFF）</span></div></div>';
+  h+='<div class="stats"><div class="st"><b>'+D+'／'+P+'</b><span>実施した活動／予定'+(b>TODAY?'（今日まで）':'')+'</span></div><div class="st"><b>'+rom+'</b>日<span>ROMをやった日（通算 '+ROMTOTAL+'回）</span></div><div class="st"><b>'+offN+'</b>日<span>休養日（OFF）</span></div></div>';
   if(statP==='year'){const y=fy(a),sc=schoolCount(y),lim=S.warkLimit||5,left=lim-sc.used;
     h+='<h2>学校の休み（'+y+'年度）</h2><div class="tbl"><div class="tr th"><span>区分</span><span>日数</span><span>日付</span></div>'+
       '<div class="tr"><span><span class="sch sch-ab">公欠</span></span><span>'+sc.abs.length+'日</span><span>'+(sc.abs.map(md).join('、')||'－')+'</span></div>'+
@@ -1249,9 +1265,10 @@ function renderHelp(){
   '<h3>スマホのホーム画面から開く</h3><p>iPhoneのSafariでこのアプリを開き、下の共有ボタン（□に↑）→「ホーム画面に追加」→「追加」。以後はホーム画面のアイコンを押すだけで開けます。Androidは Chrome のメニュー「ホーム画面に追加」です。ホーム画面から開いた初回だけ、記録者を選び直します。</p>'+
   '<h3>ラーケーション</h3><p>年度に'+(S.warkLimit||5)+'回まで取れる休みです（1日＝1回）。予定画面の上に残り回数が出ます。日を押して「学校予定・メモを変更」→「学校の扱い」で1日ずつ、または「複数日を選ぶ」→「学校の扱い」でまとめて設定できます。年度ごとの公欠・欠席・ラーケーションの日数は、実績画面の「年度」で確認できます。</p>'+
   
-  '<h3>記録のしかた（v4.21）</h3><ul class="hl"><li>開いてすぐ押せます。電波が届かないときは端末に残り、つながったら自動で送ります（右上に「未送信 ○件」）</li><li>［やった］のあと6秒間は「取り消す」が出ます</li><li>✕を押すと「やらなかった」で記録。理由はあとから「理由を書く」で</li><li>WJは前回の本数が入り、よく使う技が上に並びます</li><li>ROMベーシックは予定でフル／ハーフを決められます（決めていなければ当日）。1タップの記録は予定の区分で入ります</li></ul>'+
+  '<h3>記録のしかた（v4.21）</h3><ul class="hl"><li>ROMの通算は「ROMをやった日」の数です。同じ日にROMベーシックとROMプラスをやっても1回（2件目は「同日2回目」と表示）</li><li>開いてすぐ押せます。電波が届かないときは端末に残り、つながったら自動で送ります（右上に「未送信 ○件」）</li><li>［やった］のあと6秒間は「取り消す」が出ます</li><li>✕を押すと「やらなかった」で記録。理由はあとから「理由を書く」で</li><li>WJは前回の本数が入り、よく使う技が上に並びます</li><li>ROMベーシックは予定でフル／ハーフを決められます（決めていなければ当日）。1タップの記録は予定の区分で入ります</li></ul>'+
   '<h3>実績を事実に合わせる（v4.22）</h3><ul class="hl"><li>カレンダーの「Rフ」「Rハ」は、記録前は予定の区分、記録後は実際にやった区分です</li><li>朝の予定を夜にやった場合も、同じ日・同じ活動なら予定の実施と数え、「（夜に実施）」と注記します</li><li>記録があるのに予定が空だった日は、日の画面の「記録どおりに予定を入れる」、または「⋯」→「記録どおりに予定を埋める」で、記録した活動を予定として入れられます（達成率・報告の「予定」が事実に合います）</li><li>過去の日の予定も「予定を変更」「複数日を選ぶ」「週の型（期間を指定）」で変えられます</li><li>記録のフル／ハーフをまとめて直すときは、「複数日を選ぶ」→日を選ぶ→「記録のフル／ハーフを直す」（種目・回数はその区分のメニューの標準値になります）</li></ul>'+
   '<h3>月次チェック（月末の締め）</h3><p>スプレッドシートのメニュー「行動予定アプリ」→「月次チェック」で、その月の点検表（1日1行）ができます。予定・実績・体調・問題（未記録／予定外／時間帯ちがい／区分ちがい／標準より少ない／明細なし）が並び、「どうする」の列に<b>おすすめが入っています</b>。違う日だけ▼で「そのまま／記録が正しい／予定が正しい／この日は休み／本人に聞く」から選び、メニュー「月次チェックの修正を反映」を押すだけです。</p><p>「本人に聞く」にした日は、本人のアプリのホームに知らせが出て、「まとめて記録」の先頭に「父から確認」として並びます。まとめて記録では、ROMベーシックの行に予定の区分（フル／ハーフ）が出て、✓にすると区分の切替と「内容を直して記録」（セット数を減らしたときなど）が使えます。セット数を個別に直すときは「月次チェック_○○_種目」シートに数を書きます。</p>'+
+  '<h3>標準値（メニュー）をアプリで変える</h3><p>活動名を押して「今日のメニュー」→「標準値（回数・セット数）を変える」で、フル／ハーフそれぞれの回数・セット数を−／＋で直せます。記録画面でセット数を直したあと「この内容を標準値にする」を押しても同じです。変えた値は目安と初回の初期値になり、すでに記録した内容は変わりません。コーチは変えられません。</p>'+
   '<h3>続ける・共有する（v4.22）</h3><ul class="hl"><li>ホームに「今週の達成率」「連続記録」が出ます。連続記録は、記録した日と記録の要らない日（予定なし・休養日）をつなぎ、予定があって未記録の日で途切れます</li><li>家族が予定を変えると、ホームの「最近の予定変更」に3日間出ます</li><li>「設定」シートの「未記録の通知メール」に宛先を書くと、毎晩21時に、その日の未記録があればメールが届きます</li><li>活動名を押すと今日のメニュー（目安）が見られます。記録は［記録］か、その画面の「記録する」から</li><li>文字が小さいときは、この画面の「文字を大きくする」</li></ul>'+
   '<h3>休養日（OFF）</h3><p>休養日は「その日の位置づけ」で、トレーニングの予定とは別に持っています。合宿中でも休養日にでき、休養日に軽く動く予定を入れることもできます。設定は、日を押して「予定を変更」→「休養日（OFF）」、複数日を選んで「休養日にする」、週の型の「OFF」の行、のいずれかです。カレンダーには上段に「OFF」（合宿中なら「合宿／OFF」）と出ます。</p>'+
   '<h3>3. 予定を変える</h3><ul class="hl"><li>1日だけ変える：日付を押して「予定を変更」</li><li>何日かを選んで変える：「予定」画面の「複数日を選ぶ」（またはカレンダーの日を長押し）→ 日を押して選ぶ →「選んだ日の予定を変更」。入れ替える／足す／外す／休養日にする／休養日をやめる／予定を消す／学校の扱い から選べます</li><li>まとめて変える：「まとめて変更」で、この週をくり返す／前の週と同じにする／期間を休養日にする／やめる／期間の予定を消す／期間に活動を追加／外す</li><li>学校予定やメモ：日付を押して「学校予定・メモを変更」</li></ul><p>コーチの方は予定を変更できません（記録と閲覧はできます）。</p>'+
@@ -1397,6 +1414,11 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
     render();return;}
   // 活動
   if(ds.mview){const [sl,k]=kp(ds.mview);openMenuView(ds.d,sl,k,ds.fh||'');return;}
+  if(ds.mstd){const [sl,k]=kp(ds.mstd);openMenuStd(ds.d,sl,k,ds.fh||'');return;}
+  if(ds.mst){const i=+ds.i,x=mstd.items[i];readMenuStd();x.sets=Math.max(0,Math.min(999,x.sets+(ds.mst==='+'?1:-1)));drawMenuStd();return;}
+  if(ds.act==='mstdSave'){readMenuStd();const c=mstd;closeSheet();sendPlan('saveMenuStd',{kind:c.kind,fh:c.fh,date:c.date,items:c.items.map(x=>({name:x.name,v:x.v,sets:x.sets}))},null,null);return;}
+  if(ds.act==='aAsStd'){readAct();const c=act;if(!confirm(c.kind+(c.fh?'（'+c.fh+'）':'')+'の標準値を、いま入力している回数・セット数にします。よろしいですか？'))return;
+    sendPlan('saveMenuStd',{kind:c.kind,fh:c.fh,date:c.date,items:c.items.map(x=>({name:x.name,v:x.v,sets:x.sets}))},null,null);return;}
   if(ds.adone){const [sl,k]=kp(ds.adone);quickDone(ds.d,sl,k);return;}
   if(ds.askip){const [sl,k]=kp(ds.askip);quickSkip(ds.d,sl,k);return;}
   if(ds.anew){const [sl,k]=kp(ds.anew);const back=sheetKind==='day'?ds.d:'';sheetCtx=null;openAct(ds.d,sl,k,ds.aopen||'');act.back=back;return;}
