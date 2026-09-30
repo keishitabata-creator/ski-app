@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.32.1 -->
+<!-- スキー行動予定アプリ 画面側 v4.33.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -432,12 +432,16 @@ html.big .btn{font-size:17px}
 .sync.info{opacity:.75;padding:3px 10px;background:rgba(255,255,255,.12);color:var(--sub);font-weight:600}
 .tbl.t5 .tr{grid-template-columns:1.8fr .7fr .7fr .7fr .7fr}
 /* v4.31：ROMベーシックの区分は親の下の段に */
-.fhrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 6px 34px;padding:6px 8px;border-left:3px solid var(--line);background:rgba(127,127,127,.06);border-radius:0 8px 8px 0}
+.fhrow{grid-column:1 / -1;width:100%;display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 6px 0;padding:6px 8px;border-left:3px solid var(--line);background:rgba(127,127,127,.06);border-radius:0 8px 8px 0;box-sizing:border-box}
+.fhlab{white-space:nowrap}
 .fhlab{font-size:12.5px;color:var(--sub);font-weight:700;margin-right:4px}
 .fhlab .need,.fhtag.need,.note.need{color:#C42B5E}
 .fhtag.need{background:rgba(196,43,94,.12)}
 .a-club{background:#E3F0E6;color:#1E5B32}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .a-club{background:#1F4A2E;color:#CFF2DB}}
+.tbl.t3 .tr{grid-template-columns:2fr 1fr 1fr}
+.tbl.t6 .tr{grid-template-columns:2fr .7fr .7fr .7fr .8fr 1fr}
+.tbl .s{color:var(--sub);font-weight:500}
 </style>
 </head>
 <body>
@@ -445,7 +449,7 @@ html.big .btn{font-size:17px}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.32.1';
+const CLIENT_VERSION='4.33.0';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -733,6 +737,7 @@ function dayBody(d,opt){opt=opt||{};const v=view(d),rows=rowsOf(d,v),x=d.d,st=sc
         '<p class="note">記録は、'+(x===addD(TODAY,1)?'明日':mdw(x))+'になってからできます。</p>';
     } else {
       h+='<div class="qrow"><button class="linkbtn2" data-aadd="'+x+'">＋ 予定にない活動を記録</button>'+(canEdit()?'<button class="linkbtn2" data-dplan="'+x+'">✎ 予定を変更</button>':'')+'</div>';
+      if(S.opt.kinds.indexOf('部活')>=0&&!rows.some(r=>r.kind==='部活'))h+='<button class="linkbtn2" data-clubgo="'+x+'">部活（演劇部）に参加した</button>';
       if(canEdit()&&rows.some(r=>!r.planned&&!isSys(r.kind)&&r.act))h+='<button class="linkbtn2" data-fillrec="'+x+'">↺ 記録どおりに予定を入れる（予定外の記録を予定に反映）</button>';
       const n=S.notes[x];h+='<button class="notebtn" data-note="'+x+'">'+(n?'<b>体調 '+esc(n.cond||'－')+'</b>　'+esc(n.note||''):'体調・備考を書く')+'</button>';
       const pend=rows.filter(r=>r.planned&&!r.act&&!isSys(r.kind));
@@ -1231,19 +1236,21 @@ function statLabel(a,b){if(statP==='month')return a.slice(0,4)+'年'+(+a.slice(5
 let arep=null;
 /* ---- 学業（家族のみ） ---- */
 const GR={loaded:false,list:[],busy:false};
-function ensureGrades(){if(GR.loaded||GR.busy||!canEdit()||who==='本人')return;GR.busy=true;call('getGrades',{who}).then(r=>{GR.busy=false;GR.loaded=true;GR.list=(r&&r.grades)||[];if(tab==='stats')render();}).catch(()=>{GR.busy=false;});}
+function ensureGrades(){if(GR.loaded||GR.busy||!canEdit()||who==='本人')return;GR.busy=true;call('getGrades',{who}).then(r=>{GR.busy=false;GR.loaded=true;GR.list=(r&&r.grades)||[];GR.details=(r&&r.details)||[];if(tab==='stats')render();}).catch(()=>{GR.busy=false;});}
 let gedit=null;
 function openGrade(){const y=fy(TODAY);gedit=gedit||{term:y+'前期',gpa:'',rank:'',memo:'',file:null};drawGrade();openS('grade');}
 function drawGrade(){const c=gedit,y=fy(TODAY);const terms=[y+'前期',y+'後期',(y-1)+'前期',(y-1)+'後期'];
   let h='<div class="grab"></div><h3 id="sh-title">学期の成績を登録</h3><div class="lab">学期</div><div class="wrap">'+terms.map(t=>'<button class="opt sm" data-gterm="'+t+'" aria-pressed="'+(c.term===t)+'">'+t+'</button>').join('')+'</div>';
   h+='<div class="qrow"><label class="lab">評定平均<input type="text" id="g-gpa" inputmode="decimal" placeholder="例：4.3" value="'+esc(c.gpa)+'"></label><label class="lab">学年順位（任意）<input type="text" id="g-rank" placeholder="例：12/240" value="'+esc(c.rank)+'"></label></div>';
-  h+='<label class="lab">通知表の写真（任意）<input type="file" id="g-file" accept="image/*"></label>'+(c.file?'<p class="note">選択中：'+esc(c.file.name)+'</p>':'');
+  h+='<label class="lab">成績資料の写真（通知表・成績一覧など。複数選べます）<input type="file" id="g-file" accept="image/*" multiple></label>'+(c.files&&c.files.length?'<p class="note">選択中：'+c.files.map(f=>esc(f.name)).join('、')+'</p>':'')+'<p class="note">評定平均・学年順位は、資料の写真を開発者（Claude）に送ると読み取って計算します。その値をここに入れてください。</p>';
   h+='<label class="lab">メモ<input type="text" id="g-memo" maxlength="300" value="'+esc(c.memo)+'"></label>';
   h+='<div class="acts"><button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="gradeSave"'+(saving?' disabled':'')+'>'+(saving?'保存中…':'保存')+'</button></div>';SH.innerHTML=h;
-  const f=document.getElementById('g-file');if(f)f.onchange=()=>{gedit.file=f.files[0]||null;};}
+  const f=document.getElementById('g-file');if(f)f.onchange=()=>{gedit.files=[...f.files].slice(0,4);};}
 function saveGrade(){const c=gedit;c.gpa=val('g-gpa');c.rank=val('g-rank');c.memo=val('g-memo');if(!c.term){toast('学期を選んでください');return;}
-  const send=(b64,mime,name)=>{saving=true;drawGrade();call('saveGrade',{who,term:c.term,gpa:c.gpa,rank:c.rank,memo:c.memo,photoB64:b64||'',mime:mime||'',name:name||''}).then(r=>{saving=false;GR.list=(r&&r.grades)||GR.list;GR.loaded=true;closeSheet();gedit=null;render();toast(c.term+'の成績を登録しました');}).catch(e=>{saving=false;drawGrade();toast('保存できませんでした：'+errMsg(e).replace(/^(Exception|Error):\s*/,''));});};
-  if(c.file){if(c.file.size>8*1024*1024){toast('写真は8MBまでにしてください');return;}const r=new FileReader();r.onload=()=>send(String(r.result).split(',')[1],c.file.type,c.file.name);r.readAsDataURL(c.file);}else send('','','');}
+  const send=(photos)=>{saving=true;drawGrade();call('saveGrade',{who,term:c.term,gpa:c.gpa,rank:c.rank,memo:c.memo,photos}).then(r=>{saving=false;GR.list=(r&&r.grades)||GR.list;GR.details=(r&&r.details)||GR.details;GR.loaded=true;closeSheet();gedit=null;render();toast(c.term+'の成績を登録しました');}).catch(e=>{saving=false;drawGrade();toast('保存できませんでした：'+errMsg(e).replace(/^(Exception|Error):\s*/,''));});};
+  const files=c.files||[];if(files.some(f=>f.size>8*1024*1024)){toast('写真は1枚8MBまでにしてください');return;}
+  if(!files.length){send([]);return;}
+  Promise.all(files.map(f=>new Promise(res=>{const r=new FileReader();r.onload=()=>res({b64:String(r.result).split(',')[1],mime:f.type,name:f.name});r.readAsDataURL(f);}))).then(send);}
 function openActRep(){const y=fy(TODAY);arep=arep||{aud:'school',pre:'fy',a:y+'-04-01',b:(y+1)+'-03-31',label:''};drawActRep();openS('arep');}
 function drawActRep(){const c=arep,y=fy(TODAY);
   const P=[['fy','今年度（4月〜3月）',y+'-04-01',(y+1)+'-03-31'],['h1','前期（4月〜9月）',y+'-04-01',y+'-09-30'],['h2','後期（10月〜3月）',y+'-10-01',(y+1)+'-03-31'],['season','シーズン（12月〜3月）',y+'-12-01',(y+1)+'-03-31'],['custom','期間を指定','','']];
@@ -1313,8 +1320,21 @@ function renderStats(){ensureReports();ensureGrades();
   if(loading)h+='<p class="note">古い期間の内容を読み込んでいます…</p>';
   if(canEdit()&&who!=='本人'){h+='<h2>学業（家族だけに表示）</h2>';
     if(!GR.loaded)h+='<p class="note">読み込み中…</p>';
-    else{h+=(GR.list.length?'<div class="tbl t4"><div class="tr th"><span>学期</span><span>評定平均</span><span>順位</span><span>通知表</span></div>'+GR.list.map(g=>'<div class="tr"><span>'+esc(g.term)+'</span><span>'+esc(g.gpa||'－')+'</span><span>'+esc(g.rank||'')+'</span><span>'+(g.url?'<a href="'+esc(g.url)+'" target="_blank" rel="noopener">写真</a>':'')+'</span></div>').join('')+'</div>':'<p class="note">まだ登録がありません。</p>')+
-      '<button class="btn" data-act="gradeOpen" style="width:100%">✎ 学期の成績を登録・更新</button><p class="note">学校・スポンサー向けPDFには評定平均だけが載ります。本人・コーチの画面には出ません。</p>';}}
+    else{h+=(GR.list.length?'<div class="tbl t4"><div class="tr th"><span>学期</span><span>評定平均</span><span>順位</span><span>通知表</span></div>'+GR.list.map(g=>'<div class="tr"><span>'+esc(g.term)+'</span><span>'+esc(g.gpa||'－')+'</span><span>'+esc(g.rank||'')+'</span><span>'+((g.urls||[]).length?(g.urls||[]).map((u,i)=>'<a href="'+esc(u)+'" target="_blank" rel="noopener">資料'+(i+1)+'</a>').join('　'):'')+'</span></div>').join('')+'</div>':'<p class="note">まだ登録がありません。</p>')+
+      '<button class="btn" data-act="gradeOpen" style="width:100%">✎ 学期の成績を登録・更新</button><p class="note">学校・スポンサー向けPDFには評定平均だけが載ります。本人・コーチの画面には出ません。</p>';
+      // 明細（科目ごと）
+      const D=(GR.details||[]).slice().sort((x,y)=>(x.date||'9999')<(y.date||'9999')?-1:(x.date||'9999')>(y.date||'9999')?1:x.i-y.i);
+      if(D.length){
+        // 学年順位の推移（5教科の行があればそれ、無ければ資料ごとの科目の平均順位）
+        const ex=[];[...new Set(D.map(x=>x.term+'|'+x.src))].forEach(k=>{const [t,src]=k.split('|');const rows=D.filter(x=>x.term===t&&x.src===src);const five=rows.find(x=>/5教科/.test(x.subj))||rows.find(x=>/合計|総合/.test(x.subj));const r=five?five.grank:'';if(r)ex.push({t,src,date:rows[0].date,grank:r,n:five.n,dev:five.dev});});
+        if(ex.length)h+='<h3>学年順位の推移（5教科）</h3><div class="tbl t4"><div class="tr th"><span>試験</span><span>日付</span><span>学年順位</span><span>偏差値</span></div>'+ex.map(e=>'<div class="tr"><span>'+esc(e.t+' '+e.src)+'</span><span>'+esc(e.date?md(e.date):'')+'</span><span>'+esc(e.grank+(e.n?'/'+e.n:''))+'</span><span>'+esc(e.dev||'')+'</span></div>').join('')+'</div>';
+        const terms=[...new Set(D.map(x=>x.term))].sort().reverse();
+        h+='<h3>科目ごとの内容</h3><div class="wrap">'+terms.map(t=>'<button class="opt sm" data-gdt="'+esc(t)+'" aria-pressed="'+((GR.term||terms[0])===t)+'">'+esc(t)+'</button>').join('')+'</div>';
+        const t=GR.term||terms[0];const srcs=[...new Set(D.filter(x=>x.term===t).map(x=>x.src))];
+        srcs.forEach(src=>{const rows=D.filter(x=>x.term===t&&x.src===src);const hasScore=rows.some(x=>x.score),hasGrade=rows.some(x=>x.grade);
+          h+='<h4>'+esc(src)+'</h4><div class="tbl '+(hasScore?'t6':'t3')+'"><div class="tr th"><span>科目</span>'+(hasGrade?'<span>評定</span>':'')+(hasScore?'<span>得点</span><span>平均</span><span>偏差値</span><span>学年順位</span>':'')+(!hasGrade&&!hasScore?'<span></span><span></span>':'')+'</div>'+
+            rows.map(x=>'<div class="tr"><span>'+esc(x.subj)+(x.units?'<small class="s"> '+esc(x.units)+'単位</small>':'')+'</span>'+(hasGrade?'<span>'+esc(x.grade||'－')+'</span>':'')+(hasScore?'<span>'+esc(x.score||'')+'</span><span>'+esc(x.avg||'')+'</span><span>'+esc(x.dev||'')+'</span><span>'+esc(x.grank?x.grank+(x.n?'/'+x.n:''):'')+'</span>':'')+'</div>').join('')+'</div>';});
+        h+='<p class="note">明細はスプレッドシートの「学業明細」シートに貼り付けて増やせます（写真を送っていただければ、貼り付け用の表を作ります）。</p>';}}}
   if(canEdit())h+='<h2>学校・スポンサーへの報告PDF</h2><p class="note">年間・半期・任意の期間で、遠征・合宿・大会の予定と実績（学校向けは公欠・欠席・ラーケーションの日付一覧つき）をPDFにします。</p><button class="btn" data-act="actRepOpen" style="width:100%">📄 活動報告PDFを作る</button>';
   h+='<button class="btn" data-act="reload" style="width:100%;margin-top:14px">最新の状態に更新</button></main>';
   V.innerHTML=h;}
@@ -1333,7 +1353,7 @@ function renderHelp(){
   '<h3>月次チェック（月末の締め）</h3><p>スプレッドシートのメニュー「行動予定アプリ」→「月次チェック」で、その月の点検表（1日1行）ができます。予定・実績・体調・問題（未記録／予定外／時間帯ちがい／区分ちがい／標準より少ない／明細なし）が並び、「どうする」の列に<b>おすすめが入っています</b>。違う日だけ▼で「そのまま／記録が正しい／予定が正しい／この日は休み／本人に聞く」から選び、メニュー「月次チェックの修正を反映」を押すだけです。</p><p>「本人に聞く」にした日は、本人のアプリのホームに知らせが出て、「まとめて記録」の先頭に「父から確認」として並びます。まとめて記録では、ROMベーシックの行に予定の区分（フル／ハーフ）が出て、✓にすると区分の切替と「内容を直して記録」（セット数を減らしたときなど）が使えます。セット数を個別に直すときは「月次チェック_○○_種目」シートに数を書きます。</p>'+
   '<h3>標準値（メニュー）をアプリで変える</h3><p>活動名を押して「今日のメニュー」→「標準値（回数・セット数）を変える」で、フル／ハーフそれぞれの回数・セット数を−／＋で直せます。記録画面でセット数を直したあと「この内容を標準値にする」を押しても同じです。変えた値は目安と初回の初期値になり、すでに記録した内容は変わりません。コーチは変えられません。</p>'+
   '<h3>学校・スポンサーへの報告PDF</h3><p>「実績」画面の一番下の「活動報告PDFを作る」。宛先（学校／スポンサー）と期間（今年度・上期・下期・シーズン・期間指定）を選ぶだけです。学校向けは遠征・合宿・大会の予定と実績、公欠・欠席・ラーケーションの日付一覧、今後の予定。スポンサー向けは大会結果とトレーニングの量。選手名・所属は「設定」シートに書いておくと載ります。</p><h3>予定変更画面の見方</h3><p>ROMベーシックを選ぶと、その下に「└ ROMベーシックの区分：フル／ハーフ／当日決める」の段が出ます。どれかを選ぶまで保存できません（週の型・複数日も同じ）。「この日にパーソナルを受ける」で、未来の日にパーソナルを予定できます。</p>'+
-  '<h3>部活（演劇部）と学業</h3><p>活動の種類「部活」で、予定と参加の記録ができます（内容：練習／公演／大会／合宿）。カレンダーは「部」。コーチにも見えます。学業（学期・評定平均・順位・通知表の写真）は「実績」画面の一番下で父・母だけが登録・閲覧でき、本人・コーチには見えません。学校・スポンサー向けPDFには、全期間を通じた評定平均と学期ごとの評定平均が載ります。</p>'+
+  '<h3>部活（演劇部）と学業</h3><p><b>部活の入れ方</b>：予定は「予定を変更」（または週の型）で時間帯の「部活」ボタンを押す。参加の記録は、その日の行の［やった］か、日の画面の「部活（演劇部）に参加した」ボタン（1タップ・内容は練習）。公演・大会・合宿は［記録］で内容を選ぶ。カレンダーは「部」。コーチにも見えます。学業（学期・評定平均・順位・通知表の写真）は「実績」画面の一番下で父・母だけが登録・閲覧でき、本人・コーチには見えません。学校・スポンサー向けPDFには、全期間を通じた評定平均と学期ごとの評定平均が載ります。科目ごとの評定や試験ごとの学年順位は「学業明細」シートに貼り付けると、学期ごとの表と「学年順位の推移」で見られます。</p>'+
   '<h3>続ける・共有する（v4.22）</h3><ul class="hl"><li>ホームに「今週の達成率」「連続記録」が出ます。連続記録は、記録した日と記録の要らない日（予定なし・休養日）をつなぎ、予定があって未記録の日で途切れます</li><li>家族が予定を変えると、ホームの「最近の予定変更」に3日間出ます</li><li>「設定」シートの「未記録の通知メール」に宛先を書くと、毎晩21時に、その日の未記録があればメールが届きます</li><li>活動名を押すと今日のメニュー（目安）が見られます。記録は［記録］か、その画面の「記録する」から</li><li>文字が小さいときは、この画面の「文字を大きくする」</li></ul>'+
   '<h3>休養日（OFF）</h3><p>休養日は「その日の位置づけ」で、トレーニングの予定とは別に持っています。合宿中でも休養日にでき、休養日に軽く動く予定を入れることもできます。設定は、日を押して「予定を変更」→「休養日（OFF）」、複数日を選んで「休養日にする」、週の型の「OFF」の行、のいずれかです。カレンダーには上段に「OFF」（合宿中なら「合宿／OFF」）と出ます。</p>'+
   '<h3>3. 予定を変える</h3><ul class="hl"><li>1日だけ変える：日付を押して「予定を変更」</li><li>何日かを選んで変える：「予定」画面の「複数日を選ぶ」（またはカレンダーの日を長押し）→ 日を押して選ぶ →「選んだ日の予定を変更」。入れ替える／足す／外す／休養日にする／休養日をやめる／予定を消す／学校の扱い から選べます</li><li>まとめて変える：「まとめて変更」で、この週をくり返す／前の週と同じにする／期間を休養日にする／やめる／期間の予定を消す／期間に活動を追加／外す</li><li>学校予定やメモ：日付を押して「学校予定・メモを変更」</li></ul><p>コーチの方は予定を変更できません（記録と閲覧はできます）。</p>'+
@@ -1478,6 +1498,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
     if(ds.selp==='none')SEL={};else mm.forEach(d=>{const we=d.w==='土'||d.w==='日';if(ds.selp==='all'||(ds.selp==='wd'&&!we)||(ds.selp==='we'&&we))SEL[d.d]=1;});
     render();return;}
   // 活動
+  if(ds.clubgo){const x=ds.clubgo;const c={date:x,id:'',slot:'夜',kind:'部活',st:'実施',memo:'',sel:['練習'],fh:'',items:[]};sendRec('saveActivity',actPayload(c),'部活の参加を記録しました');toastAct('部活の参加を記録しました（練習）','内容を変える',()=>{const a=(S.acts[x]||[]).find(y=>y.kind==='部活');openAct(x,'夜','部活',a?a.id:'');});return;}
   if(ds.mview){const [sl,k]=kp(ds.mview);openMenuView(ds.d,sl,k,ds.fh||'');return;}
   if(ds.mstd){const [sl,k]=kp(ds.mstd);openMenuStd(ds.d,sl,k,ds.fh||'');return;}
   if(ds.mst){const i=+ds.i,x=mstd.items[i];readMenuStd();x.sets=Math.max(0,Math.min(999,x.sets+(ds.mst==='+'?1:-1)));drawMenuStd();return;}
@@ -1642,6 +1663,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.act==='report'){makeRep();return;}
   if(ds.act==='actRepOpen'){openActRep();return;}
   if(ds.act==='gradeOpen'){openGrade();return;}
+  if(ds.gdt){GR.term=ds.gdt;render();return;}
   if(ds.gterm){gedit.gpa=val('g-gpa');gedit.rank=val('g-rank');gedit.memo=val('g-memo');gedit.term=ds.gterm;drawGrade();return;}
   if(ds.act==='gradeSave'){if(saving)return;saveGrade();return;}
   if(ds.arepaud){arep.aud=ds.arepaud;drawActRep();return;}
