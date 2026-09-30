@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.22.1 -->
+<!-- スキー行動予定アプリ 画面側 v4.23.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -425,7 +425,7 @@ html.big .btn{font-size:17px}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.22.1';
+const CLIENT_VERSION='4.23.0';
 const W='日月火水木金土', WK=['月','火','水','木','金','土','日'], SLOTS=['朝','昼','夜'];
 const pad=n=>String(n).padStart(2,'0');
 const iso=dt=>dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate());
@@ -1050,11 +1050,16 @@ function recPayload(date,slot,kind,st){const menu=isMenu(kind),wj=menu&&(MENUK[k
 
 // ---------- カレンダーで選んだ日をまとめて変更 ----------
 function openSelDays(){const ds=Object.keys(SEL).sort();if(!ds.length){toast('日を選んでください');return;}
-  sheetCtx={mode:'set',items:[],dates:ds,kubun:''};drawSelDays();openS('seldays');}
-function drawSelDays(){const c=sheetCtx,M=[['set','入れ替える'],['add','足す'],['remove','外す'],['off','休養日にする'],['unoff','休養日をやめる'],['clear','予定を消す'],['school','学校の扱い']],pv=previewDays(c.dates,false);
+  sheetCtx={mode:'set',items:[],dates:ds,kubun:'',fh:''};drawSelDays();openS('seldays');}
+function drawSelDays(){const c=sheetCtx,M=[['set','入れ替える'],['add','足す'],['remove','外す'],['off','休養日にする'],['unoff','休養日をやめる'],['clear','予定を消す'],['school','学校の扱い'],['recfh','記録のフル／ハーフを直す']],pv=previewDays(c.dates,false);
   let h='<div class="grab"></div><h3 id="sh-title">選んだ'+c.dates.length+'日の予定を変更</h3>'+
     '<p class="note">'+c.dates.slice(0,8).map(md).join('、')+(c.dates.length>8?' ほか'+(c.dates.length-8)+'日':'')+'</p>'+
     '<div class="wrap">'+M.map(m=>'<button class="opt sm" data-sm="'+m[0]+'" aria-pressed="'+(c.mode===m[0])+'">'+m[1]+'</button>').join('')+'</div>';
+  if(c.mode==='recfh'){const n=c.dates.filter(x=>(S.acts[x]||[]).some(a=>a.kind==='ROMベーシック'&&a.st==='実施')).length;
+    h+='<p class="note" style="margin-top:10px">選んだ日の<b>ROMベーシックの記録</b>を、まとめてフル／ハーフに直します。種目と回数はその区分のメニューの標準値で作り直します（手で直したセット数は失われます）。</p>'+
+      '<div class="wrap">'+['フル','ハーフ'].map(f=>'<button class="opt sm" data-rfh="'+f+'" aria-pressed="'+(c.fh===f)+'">'+f+'</button>').join('')+'</div>'+
+      '<p class="note pvw">対象：ROMベーシックの記録がある'+n+'日</p>'+
+      '<div class="acts"><button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="selRecFh"'+(c.fh&&n?'':' disabled')+'>直す</button></div>';SH.innerHTML=h;return;}
   if(c.mode==='school'){const y=fy(c.dates[0]),sc=schoolCount(y),lim=Number(S.warkLimit)||5;
     h+='<p class="note" style="margin-top:10px">選んだ日の学校の扱いを変えます。トレーニングの予定はそのまま残ります。</p>'+
       '<div class="wrap">'+(S.opt.schools||[]).map(k=>'<button class="opt sm" data-ss="'+esc(k)+'" aria-pressed="'+(c.kubun===k)+'">'+esc(k)+'</button>').join('')+'</div>';
@@ -1212,7 +1217,7 @@ function renderHelp(){
   '<h3>ワーケーション</h3><p>年度に'+(S.warkLimit||5)+'回まで取れる休みです（1日＝1回）。予定画面の上に残り回数が出ます。日を押して「学校予定・メモを変更」→「学校の扱い」で1日ずつ、または「複数日を選ぶ」→「学校の扱い」でまとめて設定できます。年度ごとの公欠・欠席・ワーケーションの日数は、実績画面の「年度」で確認できます。</p>'+
   
   '<h3>記録のしかた（v4.21）</h3><ul class="hl"><li>開いてすぐ押せます。電波が届かないときは端末に残り、つながったら自動で送ります（右上に「未送信 ○件」）</li><li>［やった］のあと6秒間は「取り消す」が出ます</li><li>✕を押すと「やらなかった」で記録。理由はあとから「理由を書く」で</li><li>WJは前回の本数が入り、よく使う技が上に並びます</li><li>ROMベーシックは予定でフル／ハーフを決められます（決めていなければ当日）。1タップの記録は予定の区分で入ります</li></ul>'+
-  '<h3>実績を事実に合わせる（v4.22）</h3><ul class="hl"><li>カレンダーの「Rフ」「Rハ」は、記録前は予定の区分、記録後は実際にやった区分です</li><li>朝の予定を夜にやった場合も、同じ日・同じ活動なら予定の実施と数え、「（夜に実施）」と注記します</li><li>記録があるのに予定が空だった日は、日の画面の「記録どおりに予定を入れる」、または「⋯」→「記録どおりに予定を埋める」で、記録した活動を予定として入れられます（達成率・報告の「予定」が事実に合います）</li><li>過去の日の予定も「予定を変更」「複数日を選ぶ」「週の型（期間を指定）」で変えられます</li></ul>'+
+  '<h3>実績を事実に合わせる（v4.22）</h3><ul class="hl"><li>カレンダーの「Rフ」「Rハ」は、記録前は予定の区分、記録後は実際にやった区分です</li><li>朝の予定を夜にやった場合も、同じ日・同じ活動なら予定の実施と数え、「（夜に実施）」と注記します</li><li>記録があるのに予定が空だった日は、日の画面の「記録どおりに予定を入れる」、または「⋯」→「記録どおりに予定を埋める」で、記録した活動を予定として入れられます（達成率・報告の「予定」が事実に合います）</li><li>過去の日の予定も「予定を変更」「複数日を選ぶ」「週の型（期間を指定）」で変えられます</li><li>記録のフル／ハーフをまとめて直すときは、「複数日を選ぶ」→日を選ぶ→「記録のフル／ハーフを直す」（種目・回数はその区分のメニューの標準値になります）</li></ul>'+
   '<h3>続ける・共有する（v4.22）</h3><ul class="hl"><li>ホームに「今週の達成率」「連続記録」が出ます。連続記録は、記録した日と記録の要らない日（予定なし・休養日）をつなぎ、予定があって未記録の日で途切れます</li><li>家族が予定を変えると、ホームの「最近の予定変更」に3日間出ます</li><li>「設定」シートの「未記録の通知メール」に宛先を書くと、毎晩21時に、その日の未記録があればメールが届きます</li><li>活動名を押すと今日のメニュー（目安）が見られます。記録は［記録］か、その画面の「記録する」から</li><li>文字が小さいときは、この画面の「文字を大きくする」</li></ul>'+
   '<h3>休養日（OFF）</h3><p>休養日は「その日の位置づけ」で、トレーニングの予定とは別に持っています。合宿中でも休養日にでき、休養日に軽く動く予定を入れることもできます。設定は、日を押して「予定を変更」→「休養日（OFF）」、複数日を選んで「休養日にする」、週の型の「OFF」の行、のいずれかです。カレンダーには上段に「OFF」（合宿中なら「合宿／OFF」）と出ます。</p>'+
   '<h3>3. 予定を変える</h3><ul class="hl"><li>1日だけ変える：日付を押して「予定を変更」</li><li>何日かを選んで変える：「予定」画面の「複数日を選ぶ」（またはカレンダーの日を長押し）→ 日を押して選ぶ →「選んだ日の予定を変更」。入れ替える／足す／外す／休養日にする／休養日をやめる／予定を消す／学校の扱い から選べます</li><li>まとめて変える：「まとめて変更」で、この週をくり返す／前の週と同じにする／期間を休養日にする／やめる／期間の予定を消す／期間に活動を追加／外す</li><li>学校予定やメモ：日付を押して「学校予定・メモを変更」</li></ul><p>コーチの方は予定を変更できません（記録と閲覧はできます）。</p>'+
@@ -1398,6 +1403,10 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
     closeSheet();sendRec('saveActivities',{list},Object.keys(nd).length+'日分・'+list.length+'件を記録しました（やった'+n1+(list.length-n1?'・やらなかった'+(list.length-n1):'')+'）');return;}
   if(ds.sm){sheetCtx.mode=ds.sm;drawSelDays();return;}
   if(ds.ss){sheetCtx.kubun=sheetCtx.kubun===ds.ss?'':ds.ss;drawSelDays();return;}
+  if(ds.rfh){sheetCtx.fh=ds.rfh;drawSelDays();return;}
+  if(ds.act==='selRecFh'){const c=sheetCtx,fh=c.fh,dates=c.dates.slice();if(!fh)return;
+    if(!confirm(dates.length+'日のROMベーシックの記録を「'+fh+'」に直します。種目・回数は'+fh+'のメニューの標準値になります。よろしいですか？'))return;
+    closeSheet();selMode=false;SEL={};sendPlan('fixRecordFh',{dates,fh},null,null);return;}
   if(ds.act==='selSchool'){const c=sheetCtx,kubun=c.kubun,dates=c.dates.slice();if(!kubun)return;
     closeSheet();selMode=false;SEL={};sendPlan('bulkSchool',{dates,kubun},null);return;}
   if(ds.sk){const [sl,k]=kp(ds.sk),c=sheetCtx,i=c.items.findIndex(x=>x.slot===sl&&x.kind===k);
