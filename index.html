@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.20.0 -->
+<!-- スキー行動予定アプリ 画面側 v4.20.2 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -403,7 +403,7 @@ body.open{overflow:hidden}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.20.0';
+const CLIENT_VERSION='4.20.2';
 const W='日月火水木金土', WK=['月','火','水','木','金','土','日'], SLOTS=['朝','昼','夜'];
 const pad=n=>String(n).padStart(2,'0');
 const iso=dt=>dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate());
@@ -466,12 +466,16 @@ function expandSess(o){Object.keys(o||{}).forEach(k=>{const s=o[k];if(s&&s.i&&!s
 const API_URL=(window.APP_CONFIG&&window.APP_CONFIG.apiUrl)||'';
 const INSIDE_GAS=!!(window.google&&google.script&&google.script.run);
 let vkey=LS.get('vkey')||'';
-function call(fn,arg){
+const READ_FNS={getAll:1,sessRange:1,listReports:1};   // 読むだけの処理は、失敗したら自動でやり直す（2回まで）
+function call(fn,arg,tryNo){
   if(INSIDE_GAS)return new Promise((res,rej)=>{google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](arg);});
   if(!API_URL)return Promise.reject(new Error('通信先（API_URL）が設定されていません'));
-  return fetch(API_URL,{method:'POST',body:JSON.stringify({fn,arg:arg||{},vkey}),headers:{'Content-Type':'text/plain;charset=utf-8'},redirect:'follow'})
+  const once=()=>fetch(API_URL,{method:'POST',body:JSON.stringify({fn,arg:arg||{},vkey}),headers:{'Content-Type':'text/plain;charset=utf-8'},redirect:'follow'})
     .then(r=>{if(!r.ok)throw new Error('通信エラー（'+r.status+'）');return r.json();})
-    .then(j=>{if(!j||j.ok!==true)throw new Error((j&&j.error)||'通信エラー');return j.data;});}
+    .then(j=>{if(!j||j.ok!==true)throw new Error((j&&j.error)||'通信エラー');return j.data;});
+  return once().catch(e=>{const n=tryNo||0;const m=errMsg(e);
+    if(READ_FNS[fn]&&n<2&&!/VKEY|KEY|EKEY|呼べません/.test(m))return new Promise(r=>setTimeout(r,1500*(n+1))).then(()=>call(fn,arg,n+1));
+    throw e;});}
 const errMsg=e=>String((e&&e.message)||e||'');
 let FRESH=false;   // 最新のデータを受け取ったか（受け取るまで保存はしない）
 const T0=Date.now();   // 画面のプログラムが動き始めた時刻
