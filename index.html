@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.26.1 -->
+<!-- スキー行動予定アプリ 画面側 v4.27.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -423,6 +423,7 @@ html.big .btn{font-size:17px}
 .bline{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .bopts{display:inline-flex;gap:6px;align-items:center;margin:0 0 0 4px}
 .bchip .atag .fhtag{background:rgba(255,255,255,.35)}
+.sync.info{opacity:.75;padding:3px 10px;background:rgba(255,255,255,.12);color:var(--sub);font-weight:600}
 </style>
 </head>
 <body>
@@ -430,7 +431,7 @@ html.big .btn{font-size:17px}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.26.1';
+const CLIENT_VERSION='4.27.0';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -518,6 +519,10 @@ function call(fn,arg,tryNo){
     throw e;});}
 const errMsg=e=>String((e&&e.message)||e||'');
 let FRESH=false;   // 最新のデータを受け取ったか（受け取るまで保存はしない）
+let FRESH_AT=0;    // 最新データを受け取った時刻
+/** 最新データが古ければ（既定2分）静かに取り直す。画面切替・月移動・アプリに戻ったときに呼ぶ */
+window.__markStale=function(){FRESH_AT=0;};
+function refreshIfStale(ms){if(!S||inflight>0||saving)return;if(Date.now()-FRESH_AT<(ms||120000))return;if(sheetKind&&sheetKind!=='who')return;load(true);}
 const T0=Date.now();   // 画面のプログラムが動き始めた時刻
 let TM={html:null,cache:null,fresh:null,srv:null,srvT:''};
 try{const pt=performance.timing;if(pt&&pt.navigationStart)TM.html=Math.round((pt.responseEnd-pt.navigationStart)/100)/10;}catch(e){}
@@ -536,7 +541,7 @@ function load(quiet){
   if(hadCache){const tick=setInterval(()=>{if(done||FRESH){clearInterval(tick);return;}const sec=Math.round((Date.now()-started)/1000);
     const e=document.getElementById('sync');if(e&&inflight>0){e.className='sync on';e.textContent='最新を確認中… '+sec+'秒';}
     if(sec>=30){clearInterval(tick);inflight=Math.max(0,inflight-1);syncShow();toast('最新のデータを取れませんでした（30秒）。表示は前回のものです。上の「更新」で再読み込みできます');}},1000);}
-  call('getAll').then(d=>{done=true;checkVersion();if(hadCache){inflight=Math.max(0,inflight-1);}ingest(d);cacheSave(d);if(!hadCache)qReplay();else Q.forEach(e=>{try{const list=e.fn==='saveActivities'?e.p.list:e.fn==='deleteActivity'?[]:[e.p];if(list.length)optimistic(list,false);}catch(x){}});const first=!FRESH;FRESH=true;showLoading(false);render();syncShow();if(!who)askWho();setTimeout(qFlush,300);if(first&&!quiet){TM.fresh=Math.round((Date.now()-T0)/100)/10;TM.srv=d.srvMs!=null?Math.round(d.srvMs/100)/10:null;TM.srvT=d.srvT||'';bootReport();}})
+  call('getAll').then(d=>{done=true;checkVersion();if(hadCache){inflight=Math.max(0,inflight-1);}ingest(d);FRESH_AT=Date.now();cacheSave(d);if(!hadCache)qReplay();else Q.forEach(e=>{try{const list=e.fn==='saveActivities'?e.p.list:e.fn==='deleteActivity'?[]:[e.p];if(list.length)optimistic(list,false);}catch(x){}});const first=!FRESH;FRESH=true;showLoading(false);render();syncShow();if(!who)askWho();setTimeout(qFlush,300);if(first&&!quiet){TM.fresh=Math.round((Date.now()-T0)/100)/10;TM.srv=d.srvMs!=null?Math.round(d.srvMs/100)/10:null;TM.srvT=d.srvT||'';bootReport();}})
    .catch(e=>{done=true;showLoading(false);try{reportErr('読み込み',errMsg(e));}catch(x){}
      if(/VKEY/.test(errMsg(e))){showLoading(false);askVKey(vkey?'合言葉が違います':'');return;}
      if(S&&!FRESH){inflight=Math.max(0,inflight-1);syncShow();toast('最新のデータを取れませんでした。表示は前回のものです。');return;}
@@ -563,7 +568,7 @@ function view(d){
   const manual=d.src.indexOf('手動')===0;
   const v={school:d.sk,sy:d.sy,hol:d.hol,kb:'',nm:'',pl:'',note:'',skip:false,race,td,manual,tripOn};
   if(td&&!td.rc&&(has(td.kb,'公式練習')||(has(td.kb,'前日')&&!has(td.kb,'翌日')))){const nr=RACES.filter(r=>r.tr===td.tr&&r.d>d.d).sort((a,b)=>a.d<b.d?-1:1)[0];if(nr)v.prac=nr.short||nr.name;}
-  const explicit=['公欠','欠席','ワーケーション'].indexOf(d.sk)>=0;   // 日別予定で選んだ扱いを優先
+  const explicit=['公欠','欠席','ラーケーション'].indexOf(d.sk)>=0;   // 日別予定で選んだ扱いを優先
   if(tripOn){ if(td.ek&&!explicit)v.school=td.ek;
     if(!td.rc||raceOn){v.kb=td.kb;v.nm=v.prac&&!has(td.nm,v.prac)?v.prac+' 公式練習':td.nm;v.pl=td.pl;v.note=td.no;if(v.prac&&!has(td.nm,v.prac)&&!has(td.nm,'公式練習'))v.sub=td.nm;}
     else{v.kb='不出場（遠征中）';v.nm=td.nm;v.pl=td.pl;v.skip=true;v.skipTxt='不出場';} }
@@ -595,11 +600,11 @@ function markOf(d,v){const y=String((v||{}).sy||d.sy||'');const kb=String((v||{}
   (S.opt.marks||[]).forEach(m=>{if(!has(y,m[0]))return;if(MARK_REST.indexOf(m[1])>=0){if(!rest)rest=m[1];}else if(!other)other=m[1];});
   if(school)return other||(kb.indexOf('学校行事')===0?'行事':'');
   return rest;}
-const MKC={'考査':'sch-ex','行事':'sch-ev','面談':'sch-ev','短縮':'sch-sh','自宅':'sch-off','夏休み':'sch-off','冬休み':'sch-off','春休み':'sch-off','休校':'sch-off','休み':'sch-off','振休':'sch-off','祝日':'sch-off','未定':'sch-un','ワ':'sch-wk','公欠':'sch-ab','欠席':'sch-ab2','登校':''};
+const MKC={'考査':'sch-ex','行事':'sch-ev','面談':'sch-ev','短縮':'sch-sh','自宅':'sch-off','夏休み':'sch-off','冬休み':'sch-off','春休み':'sch-off','休校':'sch-off','休み':'sch-off','振休':'sch-off','祝日':'sch-off','未定':'sch-un','ラ':'sch-wk','公欠':'sch-ab','欠席':'sch-ab2','登校':''};
 /** その日の学校の状態（1日1つ）。{l:印, c:色, t:説明} を返す */
 function schState(d,v){v=v||view(d);const sc=String(v.school||'');
   const sy=String(d.sy||'');
-  if(sc==='ワーケーション')return {l:'ワ',c:'sch-wk',t:['ワーケーション',sy].filter(Boolean).join('／')};
+  if(sc==='ラーケーション')return {l:'ラ',c:'sch-wk',t:['ラーケーション',sy].filter(Boolean).join('／')};
   if(isAbs(sc))return has(sc,'欠席')?{l:'欠席',c:'sch-ab2',t:[sc,sy].filter(Boolean).join('／')}:{l:'公欠',c:'sch-ab',t:[sc,sy].filter(Boolean).join('／')};
   const m=markOf(d,v);
   if(m&&['考査','行事','面談','短縮'].indexOf(m)>=0)return {l:m,c:MKC[m],t:d.sy||sc};
@@ -614,8 +619,8 @@ function schState(d,v){v=v||view(d);const sc=String(v.school||'');
   if(d.w==='土'||d.w==='日')return null;
   return {l:'休み',c:'sch-off',t:'学校なし'};}
 const isOffDay=d=>{const st=schState(d);return !st||st.c==='sch-off';};
-/** 学校がある日か（公欠・欠席・ワーケーションを付けてよい日） */
-function isSchoolDayC(d){const k=String(d.sk||'');const ex=['公欠','欠席','ワーケーション'].indexOf(k)>=0;
+/** 学校がある日か（公欠・欠席・ラーケーションを付けてよい日） */
+function isSchoolDayC(d){const k=String(d.sk||'');const ex=['公欠','欠席','ラーケーション'].indexOf(k)>=0;
   if(d.w==='土'||d.w==='日')return k==='登校（土曜）'||ex;
   if(d.hol&&isNatHol(d.hol))return false;
   if(k==='非登校')return false;return true;}
@@ -626,11 +631,11 @@ function streak(){let n=0;let d=TODAY;const todayRec=(S.acts[TODAY]||[]).length>
 /** これから14日のうち、予定が入っていない日（休養日・遠征・試験などの守る日は除く） */
 function planGap(){const out=[];for(let i=1;i<=14;i++){const x=addD(TODAY,i),d=DAYS[DIDX[x]];if(!d)break;const v=view(d);
   if(v.off||v.tripOn||isProt(d))continue;if(!v.items.length)out.push(x);}return out;}
-/** 年度ごとの学校の日数（公欠・欠席・ワーケーション） */
+/** 年度ごとの学校の日数（公欠・欠席・ラーケーション） */
 function schoolCount(y){const o={abs:[],miss:[],wark:[],pre:Number((S.warkPre||{})[y]||0)};DAYS.forEach(d=>{if(fy(d.d)!==y)return;const v=view(d);
-  if(v.school==='ワーケーション')o.wark.push(d.d);else if(has(v.school,'欠席'))o.miss.push(d.d);else if(isAbs(v.school))o.abs.push(d.d);});
+  if(v.school==='ラーケーション')o.wark.push(d.d);else if(has(v.school,'欠席'))o.miss.push(d.d);else if(isAbs(v.school))o.abs.push(d.d);});
   o.used=o.wark.length+o.pre;return o;}
-/** ワーケーション：年度ごとの取得日 */
+/** ラーケーション：年度ごとの取得日 */
 const isProt=d=>(S.opt.markProtect||[]).indexOf(markOf(d))>=0;
 const isRace=v=>!v.skip&&v.kb.indexOf('大会')===0&&!has(v.kb,'大会翌日');
 const KC={'エクスプロッシブ':'a-ex','ROMベーシック':'a-rb','ROMプラス':'a-rp','雪上':'a-snow','WJ':'a-wj','TR':'a-tr','OFF':'a-off','休養':'a-off','大会':'a-race','移動':'a-move'};
@@ -751,7 +756,7 @@ function grid(k,mini){const ds=DAYS.filter(d=>d.d.slice(0,7)===k);if(!ds.length)
           if(r.act&&r.act.st==='実施'&&S.sess[r.act.id]&&S.sess[r.act.id].fh)x.fh=S.sess[r.act.id].fh;if(r.act&&r.act.st==='実施')x.done++;if(r.act&&r.act.st==='やらなかった')x.ng++;});
         const lim=mini?3:4;return g.slice(0,lim).map(x=>'<i class="ck '+kCls(x.kind)+(x.done?' on':'')+(!x.done&&x.ng?' ng':'')+'">'+esc(x.fh?kAbbrFh(x.kind,x.fh):kAbbr(x.kind))+(x.n>1?'<b>'+x.n+'</b>':'')+'</i>').join('')+(g.length>lim?'<i class="ck more">…</i>':'');})()+'</span></button>';});
   return h+'</div>';}
-function legend(){return '<div class="legend"><span><i class="c-race"></i>大会</span><span><i class="c-move"></i>移動・公式練習</span><span><i class="c-camp"></i>合宿・滞在</span><span><i class="c-off"></i>学校なし</span><span><i class="c-skip"></i>不参加</span><span><b class="sch">登校</b>授業</span><span><b class="sch sch-ex">考査</b>試験</span><span><b class="sch sch-ev">行事</b>行事・面談</span><span><b class="sch sch-sb">短縮</b>短縮・自宅</span><span><b class="sch sch-off">冬休み</b>休み・振休・祝日</span><span><b class="sch sch-ab">公欠</b>公欠・欠席</span><span><b class="sch sch-wk">ワ</b>ワーケーション</span><span><b class="sch sch-un">未定</b>学校の予定が未登録</span><span>P＝パーソナル</span><span>下の印：EX＝エクスプロッシブ　R＝ROMベーシック（Rフ＝フル、Rハ＝ハーフ）　R+＝ROMプラス　雪＝雪上。色つき＝実施、斜線＝やらなかった</span></div>';}
+function legend(){return '<div class="legend"><span><i class="c-race"></i>大会</span><span><i class="c-move"></i>移動・公式練習</span><span><i class="c-camp"></i>合宿・滞在</span><span><i class="c-off"></i>学校なし</span><span><i class="c-skip"></i>不参加</span><span><b class="sch">登校</b>授業</span><span><b class="sch sch-ex">考査</b>試験</span><span><b class="sch sch-ev">行事</b>行事・面談</span><span><b class="sch sch-sb">短縮</b>短縮・自宅</span><span><b class="sch sch-off">冬休み</b>休み・振休・祝日</span><span><b class="sch sch-ab">公欠</b>公欠・欠席</span><span><b class="sch sch-wk">ワ</b>ラーケーション</span><span><b class="sch sch-un">未定</b>学校の予定が未登録</span><span>P＝パーソナル</span><span>下の印：EX＝エクスプロッシブ　R＝ROMベーシック（Rフ＝フル、Rハ＝ハーフ）　R+＝ROMプラス　雪＝雪上。色つき＝実施、斜線＝やらなかった</span></div>';}
 function ensureYear(){if(year===null){const t=DIDX[TODAY]!==undefined?TODAY:(TODAY<DAYS[0].d?DAYS[0].d:DAYS[DAYS.length-1].d);year=fy(t);month=t.slice(0,7);}}
 function dayCard(d){const dc=d.h?'sun':(d.sat?'sat':''),v=view(d),m=schMark(v,d);
   return '<div class="day'+(d.d===TODAY?' today':'')+'"><button class="dhead" data-day="'+d.d+'"><span class="dn '+dc+'">'+md(d.d)+'（'+d.w+'）</span>'+
@@ -777,7 +782,7 @@ function renderPlan(){
   h+='</div><main>';
   if(!selMode&&canEdit()){const G=planGap();if(G.length>=5)h+='<div class="nudge plan" style="margin-top:8px"><span>'+md(G[0])+'から予定のない日が'+G.length+'日（2週間内）</span><button class="btn pri sm2" data-act="patOpen">型を当てはめる</button></div>';}
   if(!selMode){const y=month==='all'?year:fy(month+'-01'),sc=schoolCount(y),lim=Number(S.warkLimit)||5,left=lim-sc.used;
-    h+='<div class="wkbar'+(left<0?' over':'')+'"><span class="sch sch-wk">ワ</span><b>ワーケーション 残り'+Math.max(0,left)+'回</b><span>／'+y+'年度 '+lim+'回</span>'+
+    h+='<div class="wkbar'+(left<0?' over':'')+'"><span class="sch sch-wk">ワ</span><b>ラーケーション 残り'+Math.max(0,left)+'回</b><span>／'+y+'年度 '+lim+'回</span>'+
       (sc.used?'<span>使った日：'+(sc.pre?'記録前 '+sc.pre+'回':'')+(sc.pre&&sc.wark.length?'／':'')+sc.wark.map(md).join('、')+'</span>':'<span>まだ使っていません</span>')+(left<0?'<span><b>上限を'+(-left)+'回超えています</b></span>':'')+
       (sc.miss.length?'<span class="sch sch-ab2">欠席</span><span>'+sc.miss.length+'日</span>':'')+'</div>';}
   if(mode==='cal'){
@@ -1090,10 +1095,10 @@ function drawSelDays(){const c=sheetCtx,M=[['set','入れ替える'],['add','足
   if(c.mode==='school'){const y=fy(c.dates[0]),sc=schoolCount(y),lim=Number(S.warkLimit)||5;
     h+='<p class="note" style="margin-top:10px">選んだ日の学校の扱いを変えます。トレーニングの予定はそのまま残ります。</p>'+
       '<div class="wrap">'+(S.opt.schools||[]).map(k=>'<button class="opt sm" data-ss="'+esc(k)+'" aria-pressed="'+(c.kubun===k)+'">'+esc(k)+'</button>').join('')+'</div>';
-    if(['公欠','欠席','ワーケーション'].indexOf(c.kubun)>=0){const noS=c.dates.filter(x=>{const d=DAYS[DIDX[x]];return d&&!isSchoolDayC(d);}).length;
+    if(['公欠','欠席','ラーケーション'].indexOf(c.kubun)>=0){const noS=c.dates.filter(x=>{const d=DAYS[DIDX[x]];return d&&!isSchoolDayC(d);}).length;
       if(noS)h+='<p class="note">学校がない日（土日・祝日・休業）'+noS+'日は対象外です。</p>';}
-    if(c.kubun==='ワーケーション'){const after=sc.used+c.dates.filter(x=>{const d=DAYS[DIDX[x]];return d&&isSchoolDayC(d)&&view(d).school!=='ワーケーション';}).length;
-      h+='<p class="note pvw">'+y+'年度のワーケーション：いま'+sc.used+'回 → この操作で'+after+'回（上限'+lim+'回'+(after>lim?'、<b>'+(after-lim)+'回の超過</b>':'、残り'+(lim-after)+'回')+'）</p>';}
+    if(c.kubun==='ラーケーション'){const after=sc.used+c.dates.filter(x=>{const d=DAYS[DIDX[x]];return d&&isSchoolDayC(d)&&view(d).school!=='ラーケーション';}).length;
+      h+='<p class="note pvw">'+y+'年度のラーケーション：いま'+sc.used+'回 → この操作で'+after+'回（上限'+lim+'回'+(after>lim?'、<b>'+(after-lim)+'回の超過</b>':'、残り'+(lim-after)+'回')+'）</p>';}
     h+='<div class="acts"><button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="selSchool"'+(c.kubun?'':' disabled')+'>保存</button></div>';SH.innerHTML=h;return;}
   if(c.mode==='set'||c.mode==='add'||c.mode==='remove'){
     h+='<p class="note" style="margin-top:10px">'+(c.mode==='set'?'選んだ日の予定を、これで入れ替えます（もとの予定は消えます）。':c.mode==='add'?'もとの予定を残したまま、これを足します。':'選んだ日から、これを外します。')+'</p>';
@@ -1121,6 +1126,7 @@ function openPlanMenu(){const e=canEdit();
     (e?item('bulkOpen','まとめて変更','週のくり返し、期間をOFF、活動の追加・削除'):'')+
     (e?item('fillRec','記録どおりに予定を埋める','記録があるのに予定が空だった過去の日に、記録した活動を予定として入れます（実績の予定・実施率を事実に合わせる）'):'')+
     item('goToday','今日の月へ','カレンダーを今日の月に戻します')+
+    item('reloadNow','最新の状態に更新','スプレッドシートで直した予定など、最新のデータを取り直します')+
     '</div><div class="acts"><button class="btn" data-act="close">閉じる</button></div>';openS('planmenu');}
 function openTripAct(kind,id){const t=TRIPN[id];if(!t)return;sheetCtx={id,kind};let h='<div class="grab"></div>';
   if(kind==='shift'){const lim=' min="'+DAYS[0].d+'" max="'+DAYS[DAYS.length-1].d+'"';
@@ -1215,7 +1221,7 @@ function renderStats(){ensureReports();
       '<div class="tr"><span><span class="sch sch-ab">公欠</span></span><span>'+sc.abs.length+'日</span><span>'+(sc.abs.map(md).join('、')||'－')+'</span></div>'+
       '<div class="tr"><span><span class="sch sch-ab2">欠席</span></span><span>'+sc.miss.length+'日</span><span>'+(sc.miss.map(md).join('、')||'－')+'</span></div>'+
       '<div class="tr"><span><span class="sch sch-wk">ワ</span></span><span>'+sc.used+'日'+(left<0?'（上限超過）':'（残り'+left+'回）')+'</span><span>'+((sc.pre?'記録前 '+sc.pre+'回　':'')+(sc.wark.map(md).join('、')||(sc.pre?'':'－')))+'</span></div></div>'+
-      '<p class="note">公欠は欠席日数に入りません。ワーケーションは1日＝1回として、年度'+lim+'回まで。アプリに登録していない分は「設定」シートの「ワーケーションの使用済み回数」に「2026:2」のように書きます。</p>';}
+      '<p class="note">公欠は欠席日数に入りません。ラーケーションは1日＝1回として、年度'+lim+'回まで。アプリに登録していない分は「設定」シートの「ラーケーションの使用済み回数」に「2026:2」のように書きます。</p>';}
   h+='<h2>活動の予定と実施</h2>'+(kk.length?'<div class="tbl t4"><div class="tr th"><span>活動</span><span>予定</span><span>実施</span><span>やらず</span></div>'+kk.map(k=>'<div class="tr"><span><span class="atag sm '+kCls(k)+'">'+esc(k)+'</span></span><span>'+K[k].p+'</span><span>'+K[k].d+'</span><span>'+(K[k].s||'')+'</span></div>').join('')+'</div><p class="note">1日に同じ時間帯・同じ活動があれば1回と数えます。予定にない活動の記録は「実施」だけに数えます。</p>':'<p class="note">この期間の予定・記録はありません。</p>');
   const fhN={};ds.forEach(d=>rowsOf(d).forEach(r=>{if(r.act&&r.act.st==='実施'){const s2=S.sess[r.act.id];if(s2&&s2.fh){(fhN[r.kind]=fhN[r.kind]||{})[s2.fh]=((fhN[r.kind]||{})[s2.fh]||0)+1;}}}));
   Object.keys(tot).forEach(k=>{const T=tot[k],ord=n=>{const i=(MENUK[k]||[]).findIndex(m=>m.name===n);return i<0?999:i;},names=Object.keys(T).sort((x,y)=>ord(x)-ord(y)),wj=names.every(n=>T[n].u==='本');
@@ -1239,9 +1245,9 @@ function renderHelp(){
   V.innerHTML='<main class="help"><h2>使い方</h2>'+
   '<h3>1. はじめに：週の型を作る</h3><p>「予定」画面の「週の型で予定を作る」を押します。曜日×朝・昼・夜のマスを押して選び、下のボタンでやる活動を入れます（1つのマスに複数入れられます）。「平日にコピー」「土日にコピー」を使うと早く作れます。名前を付けて「保存して当てはめる」を押すと、選んだ期間の予定になります。試験・学校行事の日、遠征・合宿の日、手で変えた日は変わりません（チェックで外せます）。</p><p>型はいくつでも作れます（通常週、テスト週間、雪上シーズンなど）。期間ごとに当てはめ直してください。</p>'+
   '<h3>2. 毎日の記録</h3><p>ホームの「今日」に、その日の活動が時間帯ごとに並びます。</p><ul class="hl"><li><b>やった</b>：押すだけで記録します。ROM・エクスプロッシブは、前回と同じ内容（初回はメニューどおり）で記録されます</li><li><b>内容</b>：セット数・回数／秒数・重量を直して記録します。WJは技ごとの本数を入れます</li><li><b>やらなかった</b>：「内容」を開いて「やらなかった」を選び、理由を書いて保存します</li><li>予定にない活動をした日は「＋ 予定にない活動を記録」から</li><li>体調と備考は1日に1つ、「体調・備考を書く」から</li></ul><p><b>何日分かをまとめて記録するとき</b>は、ホームの知らせか「予定」画面の「まとめて記録」を押します。記録していない予定が日ごとに並びます。実際にやったものだけ押して「✓」にし（もう一度押すと「✕やらなかった」）、下のボタンを1回押せば記録できます。押さなかったものは記録されません。予定が入っていない日は、週の型の内容が「候補」として並びます。</p><p>ボタンを押すと、すぐに画面が変わります。保存は裏で行い、右上に「保存中…」→「✓ 保存しました」と出ます。</p><p>ROMプラスとエクスプロッシブのように、同じ時間帯に複数の活動がある日は、活動ごとに色の違う行で並びます。記録の画面の上には、どの活動を記録しているかが大きく出ます。</p><p>昨日の記録を忘れていると、ホームの上に知らせが出ます。</p>'+
-  '<h3>カレンダーの見方</h3><p>日付の横の印で、その日の学校の状態が分かります。</p><ul class="hl"><li><b>青</b>：学校がある日（登校／短縮）</li><li><b>赤</b>：考査、<b>黄</b>：行事・面談</li><li><b>灰</b>：学校がない日（夏休み・冬休み・春休み・振休・祝日・自宅・休み）</li><li><b>桃</b>：公欠、<b>赤枠の桃</b>：欠席、<b>紫のワ</b>：ワーケーション</li><li><b>点線の未定</b>：学校の予定表がまだ登録されていない期間</li></ul><p>印の決まり方は2通りです。<b>公欠・欠席・ワーケーション・登校・非登校</b>は、日を押して「学校予定・メモを変更」→「学校の扱い」で選びます。<b>考査・行事・面談・短縮・自宅・夏休みなど</b>は、「学校予定」に書かれた言葉から自動で決まります（どの言葉がどの印になるかは、スプレッドシートの「選択肢」シートの「学校マーク」で変えられます）。</p><p>長期休業は、開始日と終了日から期間を自動で補っています。月のカレンダーの下に、その月の平日の休みと、試験・学校行事の一覧が出ます。公式練習の日には大会名も出ます。「P」はパーソナルの日です。</p>'+
+  '<h3>カレンダーの見方</h3><p>日付の横の印で、その日の学校の状態が分かります。</p><ul class="hl"><li><b>青</b>：学校がある日（登校／短縮）</li><li><b>赤</b>：考査、<b>黄</b>：行事・面談</li><li><b>灰</b>：学校がない日（夏休み・冬休み・春休み・振休・祝日・自宅・休み）</li><li><b>桃</b>：公欠、<b>赤枠の桃</b>：欠席、<b>紫のワ</b>：ラーケーション</li><li><b>点線の未定</b>：学校の予定表がまだ登録されていない期間</li></ul><p>印の決まり方は2通りです。<b>公欠・欠席・ラーケーション・登校・非登校</b>は、日を押して「学校予定・メモを変更」→「学校の扱い」で選びます。<b>考査・行事・面談・短縮・自宅・夏休みなど</b>は、「学校予定」に書かれた言葉から自動で決まります（どの言葉がどの印になるかは、スプレッドシートの「選択肢」シートの「学校マーク」で変えられます）。</p><p>長期休業は、開始日と終了日から期間を自動で補っています。月のカレンダーの下に、その月の平日の休みと、試験・学校行事の一覧が出ます。公式練習の日には大会名も出ます。「P」はパーソナルの日です。</p>'+
   '<h3>スマホのホーム画面から開く</h3><p>iPhoneのSafariでこのアプリを開き、下の共有ボタン（□に↑）→「ホーム画面に追加」→「追加」。以後はホーム画面のアイコンを押すだけで開けます。Androidは Chrome のメニュー「ホーム画面に追加」です。ホーム画面から開いた初回だけ、記録者を選び直します。</p>'+
-  '<h3>ワーケーション</h3><p>年度に'+(S.warkLimit||5)+'回まで取れる休みです（1日＝1回）。予定画面の上に残り回数が出ます。日を押して「学校予定・メモを変更」→「学校の扱い」で1日ずつ、または「複数日を選ぶ」→「学校の扱い」でまとめて設定できます。年度ごとの公欠・欠席・ワーケーションの日数は、実績画面の「年度」で確認できます。</p>'+
+  '<h3>ラーケーション</h3><p>年度に'+(S.warkLimit||5)+'回まで取れる休みです（1日＝1回）。予定画面の上に残り回数が出ます。日を押して「学校予定・メモを変更」→「学校の扱い」で1日ずつ、または「複数日を選ぶ」→「学校の扱い」でまとめて設定できます。年度ごとの公欠・欠席・ラーケーションの日数は、実績画面の「年度」で確認できます。</p>'+
   
   '<h3>記録のしかた（v4.21）</h3><ul class="hl"><li>開いてすぐ押せます。電波が届かないときは端末に残り、つながったら自動で送ります（右上に「未送信 ○件」）</li><li>［やった］のあと6秒間は「取り消す」が出ます</li><li>✕を押すと「やらなかった」で記録。理由はあとから「理由を書く」で</li><li>WJは前回の本数が入り、よく使う技が上に並びます</li><li>ROMベーシックは予定でフル／ハーフを決められます（決めていなければ当日）。1タップの記録は予定の区分で入ります</li></ul>'+
   '<h3>実績を事実に合わせる（v4.22）</h3><ul class="hl"><li>カレンダーの「Rフ」「Rハ」は、記録前は予定の区分、記録後は実際にやった区分です</li><li>朝の予定を夜にやった場合も、同じ日・同じ活動なら予定の実施と数え、「（夜に実施）」と注記します</li><li>記録があるのに予定が空だった日は、日の画面の「記録どおりに予定を入れる」、または「⋯」→「記録どおりに予定を埋める」で、記録した活動を予定として入れられます（達成率・報告の「予定」が事実に合います）</li><li>過去の日の予定も「予定を変更」「複数日を選ぶ」「週の型（期間を指定）」で変えられます</li><li>記録のフル／ハーフをまとめて直すときは、「複数日を選ぶ」→日を選ぶ→「記録のフル／ハーフを直す」（種目・回数はその区分のメニューの標準値になります）</li></ul>'+
@@ -1276,7 +1282,10 @@ function reportErr(action,msg){try{if(errN++>20)return;if(/^(KEY|EKEY)$/.test(St
 window.addEventListener('error',e=>reportErr('画面のエラー',(e&&e.message)||''));
 window.addEventListener('unhandledrejection',e=>reportErr('画面のエラー（非同期）',(e&&e.reason&&e.reason.message)||String(e&&e.reason||'')));
 function syncShow(msg){const e=document.getElementById('sync');if(!e)return;if(Q.length&&inflight===0){e.className='sync on';e.textContent='未送信 '+Q.length+'件（つながったら送ります）';return;}
-  if(inflight>0){e.className='sync on';e.textContent=msg||(FRESH?'保存中…':'最新を確認中…');}else{e.className='sync ok';e.textContent='✓ 保存しました';clearTimeout(syncShow.h);syncShow.h=setTimeout(()=>{e.className='sync';e.textContent='';},2500);}}
+  const idle=()=>{if(FRESH_AT){const t=new Date(FRESH_AT);e.className='sync info';e.textContent='最新 '+t.getHours()+':'+String(t.getMinutes()).padStart(2,'0');}else{e.className='sync';e.textContent='';}};
+  if(inflight>0){e.className='sync on';e.textContent=msg||(FRESH?'保存中…':'最新を確認中…');}
+  else if(syncShow.saved){e.className='sync ok';e.textContent='✓ 保存しました';syncShow.saved=false;clearTimeout(syncShow.h);syncShow.h=setTimeout(idle,2500);}
+  else idle();}
 /** 画面を先に変え、保存は裏で行う（活動の記録用） */
 function optimistic(list,del){list.forEach(p=>{const L=S.acts[p.date]=(S.acts[p.date]||[]).filter(a=>!(a.id&&a.id===p.id)&&!(a.slot===p.slot&&a.kind===p.kind));
     if(!del){const id=p.id||('tmp'+Date.now()+Math.random().toString(36).slice(2,6));L.push({id,slot:p.slot,kind:p.kind,st:p.st,c:p.c||'',memo:p.memo||'',by:who,at:''});if(p.sess)S.sess[id]={kind:p.kind,fh:p.sess.fh,items:p.sess.items.map(i=>({name:i.name,v:String(i.v),unit:i.unit,sets:String(i.sets),w:i.w}))};}
@@ -1306,7 +1315,7 @@ function sendRec(fn,p,okMsg,delRow,quiet){
   if(fn!=='deleteActivity'){optimistic(list,false);keys.forEach(k=>PENDK[k]=(PENDK[k]||0)+1);}else if(delRow)optimistic([delRow],true);
   redraw();inflight++;syncShow();
   p.who=who;p.key=key;p.ekey=ekey;p.partial=true;
-  call(fn,p).then(d=>{keys.forEach(k=>{if(PENDK[k]&&--PENDK[k]<=0)delete PENDK[k];});inflight--;applyPart(d);redraw();syncShow();if(!quiet)toast((typeof okMsg==='function'?okMsg():okMsg)||'保存しました');})
+  call(fn,p).then(d=>{keys.forEach(k=>{if(PENDK[k]&&--PENDK[k]<=0)delete PENDK[k];});inflight--;syncShow.saved=true;applyPart(d);redraw();syncShow();if(!quiet)toast((typeof okMsg==='function'?okMsg():okMsg)||'保存しました');})
    .catch(e=>{inflight--;const m=errMsg(e);reportErr('保存：'+fn,m);
      if(m.indexOf('KEY')>=0){keys.forEach(k=>{if(PENDK[k]&&--PENDK[k]<=0)delete PENDK[k];});key='';LS.set('key','');load(true);askKey();toast('合言葉が違います');syncShow();return;}
      if(isNetErr(m)){Q.push({fn,p:Object.assign({},p,{who:undefined,key:undefined,ekey:undefined}),who,delRow:delRow||null,ts:Date.now()});qSave();syncShow();toast('電波が届かないため、端末に残しました。つながったら自動で送ります');return;}
@@ -1327,7 +1336,7 @@ function sendPlan(fn,p,okMsg,local){
   if(S.needEKey&&!ekey){pending={fn,p,after:null,okMsg,plan:true};askKey('plan');return;}
   if(local)local();
   redraw();inflight++;syncShow();p.who=who;p.key=key;p.ekey=ekey;p.partial=true;
-  call(fn,p).then(d=>{inflight--;applyPart(d);redraw();syncShow();toast(d.msg&&!okMsg?d.msg:(typeof okMsg==='function'?okMsg():okMsg)||d.msg||'保存しました');})
+  call(fn,p).then(d=>{inflight--;syncShow.saved=true;applyPart(d);redraw();syncShow();toast(d.msg&&!okMsg?d.msg:(typeof okMsg==='function'?okMsg():okMsg)||d.msg||'保存しました');})
    .catch(e=>{inflight--;syncShow();const m=errMsg(e);reportErr('保存：'+fn,m);
      if(m.indexOf('EKEY')>=0){ekey='';LS.set('ekey','');load(true);askKey('plan');toast('予定を変えるための合言葉が違います');return;}
      if(m.indexOf('KEY')>=0){key='';LS.set('key','');load(true);askKey();toast('合言葉が違います');return;}
@@ -1353,10 +1362,10 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.act==='vkGo'){const v=(document.getElementById('vk-in')||{}).value||'';if(!v)return;vkey=v;LS.set('vkey',v);showLoading(true);load(false);return;}
   if(ds.act==='key'){const v=val('k-in');if(!v)return;
     if(sheetCtx&&sheetCtx.kind==='plan'){ekey=v;LS.set('ekey',v);}else{key=v;LS.set('key',v);}closeSheet();if(pending){const q=pending;pending=null;if(q.plan)sendPlan(q.fn,q.p,q.okMsg);else if(['saveActivity','saveActivities','deleteActivity'].indexOf(q.fn)>=0)sendRec(q.fn,q.p,q.okMsg);else send(q.fn,q.p,q.after,q.okMsg);}return;}
-  if(ds.tab){if(tab==='race'&&ds.tab!=='race'&&draftDiff().length&&!confirm('保存していない参加・不参加の変更があります。破棄しますか？'))return;if(ds.tab!=='race')draftTrips=null;if(ds.tab!=='plan'){selMode=false;SEL={};}tab=ds.tab;window.scrollTo(0,0);render();return;}
+  if(ds.tab){if(tab==='race'&&ds.tab!=='race'&&draftDiff().length&&!confirm('保存していない参加・不参加の変更があります。破棄しますか？'))return;if(ds.tab!=='race')draftTrips=null;if(ds.tab!=='plan'){selMode=false;SEL={};}tab=ds.tab;window.scrollTo(0,0);render();refreshIfStale();return;}
   if(ds.mode){mode=ds.mode;render();window.scrollTo(0,0);return;}
   if(ds.year){year=+ds.year;month=months()[0];render();window.scrollTo(0,0);return;}
-  if(ds.mv){moveMonth(+ds.mv);render();window.scrollTo(0,0);return;}
+  if(ds.mv){moveMonth(+ds.mv);render();window.scrollTo(0,0);refreshIfStale();return;}
   if(ds.act==='months'){openMonths();return;}
   if(ds.act==='planMenu'){openPlanMenu();return;}
   if(ds.my){year=+ds.my;month=months()[0];openMonths();render();return;}
@@ -1367,6 +1376,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
     if(!L.length){toast('記録があって予定が空の日はありません');return;}
     if(!confirm(L.length+'日（'+md(L[0])+'〜'+md(L[L.length-1])+'）に、記録した活動を予定として入れます。よろしいですか？'))return;
     closeSheet();sendPlan('fillFromRecords',{},L.length+'日の予定を記録どおりにしました',()=>planLocal(L,(d2,cur,off)=>{const items=[];(S.acts[d2.d]||[]).forEach(a=>{if(isSys(a.kind)||items.some(y=>y.slot===a.slot&&y.kind===a.kind))return;items.push({slot:a.slot,kind:a.kind,fh:a.kind==='ROMベーシック'?((S.sess[a.id]||{}).fh||''):''});});return {items,off};},'記録から'));return;}
+  if(ds.act==='reloadNow'){closeSheet();load(true);toast('最新のデータを取り直しています…');return;}
   if(ds.act==='goToday'){const t2=DIDX[TODAY]!==undefined?TODAY:DAYS[0].d;year=fy(t2);month=t2.slice(0,7);closeSheet();render();window.scrollTo(0,0);setTimeout(()=>{const c=document.querySelector('.cell.today,.day.today');if(c)c.scrollIntoView({block:'center'});},60);return;}
   if(ds.month){month=ds.month;render();window.scrollTo(0,0);return;}
   if(ds.filt){filt=ds.filt;render();return;}
@@ -1570,6 +1580,7 @@ document.addEventListener('change',e=>{const id=e.target.id||'';
       e.className='note pvw';e.textContent=md(t.a)+'〜'+md(t.b)+'（'+old+'日間）→ '+md(a)+'〜'+md(b)+'（'+n+'日間）'+(dd?'　'+(dd>0?dd+'日後ろへ':(-dd)+'日前へ'):'')+(n!==old?'　'+(n>old?(n-old)+'日のばす':(old-n)+'日みじかく'):'');}}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetKind&&sheetKind!=='who'&&!saving)closeSheet();});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&S&&!sheetKind&&!saving&&!draftDiff().length)load(true);});
+window.addEventListener('focus',()=>{if(!draftDiff().length)refreshIfStale(60000);});
 if(INSIDE_GAS||API_URL)load(false);
 else V.innerHTML='<main><p class="empty">このページは、デプロイしたウェブアプリのURLから開くか、通信先（API_URL）を設定してください。</p></main>';
 })();
