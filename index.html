@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.23.1 -->
+<!-- スキー行動予定アプリ 画面側 v4.25.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -418,6 +418,8 @@ html.big .btn{font-size:17px}
 .list .s{color:var(--sub);font-size:12px}
 .stats .st{flex:1 1 30%}
 .asum .mv{color:var(--sub);font-weight:600;margin-left:4px}
+.bday.asked{border-color:#E87A30;box-shadow:0 0 0 2px rgba(232,122,48,.25)}
+.bday.asked .bdh b::after{content:"　父から確認";font-size:11px;color:#E87A30;font-weight:800}
 </style>
 </head>
 <body>
@@ -425,7 +427,7 @@ html.big .btn{font-size:17px}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.23.1';
+const CLIENT_VERSION='4.25.0';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -708,6 +710,7 @@ function renderHome(){
   if(DIDX[TODAY]===undefined){V.innerHTML=h+'<p class="empty">今日は登録期間（'+md(DAYS[0].d)+'〜'+md(DAYS[DAYS.length-1].d)+'）の外です。</p></main>';return;}
   const planEmpty=!DAYS.some(d=>d.plan);
   if(planEmpty&&canEdit())h+='<div class="nudge"><span>まだトレーニングの予定がありません。まず「週の型」を作って、期間に当てはめましょう。</span><button class="btn pri sm2" data-act="patOpen">週の型を作る</button></div>';
+  {const A=(S.askDays||[]).filter(x=>DIDX[x]!==undefined&&x<=TODAY&&pendRows(DAYS[DIDX[x]]).length);if(A.length)h+='<div class="nudge"><span>月次チェックで確認を求められている日が'+A.length+'日あります（'+A.slice(0,3).map(md).join('・')+(A.length>3?'…':'')+'）</span><button class="btn pri sm2" data-act="brecOpen">まとめて記録</button></div>';}
   {const L=unrecDays(14);if(L.length)h+='<div class="nudge"><span>'+(L.length===1&&L[0].d===addD(TODAY,-1)?'昨日（'+mdw(L[0].d)+'）の記録が'+L[0].n+'件まだです':'記録していない日が'+L.length+'日あります（最近14日）')+'</span><button class="btn pri sm2" data-act="brecOpen">まとめて記録</button></div>';}
   if(!planEmpty&&canEdit()){const G=planGap();if(G.length>=5)h+='<div class="nudge plan"><span>'+md(G[0])+'から、予定が入っていない日が'+G.length+'日あります（これから2週間）。週の型を当てはめると埋まります。</span><button class="btn pri sm2" data-act="patOpen">週の型を当てはめる</button></div>';}
   h+='<section class="today"><div class="thead"><span class="tlabel">今日</span><b>'+mdw(TODAY)+'</b></div>'+dayBody(DAYS[DIDX[TODAY]])+'</section>';
@@ -1030,17 +1033,20 @@ function openAddCamp(){
 // ---------- まとめて記録（過去の日） ----------
 function openBrec(){brec={span:14,days:[],addAt:-1,addSlot:'夜',addSel:[]};buildBrec();drawBrec();openS('brec');}
 function buildBrec(){const keep={},extra={};(brec.days||[]).forEach(x=>x.rows.forEach(r=>{keep[x.d+'|'+r.slot+'|'+r.kind]=r.st;if(r.add)(extra[x.d]=extra[x.d]||[]).push(r);}));
-  const out=[];for(let i=0;i<brec.span;i++){const x=addD(TODAY,-i);if(DIDX[x]===undefined)continue;const d=DAYS[DIDX[x]];
+  const out=[];const ask=(S.askDays||[]).filter(x=>DIDX[x]!==undefined&&x<=TODAY);const seen={};
+  const list=ask.slice().sort().reverse();for(let i=0;i<brec.span;i++){const x=addD(TODAY,-i);if(list.indexOf(x)<0)list.push(x);}
+  list.forEach(x=>{if(DIDX[x]===undefined||seen[x])return;seen[x]=1;const d=DAYS[DIDX[x]];const asked=ask.indexOf(x)>=0;
     let rows=pendRows(d).map(r=>{const k=x+'|'+r.slot+'|'+r.kind;return {slot:r.slot,kind:r.kind,sug:r.sug||'',st:keep[k]!==undefined?keep[k]:''};});
     (extra[x]||[]).forEach(r=>{if(!rows.some(y=>y.slot===r.slot&&y.kind===r.kind)&&!(S.acts[x]||[]).some(a=>a.slot===r.slot&&a.kind===r.kind))rows.push(r);});
-    const done=(S.acts[x]||[]).length;if(!rows.length&&done)continue;
-    out.push({d:x,rows,done,trip:view(d).tripOn,sug:rows.some(r=>r.sug)?rows.find(r=>r.sug).sug:''});}
+    const done=(S.acts[x]||[]).length;if(!rows.length&&done)return;
+    out.push({d:x,rows,done,trip:view(d).tripOn,asked,sug:rows.some(r=>r.sug)?rows.find(r=>r.sug).sug:''});});
   brec.days=out;}
 function drawBrec(){const c=brec;let n1=0,n2=0;c.days.forEach(x=>x.rows.forEach(r=>{if(r.st==='ok')n1++;if(r.st==='ng')n2++;}));
   let h='<div class="grab"></div><h3 id="sh-title">まとめて記録</h3><p class="note">最近'+c.span+'日の、まだ記録していない日を並べています。<b>実際にやったものだけ</b>押してください。押すたびに <b>－記録しない → ✓やった → ✕やらなかった</b> と変わります。押さなかったものは記録されません。予定にない活動は「＋ 活動を追加」から足せます。最後に下のボタンを1回押すと、まとめて記録します。</p>';
   if(!Object.keys(S.patterns||{}).length&&c.days.some(x=>!x.rows.length))h+='<p class="note pvw">過去の日に予定が入っていません。週の型を作ると、ここに型の内容が候補として並びます（「予定」→「週の型で予定を作る」）。今は「＋ 活動を追加」で記録できます。</p>';
   if(!c.days.length)h+='<p class="empty">最近'+c.span+'日は、すべて記録済みです。</p>';
-  c.days.forEach((x,di)=>{h+='<div class="bday"><div class="bdh"><b>'+mdw(x.d)+(x.d===TODAY?' 今日':'')+'</b>'+(x.rows.length?'<button class="linkbtn2" data-ball="'+di+'|ok">全部やった</button><button class="linkbtn2" data-ball="'+di+'|ng">全部やらなかった</button>':'')+'</div>';
+  const nAsk=c.days.filter(x=>x.asked).length;if(nAsk)h+='<p class="note pvw">月次チェックで<b>確認を求められている日が'+nAsk+'日</b>あります（先頭に並んでいます）。やった／やらなかったを押してください。</p>';
+  c.days.forEach((x,di)=>{h+='<div class="bday'+(x.asked?' asked':'')+'"><div class="bdh"><b>'+mdw(x.d)+(x.d===TODAY?' 今日':'')+'</b>'+(x.rows.length?'<button class="linkbtn2" data-ball="'+di+'|ok">全部やった</button><button class="linkbtn2" data-ball="'+di+'|ng">全部やらなかった</button>':'')+'</div>';
     if(x.sug)h+='<p class="note" style="margin:4px 0 0">予定が入っていないので、週の型「'+esc(x.sug)+'」の内容を<b>候補</b>として出しています。やったものだけ押してください</p>';
     if(x.done)h+='<p class="note" style="margin:4px 0 0">記録済み：'+(S.acts[x.d]||[]).map(a=>a.slot+' '+esc(a.kind)).join('、')+'</p>';
     h+='<div class="brows">'+x.rows.map((r,ri)=>'<button class="bchip st-'+(r.st||'no')+'" data-bst="'+di+'|'+ri+'" aria-label="'+esc(r.slot+' '+r.kind+'：'+(r.st==='ok'?'やった':r.st==='ng'?'やらなかった':'記録しない'))+'"><span class="bmk">'+(r.st==='ok'?'✓':r.st==='ng'?'✕':'－')+'</span><span class="slot">'+r.slot+'</span><span class="atag sm '+kCls(r.kind)+'">'+esc(r.kind)+'</span>'+(r.sug?'<span class="sugb">候補</span>':'')+(r.add?'<span class="sugb addb">追加</span>':'')+'</button>').join('')+
@@ -1230,6 +1236,7 @@ function renderHelp(){
   
   '<h3>記録のしかた（v4.21）</h3><ul class="hl"><li>開いてすぐ押せます。電波が届かないときは端末に残り、つながったら自動で送ります（右上に「未送信 ○件」）</li><li>［やった］のあと6秒間は「取り消す」が出ます</li><li>✕を押すと「やらなかった」で記録。理由はあとから「理由を書く」で</li><li>WJは前回の本数が入り、よく使う技が上に並びます</li><li>ROMベーシックは予定でフル／ハーフを決められます（決めていなければ当日）。1タップの記録は予定の区分で入ります</li></ul>'+
   '<h3>実績を事実に合わせる（v4.22）</h3><ul class="hl"><li>カレンダーの「Rフ」「Rハ」は、記録前は予定の区分、記録後は実際にやった区分です</li><li>朝の予定を夜にやった場合も、同じ日・同じ活動なら予定の実施と数え、「（夜に実施）」と注記します</li><li>記録があるのに予定が空だった日は、日の画面の「記録どおりに予定を入れる」、または「⋯」→「記録どおりに予定を埋める」で、記録した活動を予定として入れられます（達成率・報告の「予定」が事実に合います）</li><li>過去の日の予定も「予定を変更」「複数日を選ぶ」「週の型（期間を指定）」で変えられます</li><li>記録のフル／ハーフをまとめて直すときは、「複数日を選ぶ」→日を選ぶ→「記録のフル／ハーフを直す」（種目・回数はその区分のメニューの標準値になります）</li></ul>'+
+  '<h3>月次チェック（月末の締め）</h3><p>スプレッドシートのメニュー「行動予定アプリ」→「月次チェック」で、その月の点検表（1日1行）ができます。予定・実績・体調・問題（未記録／予定外／時間帯ちがい／区分ちがい／標準より少ない／明細なし）が並び、「どうする」の列に<b>おすすめが入っています</b>。違う日だけ▼で「そのまま／記録が正しい／予定が正しい／この日は休み／本人に聞く」から選び、メニュー「月次チェックの修正を反映」を押すだけです。</p><p>「本人に聞く」にした日は、本人のアプリのホームに知らせが出て、「まとめて記録」の先頭に「父から確認」として並びます。セット数を個別に直すときは「月次チェック_○○_種目」シートに数を書きます。</p>'+
   '<h3>続ける・共有する（v4.22）</h3><ul class="hl"><li>ホームに「今週の達成率」「連続記録」が出ます。連続記録は、記録した日と記録の要らない日（予定なし・休養日）をつなぎ、予定があって未記録の日で途切れます</li><li>家族が予定を変えると、ホームの「最近の予定変更」に3日間出ます</li><li>「設定」シートの「未記録の通知メール」に宛先を書くと、毎晩21時に、その日の未記録があればメールが届きます</li><li>活動名を押すと今日のメニュー（目安）が見られます。記録は［記録］か、その画面の「記録する」から</li><li>文字が小さいときは、この画面の「文字を大きくする」</li></ul>'+
   '<h3>休養日（OFF）</h3><p>休養日は「その日の位置づけ」で、トレーニングの予定とは別に持っています。合宿中でも休養日にでき、休養日に軽く動く予定を入れることもできます。設定は、日を押して「予定を変更」→「休養日（OFF）」、複数日を選んで「休養日にする」、週の型の「OFF」の行、のいずれかです。カレンダーには上段に「OFF」（合宿中なら「合宿／OFF」）と出ます。</p>'+
   '<h3>3. 予定を変える</h3><ul class="hl"><li>1日だけ変える：日付を押して「予定を変更」</li><li>何日かを選んで変える：「予定」画面の「複数日を選ぶ」（またはカレンダーの日を長押し）→ 日を押して選ぶ →「選んだ日の予定を変更」。入れ替える／足す／外す／休養日にする／休養日をやめる／予定を消す／学校の扱い から選べます</li><li>まとめて変える：「まとめて変更」で、この週をくり返す／前の週と同じにする／期間を休養日にする／やめる／期間の予定を消す／期間に活動を追加／外す</li><li>学校予定やメモ：日付を押して「学校予定・メモを変更」</li></ul><p>コーチの方は予定を変更できません（記録と閲覧はできます）。</p>'+
