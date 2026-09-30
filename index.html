@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.25.0 -->
+<!-- スキー行動予定アプリ 画面側 v4.26.1 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -420,6 +420,9 @@ html.big .btn{font-size:17px}
 .asum .mv{color:var(--sub);font-weight:600;margin-left:4px}
 .bday.asked{border-color:#E87A30;box-shadow:0 0 0 2px rgba(232,122,48,.25)}
 .bday.asked .bdh b::after{content:"　父から確認";font-size:11px;color:#E87A30;font-weight:800}
+.bline{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.bopts{display:inline-flex;gap:6px;align-items:center;margin:0 0 0 4px}
+.bchip .atag .fhtag{background:rgba(255,255,255,.35)}
 </style>
 </head>
 <body>
@@ -427,7 +430,7 @@ html.big .btn{font-size:17px}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.25.0';
+const CLIENT_VERSION='4.26.1';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -638,7 +641,11 @@ function resTxt(r){if(!r)return'';return [r.round,r.rank?r.rank+'位'+(r.n?'／'
 function specOf(m){const u=m.unit||'';const parts=[];if(m.v&&u!=='本')parts.push(m.v+(u||''));if(m.sets)parts.push(m.sets+'セット');if(m.side)parts.push(m.side);if(m.iv)parts.push('インターバル'+m.iv+'秒');return parts.join('×').replace('セット×','セット・').replace(/×(各|片)/,'・$1');}
 function sessSum(a){const s=S.sess[a.id];if(!s)return a.c||'';const n=s.items.length;
   if(s.items.every(i=>i.unit==='本'))return '合計'+s.items.reduce((t,i)=>t+(parseInt(i.v,10)||0),0)+'本（'+s.items.map(i=>i.name+i.v).join('・')+'）';
-  return (s.fh?s.fh+'・':'')+n+'種目・'+s.items.reduce((t,i)=>t+(parseInt(i.sets,10)||0),0)+'セット';}
+  return n+'種目・'+s.items.reduce((t,i)=>t+(parseInt(i.sets,10)||0),0)+'セット';}
+/** 表示する区分：記録があれば記録の区分、なければ予定の区分 */
+function fhOf(a,planFh){if(a&&S.sess[a.id]&&S.sess[a.id].fh)return S.sess[a.id].fh;return planFh||'';}
+/** 活動名＋区分の表示（HTML） */
+function kindTag(kind,fh,cls){return '<span class="atag '+(cls||'')+' '+kCls(kind)+'">'+esc(kind)+(fh?'<small class="fhtag">'+esc(fh)+'</small>':'')+'</span>';}
 function actSum(a){if(!a)return'';if(a.st==='やらなかった')return 'やらなかった'+(a.memo?'（'+a.memo+'）':'');const s=sessSum(a);return (s||'実施')+(ROMN[a.id]?'（ROM '+ROMN[a.id]+'回目）':'')+(a.memo?'　'+a.memo:'');}
 // ---------- 骨組み ----------
 const root=document.getElementById('root');
@@ -670,7 +677,7 @@ function renderHead(){
 // ---------- 活動の行 ----------
 function actRow(d,r,compact){
   const a=r.act,sys=isSys(r.kind),done=a&&a.st==='実施',skip=a&&a.st==='やらなかった',future=d.d>TODAY;
-  let h='<div class="arow'+(done?' done':skip?' skipd':'')+(r.planned?'':' extra')+'">'+(done?'<span class="okmk">✓</span>':'')+'<span class="slot">'+r.slot+'</span><span class="atag '+kCls(r.kind)+(isMenu(r.kind)?' tap':'')+'"'+(isMenu(r.kind)?' data-mview="'+r.slot+'|'+esc(r.kind)+'" data-fh="'+esc(r.fh||'')+'" data-d="'+d.d+'" role="button" title="メニューを見る"':'')+'>'+esc(r.kind)+(r.fh&&!a?'<small class="fhtag">'+esc(r.fh)+'</small>':'')+'</span>';
+  let h='<div class="arow'+(done?' done':skip?' skipd':'')+(r.planned?'':' extra')+'">'+(done?'<span class="okmk">✓</span>':'')+'<span class="slot">'+r.slot+'</span><span class="atag '+kCls(r.kind)+(isMenu(r.kind)?' tap':'')+'"'+(isMenu(r.kind)?' data-mview="'+r.slot+'|'+esc(r.kind)+'" data-fh="'+esc(r.fh||'')+'" data-d="'+d.d+'" role="button" title="メニューを見る"':'')+'>'+esc(r.kind)+(fhOf(a,r.fh)?'<small class="fhtag">'+esc(fhOf(a,r.fh))+'</small>':'')+'</span>';
   h+='<span class="asum">'+(a?esc(actSum(a))+(r.moved?'<small class="mv">（'+esc(r.moved)+'に実施）</small>':''):(r.planned?'':'予定外'))+'</span>';
   if(!compact&&!future){
     if(r.kind==='大会'){const v=view(d);if(v.race&&d.d<=TODAY)h+='<span class="abtn"><button class="btn sm2" data-res="'+esc(v.race.id)+'">'+(S.results[v.race.id]?'結果を直す':'結果を記録')+'</button></span>';}
@@ -738,7 +745,7 @@ function grid(k,mini){const ds=DAYS.filter(d=>d.d.slice(0,7)===k);if(!ds.length)
     if(prev){let x=addD(prev,1);while(x<d.d){h+='<div class="cell pad miss" title="この日はデータがありません"></div>';x=addD(x,1);}}
     prev=d.d;
     const v=view(d),rows=rowsOf(d,v),dc=d.h?'sun':(d.sat?'sat':'');
-    h+='<button class="cell '+cellCls(v)+(d.d===TODAY?' today':'')+(selMode?(SEL[d.d]?' picked':' pickable'):'')+'" data-day="'+d.d+'" aria-label="'+esc(md(d.d)+' '+v.school+' '+(v.nm||'')+' '+rows.map(r=>r.slot+r.kind).join(' '))+'"><span class="cn '+dc+'">'+(+d.d.slice(8))+(()=>{const st=schState(d,v);return st?'<span class="sch '+st.c+'">'+(mini?st.l.slice(0,1):st.l)+'</span>':'';})()+'</span>'+''+(CZ[d.d]?'<span class="czb'+(isAbs(v.school)?' two':'')+'">P</span>':'')+
+    h+='<button class="cell '+cellCls(v)+(d.d===TODAY?' today':'')+(selMode?(SEL[d.d]?' picked':' pickable'):'')+'" data-day="'+d.d+'" aria-label="'+esc(md(d.d)+' '+v.school+' '+(v.nm||'')+' '+rows.map(r=>r.slot+kindLabel(r.kind,fhOf(r.act,r.fh))).join(' '))+'"><span class="cn '+dc+'">'+(+d.d.slice(8))+(()=>{const st=schState(d,v);return st?'<span class="sch '+st.c+'">'+(mini?st.l.slice(0,1):st.l)+'</span>':'';})()+'</span>'+''+(CZ[d.d]?'<span class="czb'+(isAbs(v.school)?' two':'')+'">P</span>':'')+
       (!mini&&!v.kb&&v.off?'<span class="cl off">OFF</span>':'')+(!mini&&v.kb?'<span class="cl">'+(v.skip?'<span class="skipb">'+v.skipTxt+'</span>':'')+esc(shortEv(v)+(v.off?'／OFF':''))+'</span>':'')+
       '<span class="cks">'+(()=>{const g=[];rows.forEach(r=>{let x=g.find(y=>y.kind===r.kind);if(!x){x={kind:r.kind,fh:r.fh||'',n:0,done:0,ng:0};g.push(x);}x.n++;
           if(r.act&&r.act.st==='実施'&&S.sess[r.act.id]&&S.sess[r.act.id].fh)x.fh=S.sess[r.act.id].fh;if(r.act&&r.act.st==='実施')x.done++;if(r.act&&r.act.st==='やらなかった')x.ng++;});
@@ -880,8 +887,8 @@ function openAct(date,slot,kind,id){
 function readAct(){if(!act)return;act.memo=val('ac-memo');SH.querySelectorAll('[data-iv]').forEach(e=>{const x=act.items[+e.dataset.iv];if(x)x.v=e.value.trim();});SH.querySelectorAll('[data-iw]').forEach(e=>{const x=act.items[+e.dataset.iw];if(x)x.w=e.value.trim();});}
 function drawAct(){const c=act,menu=isMenu(c.kind),wj=menu&&(MENUK[c.kind]||[]).every(m=>m.unit==='本');
   const other=(S.acts[c.date]||[]).filter(a=>a.id!==c.id);
-  let h='<div class="grab"></div><div class="acthead '+kCls(c.kind)+'"><small>'+mdw(c.date)+'</small><b id="sh-title">'+c.slot+'　'+esc(c.kind)+'</b></div>';
-  if(other.length)h+='<p class="note">この日のほかの記録：'+other.map(a=>'<span class="atag sm '+kCls(a.kind)+'">'+a.slot+' '+esc(a.kind)+'</span>').join(' ')+'</p>';
+  let h='<div class="grab"></div><div class="acthead '+kCls(c.kind)+'"><small>'+mdw(c.date)+'</small><b id="sh-title">'+c.slot+'　'+esc(c.kind)+(c.fh?'（'+esc(c.fh)+'）':'')+'</b></div>';
+  if(other.length)h+='<p class="note">この日のほかの記録：'+other.map(a=>'<span class="atag sm '+kCls(a.kind)+'">'+a.slot+' '+esc(kindLabel(a.kind,fhOf(a,'')))+'</span>').join(' ')+'</p>';
   h+='<div class="lab">時間帯</div><div class="wrap">'+SLOTS.map(s=>'<button class="opt sm" data-aslot="'+s+'" aria-pressed="'+(c.slot===s)+'">'+s+'</button>').join('')+'</div>';
   h+='<div class="seg" role="group" style="margin-top:10px"><button data-ast="実施" aria-pressed="'+(c.st==='実施')+'">やった</button><button data-ast="やらなかった" aria-pressed="'+(c.st==='やらなかった')+'">やらなかった</button></div>';
   if(c.st==='実施'){
@@ -998,7 +1005,7 @@ function drawBulk(){const c=sheetCtx,M=[['repeat','この週をくり返す'],['
   let h='<div class="grab"></div><h3 id="sh-title">まとめて変更</h3><div class="wrap">'+M.map(m=>'<button class="opt sm" data-bm="'+m[0]+'" aria-pressed="'+(c.mode===m[0])+'">'+m[1]+'</button>').join('')+'</div>';
   const lim=' min="'+DAYS[0].d+'" max="'+DAYS[DAYS.length-1].d+'"';let pv=null,txt='';
   if(c.mode==='repeat'){const f=monOf(c.from);h+='<p class="note">実際に予定を入れた1週間を、指定した日までくり返します。</p><div class="g2"><label>もとにする週（その週の日付）<input type="date" id="b-from" value="'+c.from+'"'+lim+'></label><label>いつまで<input type="date" id="b-until" value="'+c.until+'"'+lim+'></label></div>';
-    h+='<p class="note">もとの週：'+md(f)+'〜'+md(addD(f,6))+'　'+WK.map((w,i)=>{const d=DAYS[DIDX[addD(f,i)]];return w+'：'+(d?view(d).items.filter(x=>!isSys(x.kind)).map(x=>x.slot+kAbbr(x.kind)).join('・')||'なし':'－');}).join('　')+'</p>';
+    h+='<p class="note">もとの週：'+md(f)+'〜'+md(addD(f,6))+'　'+WK.map((w,i)=>{const d=DAYS[DIDX[addD(f,i)]];return w+'：'+(d?view(d).items.filter(x=>!isSys(x.kind)).map(x=>x.slot+kAbbrFh(x.kind,x.fh)).join('・')||'なし':'－');}).join('　')+'</p>';
     if(c.until>addD(f,6)){pv=preview(addD(f,7),c.until,false,true);txt=md(addD(f,7))+'〜'+md(c.until);}}
   else if(c.mode==='prev'){const f=monOf(c.a);h+='<p class="note">指定した週を、その前の週と同じ予定にします。</p><label class="lab">変える週（その週の日付）<input type="date" id="b-a" value="'+c.a+'"'+lim+'></label><p class="note">'+md(addD(f,-7))+'〜'+md(addD(f,-1))+'の予定を、'+md(f)+'〜'+md(addD(f,6))+'に写します。</p>';pv=preview(f,addD(f,6),false,true);txt=md(f)+'〜'+md(addD(f,6));}
   else{h+='<div class="g2"><label>はじめ<input type="date" id="b-a" value="'+c.a+'"'+lim+'></label><label>おわり<input type="date" id="b-b" value="'+c.b+'"'+lim+'></label></div>';
@@ -1036,7 +1043,8 @@ function buildBrec(){const keep={},extra={};(brec.days||[]).forEach(x=>x.rows.fo
   const out=[];const ask=(S.askDays||[]).filter(x=>DIDX[x]!==undefined&&x<=TODAY);const seen={};
   const list=ask.slice().sort().reverse();for(let i=0;i<brec.span;i++){const x=addD(TODAY,-i);if(list.indexOf(x)<0)list.push(x);}
   list.forEach(x=>{if(DIDX[x]===undefined||seen[x])return;seen[x]=1;const d=DAYS[DIDX[x]];const asked=ask.indexOf(x)>=0;
-    let rows=pendRows(d).map(r=>{const k=x+'|'+r.slot+'|'+r.kind;return {slot:r.slot,kind:r.kind,sug:r.sug||'',st:keep[k]!==undefined?keep[k]:''};});
+    let rows=pendRows(d).map(r=>{const k=x+'|'+r.slot+'|'+r.kind;const old=(brec.days||[]).flatMap(y=>y.rows).find(y=>y.slot===r.slot&&y.kind===r.kind&&y.d===x);
+      return {d:x,slot:r.slot,kind:r.kind,sug:r.sug||'',st:keep[k]!==undefined?keep[k]:'',fh:old&&old.fh||(hasFH(r.kind)?(r.fh||plannedFh(x,r.slot,r.kind)||((lastSess(r.kind,x)||{s:{}}).s.fh)||'フル'):'')};});
     (extra[x]||[]).forEach(r=>{if(!rows.some(y=>y.slot===r.slot&&y.kind===r.kind)&&!(S.acts[x]||[]).some(a=>a.slot===r.slot&&a.kind===r.kind))rows.push(r);});
     const done=(S.acts[x]||[]).length;if(!rows.length&&done)return;
     out.push({d:x,rows,done,trip:view(d).tripOn,asked,sug:rows.some(r=>r.sug)?rows.find(r=>r.sug).sug:''});});
@@ -1048,8 +1056,9 @@ function drawBrec(){const c=brec;let n1=0,n2=0;c.days.forEach(x=>x.rows.forEach(
   const nAsk=c.days.filter(x=>x.asked).length;if(nAsk)h+='<p class="note pvw">月次チェックで<b>確認を求められている日が'+nAsk+'日</b>あります（先頭に並んでいます）。やった／やらなかったを押してください。</p>';
   c.days.forEach((x,di)=>{h+='<div class="bday'+(x.asked?' asked':'')+'"><div class="bdh"><b>'+mdw(x.d)+(x.d===TODAY?' 今日':'')+'</b>'+(x.rows.length?'<button class="linkbtn2" data-ball="'+di+'|ok">全部やった</button><button class="linkbtn2" data-ball="'+di+'|ng">全部やらなかった</button>':'')+'</div>';
     if(x.sug)h+='<p class="note" style="margin:4px 0 0">予定が入っていないので、週の型「'+esc(x.sug)+'」の内容を<b>候補</b>として出しています。やったものだけ押してください</p>';
-    if(x.done)h+='<p class="note" style="margin:4px 0 0">記録済み：'+(S.acts[x.d]||[]).map(a=>a.slot+' '+esc(a.kind)).join('、')+'</p>';
-    h+='<div class="brows">'+x.rows.map((r,ri)=>'<button class="bchip st-'+(r.st||'no')+'" data-bst="'+di+'|'+ri+'" aria-label="'+esc(r.slot+' '+r.kind+'：'+(r.st==='ok'?'やった':r.st==='ng'?'やらなかった':'記録しない'))+'"><span class="bmk">'+(r.st==='ok'?'✓':r.st==='ng'?'✕':'－')+'</span><span class="slot">'+r.slot+'</span><span class="atag sm '+kCls(r.kind)+'">'+esc(r.kind)+'</span>'+(r.sug?'<span class="sugb">候補</span>':'')+(r.add?'<span class="sugb addb">追加</span>':'')+'</button>').join('')+
+    if(x.done)h+='<p class="note" style="margin:4px 0 0">記録済み：'+(S.acts[x.d]||[]).map(a=>a.slot+' '+esc(kindLabel(a.kind,fhOf(a,'')))).join('、')+'</p>';
+    h+='<div class="brows">'+x.rows.map((r,ri)=>'<div class="bline"><button class="bchip st-'+(r.st||'no')+'" data-bst="'+di+'|'+ri+'" aria-label="'+esc(r.slot+' '+r.kind+'：'+(r.st==='ok'?'やった':r.st==='ng'?'やらなかった':'記録しない'))+'"><span class="bmk">'+(r.st==='ok'?'✓':r.st==='ng'?'✕':'－')+'</span><span class="slot">'+r.slot+'</span><span class="atag sm '+kCls(r.kind)+'">'+esc(r.kind)+(r.fh?'<small class="fhtag">'+esc(r.fh)+'</small>':'')+'</span>'+(r.sug?'<span class="sugb">候補</span>':'')+(r.add?'<span class="sugb addb">追加</span>':'')+'</button>'+
+      (r.st==='ok'&&isMenu(r.kind)?'<span class="bopts">'+(hasFH(r.kind)?['フル','ハーフ'].map(f=>'<button class="opt xs" data-bfh="'+di+'|'+ri+'|'+f+'" aria-pressed="'+(r.fh===f)+'">'+f+'</button>').join(''):'')+'<button class="opt xs" data-bedit="'+di+'|'+ri+'">内容を直して記録</button></span>':'')+'</div>').join('')+
       (c.addAt===di?'':'<button class="linkbtn2" data-badd="'+di+'" style="margin-top:0;min-height:44px">＋ 活動を追加</button>')+'</div>';
     if(c.addAt===di){const sel=c.addSel||[];
       h+='<div class="pcellbox"><div class="lab" style="margin-top:0">① 時間帯</div><div class="wrap">'+SLOTS.map(sl=>'<button class="opt sm" data-baslot="'+sl+'" aria-pressed="'+(c.addSlot===sl)+'">'+sl+'</button>').join('')+'</div>'+
@@ -1061,9 +1070,9 @@ function drawBrec(){const c=brec;let n1=0,n2=0;c.days.forEach(x=>x.rows.forEach(
   h+='<p class="note">ROM・エクスプロッシブは、前回と同じ内容（初回はメニューどおり）で記録します。WJの本数や細かい内容は、あとで日付を押して［直す］から入れられます。</p>';
   h+='<div class="acts stick"><button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="brecGo"'+(n1+n2?'':' disabled')+'>'+(n1+n2?(n1+n2)+'件を記録（やった'+n1+(n2?'・やらなかった'+n2:'')+'）':'記録するものがありません')+'</button></div>';
   SH.innerHTML=h;}
-function recPayload(date,slot,kind,st){const menu=isMenu(kind),wj=menu&&(MENUK[kind]||[]).every(m=>m.unit==='本');
+function recPayload(date,slot,kind,st,fh){const menu=isMenu(kind),wj=menu&&(MENUK[kind]||[]).every(m=>m.unit==='本');
   const c={date,id:'',slot,kind,st,memo:'',sel:[],fh:'',items:[]};
-  if(menu&&!wj&&st==='実施'){c.fh=hasFH(kind)?((lastSess(kind,date)||{s:{}}).s.fh||'フル'):'';c.items=fillItems(kind,c.fh,date).items;}
+  if(menu&&!wj&&st==='実施'){c.fh=hasFH(kind)?(fh||plannedFh(date,slot,kind)||(lastSess(kind,date)||{s:{}}).s.fh||'フル'):'';c.items=fillItems(kind,c.fh,date).items;}
   const p=actPayload(c);if(wj)delete p.sess;return p;}
 
 // ---------- カレンダーで選んだ日をまとめて変更 ----------
@@ -1220,7 +1229,7 @@ function renderStats(){ensureReports();
   if(vids.length)h+='<h2>動画（'+vids.length+'本）</h2><div class="exl">'+vids.map(v=>'<div class="vid"><a href="'+esc(vidUrl(v))+'" target="_blank" rel="noopener">▶ '+mdw(v.d)+' '+esc(v.title)+'</a><span>'+esc([v.kind,v.memo,'登録：'+v.by].filter(Boolean).join('｜'))+'</span></div>').join('')+'</div>';
   const byDay={};logs.forEach(([x,r])=>(byDay[x]=byDay[x]||[]).push(r));Object.keys(S.notes).filter(x=>x>=a&&x<=cut).forEach(x=>byDay[x]=byDay[x]||[]);
   const dk=Object.keys(byDay).sort().reverse();
-  h+='<h2>記録の一覧</h2>'+(dk.length?'<div class="list">'+dk.map(x=>{const n=S.notes[x];return '<div class="rl"><button class="linkbtn2" data-day="'+x+'" style="min-height:auto;padding:0">'+mdw(x)+'</button>'+byDay[x].map(r=>'<div class="arow mini"><span class="slot">'+r.slot+'</span><span class="atag sm '+kCls(r.kind)+'">'+esc(r.kind)+'</span><span class="asum">'+esc(actSum(r.act))+'</span></div>').join('')+(n?'<small class="memo">体調 '+esc(n.cond||'－')+'　'+esc(n.note||'')+'</small>':'')+'</div>';}).join('')+'</div>':'<p class="note">この期間の記録はありません。</p>');
+  h+='<h2>記録の一覧</h2>'+(dk.length?'<div class="list">'+dk.map(x=>{const n=S.notes[x];return '<div class="rl"><button class="linkbtn2" data-day="'+x+'" style="min-height:auto;padding:0">'+mdw(x)+'</button>'+byDay[x].map(r=>'<div class="arow mini"><span class="slot">'+r.slot+'</span><span class="atag sm '+kCls(r.kind)+'">'+esc(r.kind)+(fhOf(r.act,r.fh)?'<small class="fhtag">'+esc(fhOf(r.act,r.fh))+'</small>':'')+'</span><span class="asum">'+esc(actSum(r.act))+'</span></div>').join('')+(n?'<small class="memo">体調 '+esc(n.cond||'－')+'　'+esc(n.note||'')+'</small>':'')+'</div>';}).join('')+'</div>':'<p class="note">この期間の記録はありません。</p>');
   if(loading)h+='<p class="note">古い期間の内容を読み込んでいます…</p>';
   h+='<button class="btn" data-act="reload" style="width:100%;margin-top:14px">最新の状態に更新</button></main>';
   V.innerHTML=h;}
@@ -1236,7 +1245,7 @@ function renderHelp(){
   
   '<h3>記録のしかた（v4.21）</h3><ul class="hl"><li>開いてすぐ押せます。電波が届かないときは端末に残り、つながったら自動で送ります（右上に「未送信 ○件」）</li><li>［やった］のあと6秒間は「取り消す」が出ます</li><li>✕を押すと「やらなかった」で記録。理由はあとから「理由を書く」で</li><li>WJは前回の本数が入り、よく使う技が上に並びます</li><li>ROMベーシックは予定でフル／ハーフを決められます（決めていなければ当日）。1タップの記録は予定の区分で入ります</li></ul>'+
   '<h3>実績を事実に合わせる（v4.22）</h3><ul class="hl"><li>カレンダーの「Rフ」「Rハ」は、記録前は予定の区分、記録後は実際にやった区分です</li><li>朝の予定を夜にやった場合も、同じ日・同じ活動なら予定の実施と数え、「（夜に実施）」と注記します</li><li>記録があるのに予定が空だった日は、日の画面の「記録どおりに予定を入れる」、または「⋯」→「記録どおりに予定を埋める」で、記録した活動を予定として入れられます（達成率・報告の「予定」が事実に合います）</li><li>過去の日の予定も「予定を変更」「複数日を選ぶ」「週の型（期間を指定）」で変えられます</li><li>記録のフル／ハーフをまとめて直すときは、「複数日を選ぶ」→日を選ぶ→「記録のフル／ハーフを直す」（種目・回数はその区分のメニューの標準値になります）</li></ul>'+
-  '<h3>月次チェック（月末の締め）</h3><p>スプレッドシートのメニュー「行動予定アプリ」→「月次チェック」で、その月の点検表（1日1行）ができます。予定・実績・体調・問題（未記録／予定外／時間帯ちがい／区分ちがい／標準より少ない／明細なし）が並び、「どうする」の列に<b>おすすめが入っています</b>。違う日だけ▼で「そのまま／記録が正しい／予定が正しい／この日は休み／本人に聞く」から選び、メニュー「月次チェックの修正を反映」を押すだけです。</p><p>「本人に聞く」にした日は、本人のアプリのホームに知らせが出て、「まとめて記録」の先頭に「父から確認」として並びます。セット数を個別に直すときは「月次チェック_○○_種目」シートに数を書きます。</p>'+
+  '<h3>月次チェック（月末の締め）</h3><p>スプレッドシートのメニュー「行動予定アプリ」→「月次チェック」で、その月の点検表（1日1行）ができます。予定・実績・体調・問題（未記録／予定外／時間帯ちがい／区分ちがい／標準より少ない／明細なし）が並び、「どうする」の列に<b>おすすめが入っています</b>。違う日だけ▼で「そのまま／記録が正しい／予定が正しい／この日は休み／本人に聞く」から選び、メニュー「月次チェックの修正を反映」を押すだけです。</p><p>「本人に聞く」にした日は、本人のアプリのホームに知らせが出て、「まとめて記録」の先頭に「父から確認」として並びます。まとめて記録では、ROMベーシックの行に予定の区分（フル／ハーフ）が出て、✓にすると区分の切替と「内容を直して記録」（セット数を減らしたときなど）が使えます。セット数を個別に直すときは「月次チェック_○○_種目」シートに数を書きます。</p>'+
   '<h3>続ける・共有する（v4.22）</h3><ul class="hl"><li>ホームに「今週の達成率」「連続記録」が出ます。連続記録は、記録した日と記録の要らない日（予定なし・休養日）をつなぎ、予定があって未記録の日で途切れます</li><li>家族が予定を変えると、ホームの「最近の予定変更」に3日間出ます</li><li>「設定」シートの「未記録の通知メール」に宛先を書くと、毎晩21時に、その日の未記録があればメールが届きます</li><li>活動名を押すと今日のメニュー（目安）が見られます。記録は［記録］か、その画面の「記録する」から</li><li>文字が小さいときは、この画面の「文字を大きくする」</li></ul>'+
   '<h3>休養日（OFF）</h3><p>休養日は「その日の位置づけ」で、トレーニングの予定とは別に持っています。合宿中でも休養日にでき、休養日に軽く動く予定を入れることもできます。設定は、日を押して「予定を変更」→「休養日（OFF）」、複数日を選んで「休養日にする」、週の型の「OFF」の行、のいずれかです。カレンダーには上段に「OFF」（合宿中なら「合宿／OFF」）と出ます。</p>'+
   '<h3>3. 予定を変える</h3><ul class="hl"><li>1日だけ変える：日付を押して「予定を変更」</li><li>何日かを選んで変える：「予定」画面の「複数日を選ぶ」（またはカレンダーの日を長押し）→ 日を押して選ぶ →「選んだ日の予定を変更」。入れ替える／足す／外す／休養日にする／休養日をやめる／予定を消す／学校の扱い から選べます</li><li>まとめて変える：「まとめて変更」で、この週をくり返す／前の週と同じにする／期間を休養日にする／やめる／期間の予定を消す／期間に活動を追加／外す</li><li>学校予定やメモ：日付を押して「学校予定・メモを変更」</li></ul><p>コーチの方は予定を変更できません（記録と閲覧はできます）。</p>'+
@@ -1395,13 +1404,14 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.asel!==undefined){readAct();const i=act.sel.indexOf(ds.asel);if(i>=0)act.sel.splice(i,1);else act.sel.push(ds.asel);drawAct();return;}
   if(ds.act==='aItem'){readAct();const nm=val('ac-new');if(!nm)return;if(!act.items.some(x=>x.name===nm))act.items.push({name:nm,v:'',unit:'回',sets:1,w:'',m:null});drawAct();return;}
   if(ds.act==='wjPrev'){readAct();const lp=lastSess(act.kind,act.date,act.id);if(!lp){toast('前回の記録がありません');return;}act.items.forEach(x=>{const y=lp.s.items.find(z=>z.name===x.name);x.v=y?(parseInt(y.v,10)||0):0;});act.src='前回（'+mdw(lp.d)+'）と同じ本数を入れています';drawAct();return;}
-  if(ds.act==='aBack'){const x=act.back;closeSheet();if(x)openDaySheet(x);return;}
+  if(ds.act==='aBack'){const x=act.back;closeSheet();if(x==='brec'){openBrec();return;}if(x)openDaySheet(x);return;}
   if(ds.act==='aSave'||ds.act==='aDel'){readAct();const c=act,del=ds.act==='aDel',back=c.back;
-    if(del){if(!confirm(c.slot+'の'+c.kind+'の記録を消しますか？'))return;closeSheet();if(back)openDaySheet(back);sendRec('deleteActivity',{id:c.id},'記録を消しました',{date:c.date,id:c.id,slot:c.slot,kind:c.kind});return;}
+    if(del){if(!confirm(c.slot+'の'+kindLabel(c.kind,c.fh)+'の記録を消しますか？'))return;closeSheet();if(back)openDaySheet(back);sendRec('deleteActivity',{id:c.id},'記録を消しました',{date:c.date,id:c.id,slot:c.slot,kind:c.kind});return;}
     if(c.st==='実施'&&isMenu(c.kind)){const wj=(MENUK[c.kind]||[]).every(m=>m.unit==='本');
       if(wj?!c.items.some(x=>+x.v>0):!c.items.some(x=>x.sets>0)){toast(wj?'本数を入れてください':'セット数が1以上の種目がありません');return;}}
     const dup=(S.acts[c.date]||[]).find(a=>a.id!==c.id&&a.slot===c.slot&&a.kind===c.kind);if(dup){toast('同じ時間帯に同じ活動の記録がすでにあります。その記録を直してください');return;}
-    const pl=actPayload(c);closeSheet();if(back)openDaySheet(back);sendRec('saveActivity',pl,()=>c.st==='やらなかった'?'「やらなかった」と記録しました':romMsg(c.date,c.slot,c.kind));return;}
+    const pl=actPayload(c);closeSheet();if(back==='brec'){sendRec('saveActivity',pl,()=>romMsg(c.date,c.slot,c.kind));setTimeout(()=>openBrec(),50);return;}
+    if(back)openDaySheet(back);sendRec('saveActivity',pl,()=>c.st==='やらなかった'?'「やらなかった」と記録しました':romMsg(c.date,c.slot,c.kind));return;}
   // まとめて記録
   if(ds.act==='brecOpen'){openBrec();return;}
   if(ds.bst){const [di,ri]=ds.bst.split('|').map(Number),x=brec.days[di],r=x.rows[ri];
@@ -1417,9 +1427,13 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.bakind){const sel=brec.addSel=brec.addSel||[],i=sel.indexOf(ds.bakind);if(i>=0)sel.splice(i,1);else sel.push(ds.bakind);drawBrec();return;}
   if(ds.act==='baClose'){brec.addAt=-1;brec.addSel=[];drawBrec();return;}
   if(ds.act==='brecMore'){brec.span+=14;buildBrec();drawBrec();return;}
-  if(ds.act==='brecGo'){const list=[];brec.days.forEach(x=>x.rows.forEach(r=>{if(r.st)list.push(recPayload(x.d,r.slot,r.kind,r.st==='ok'?'実施':'やらなかった'));}));if(!list.length)return;
+  if(ds.act==='brecGo'){const list=[];brec.days.forEach(x=>x.rows.forEach(r=>{if(r.st)list.push(recPayload(x.d,r.slot,r.kind,r.st==='ok'?'実施':'やらなかった',r.fh));}));if(!list.length)return;
     const n1=list.filter(p=>p.st!=='やらなかった').length,nd={};list.forEach(p=>nd[p.date]=1);
     closeSheet();sendRec('saveActivities',{list},Object.keys(nd).length+'日分・'+list.length+'件を記録しました（やった'+n1+(list.length-n1?'・やらなかった'+(list.length-n1):'')+'）');return;}
+  if(ds.bfh){const [di,ri,f]=ds.bfh.split('|');brec.days[+di].rows[+ri].fh=f;drawBrec();return;}
+  if(ds.bedit){const [di,ri]=ds.bedit.split('|');const x=brec.days[+di],r=x.rows[+ri];
+    // この1件だけ記録画面で内容を直して保存する。保存後はまとめて記録に戻る
+    sheetCtx=null;openAct(x.d,r.slot,r.kind,'');if(r.fh&&hasFH(r.kind)&&act.fh!==r.fh){act.fh=r.fh;const f=fillItems(r.kind,r.fh,x.d);act.items=f.items;act.src=f.src;drawAct();}act.back='brec';return;}
   if(ds.sm){sheetCtx.mode=ds.sm;drawSelDays();return;}
   if(ds.ss){sheetCtx.kubun=sheetCtx.kubun===ds.ss?'':ds.ss;drawSelDays();return;}
   if(ds.rfh){sheetCtx.fh=ds.rfh;drawSelDays();return;}
