@@ -1,0 +1,13 @@
+{
+  "name": "スキー行動予定",
+  "short_name": "スキー予定",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#EEF3F7",
+  "theme_color": "#16324F",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}
