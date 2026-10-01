@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.33.0 -->
+<!-- スキー行動予定アプリ 画面側 v4.36.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -442,6 +442,14 @@ html.big .btn{font-size:17px}
 .tbl.t3 .tr{grid-template-columns:2fr 1fr 1fr}
 .tbl.t6 .tr{grid-template-columns:2fr .7fr .7fr .7fr .8fr 1fr}
 .tbl .s{color:var(--sub);font-weight:500}
+/* v4.36：今日のひとこと */
+.qcard{margin:10px 0 4px;border:1px solid var(--line);border-radius:14px;padding:12px 12px 10px;background:var(--card)}
+.qcard .qlab{font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.02em}
+.qcard .qq{font-size:16px;font-weight:700;margin:6px 0 8px;line-height:1.5}
+.qcard .qin{width:100%;box-sizing:border-box;margin-top:8px;min-height:40px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:15px;background:var(--bg);color:var(--ink)}
+.qcard .acts{margin-top:8px;justify-content:flex-end}
+.a-inq{background:#EADFCB;color:#5A3E12}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .a-inq{background:#4A3A20;color:#F1DDB8}}
 </style>
 </head>
 <body>
@@ -449,7 +457,7 @@ html.big .btn{font-size:17px}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.33.0';
+const CLIENT_VERSION='4.36.0';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -671,8 +679,8 @@ function schoolCount(y){const o={abs:[],miss:[],wark:[],pre:Number((S.warkPre||{
 /** ラーケーション：年度ごとの取得日 */
 const isProt=d=>(S.opt.markProtect||[]).indexOf(markOf(d))>=0;
 const isRace=v=>!v.skip&&v.kb.indexOf('大会')===0&&!has(v.kb,'大会翌日');
-const KC={'エクスプロッシブ':'a-ex','ROMベーシック':'a-rb','ROMプラス':'a-rp','雪上':'a-snow','WJ':'a-wj','TR':'a-tr','OFF':'a-off','休養':'a-off','大会':'a-race','移動':'a-move','部活':'a-club'};
-const KA={'エクスプロッシブ':'EX','ROMベーシック':'R','ROMプラス':'R+','雪上':'雪','WJ':'WJ','TR':'TR','OFF':'OFF','休養':'休','大会':'大会','移動':'移動','部活':'部'};
+const KC={'エクスプロッシブ':'a-ex','ROMベーシック':'a-rb','ROMプラス':'a-rp','雪上':'a-snow','WJ':'a-wj','TR':'a-tr','OFF':'a-off','休養':'a-off','大会':'a-race','移動':'a-move','部活':'a-club','探究':'a-inq'};
+const KA={'エクスプロッシブ':'EX','ROMベーシック':'R','ROMプラス':'R+','雪上':'雪','WJ':'WJ','TR':'TR','OFF':'OFF','休養':'休','大会':'大会','移動':'移動','部活':'部','探究':'探'};
 const kCls=k=>KC[k]||'a-other';
 const kAbbr=k=>KA[k]||String(k).slice(0,2);
 function resTxt(r){if(!r)return'';return [r.round,r.rank?r.rank+'位'+(r.n?'／'+r.n+'人':''):'',r.score?r.score+'点':''].filter(Boolean).join('　');}
@@ -760,6 +768,7 @@ function renderHome(){
   {const L=unrecDays(14);if(L.length)h+='<div class="nudge"><span>'+(L.length===1&&L[0].d===addD(TODAY,-1)?'昨日（'+mdw(L[0].d)+'）の記録が'+L[0].n+'件まだです':'記録していない日が'+L.length+'日あります（最近14日）')+'</span><button class="btn pri sm2" data-act="brecOpen">まとめて記録</button></div>';}
   if(!planEmpty&&canEdit()){const G=planGap();if(G.length>=5)h+='<div class="nudge plan"><span>'+md(G[0])+'から、予定が入っていない日が'+G.length+'日あります（これから2週間）。週の型を当てはめると埋まります。</span><button class="btn pri sm2" data-act="patOpen">週の型を当てはめる</button></div>';}
   h+='<section class="today"><div class="thead"><span class="tlabel">今日</span><b>'+mdw(TODAY)+'</b></div>'+dayBody(DAYS[DIDX[TODAY]])+'</section>';
+  h+=questionCard();
   const tm=addD(TODAY,1);if(DIDX[tm]!==undefined)h+='<section class="today tmr"><div class="thead"><span class="tlabel">明日</span><b>'+mdw(tm)+'</b><button class="linkbtn2" data-day="'+tm+'" style="margin-left:auto">開く</button></div>'+dayBody(DAYS[DIDX[tm]],{compact:true})+'</section>';
   const a=monOf(TODAY),b=addD(a,6);let pl=0,dn=0;
   let ex=0;DAYS.forEach(d=>{if(d.d<a||d.d>b||d.d>TODAY)return;rowsOf(d).forEach(r=>{if(isSys(r.kind))return;if(r.planned)pl++;if(r.act&&r.act.st==='実施'){if(r.planned)dn++;else ex++;}});});
@@ -1224,6 +1233,101 @@ async function uploadVid(){if(upBusy)return;if(!who){askWho();return;}
   }catch(e){upBusy=false;SH.querySelectorAll('button').forEach(b=>b.disabled=false);const m=errMsg(e);st.textContent='';
     if(m.indexOf('KEY')>=0){key='';LS.set('key','');askKey(false);toast('合言葉が違います');return;}
     toast(/[^\x00-\x7F]/.test(m)?m.replace(/^(Exception|Error):\s*/,''):'送信できませんでした。電波のよい場所でもう一度お試しください。');}}
+// ---------- 今日の1問（本人だけ）：場面の判定と問いの選択 ----------
+const QCLOSE=/^(なかった|ない|どっちもない|わからない|話してない|見てない|思い出せない|まだない|してない|考えてない)$/;
+const termOf=d=>{const y=+d.slice(0,4),m=+d.slice(5,7);return m>=4&&m<=9?y+'前期':(m>=10?y:y-1)+'後期';};
+const termRange=t=>{const y=+t.slice(0,4);return t.endsWith('前期')?[y+'-04-01',y+'-09-30']:[y+'-10-01',(y+1)+'-03-31'];};
+function qAskedAt(qid){let last='';(S.frags||[]).forEach(f=>{if(f.qid===qid&&f.d>last)last=f.d;});return last;}
+function qCount(prefix,days){const from=addD(TODAY,-days+1);return (S.frags||[]).filter(f=>f.qid.indexOf(prefix)===0&&f.d>=from).length;}
+function qAnsweredToday(qid){return (S.frags||[]).some(f=>f.qid===qid&&f.d===TODAY);}
+/** 今日の場面（条件キー）を集める。値は {E:行事名} などの差し込み */
+function qScenes(){const sc={};const d=DAYS[DIDX[TODAY]];if(!d)return sc;const v=view(d),rows=rowsOf(d,v);const y=DAYS[DIDX[addD(TODAY,-1)]],t=DAYS[DIDX[addD(TODAY,1)]],y2=DAYS[DIDX[addD(TODAY,-2)]];
+  const raceOn=x=>x&&RACES.some(r=>r.d===x.d&&r.on!==false);const topOn=x=>x&&RACES.some(r=>r.d===x.d&&(S.results||{})[r.id]&&+(S.results[r.id].rank)>0&&+(S.results[r.id].rank)<=3);
+  if(raceOn(d))sc['R:day']=1;if(raceOn(t))sc['R:prev']=1;if(raceOn(y)){sc['R:next']=1;if(topOn(y))sc['R:next_top']=1;}if(raceOn(y2))sc['R:next2']=1;
+  if(CZ[TODAY])sc['P:day']=1;if(CZ[addD(TODAY,-7)])sc['P:next7']=1;
+  if(v.tripOn&&!sc['R:day']){const nm=(v.td&&(v.td.nm||''))+' '+(v.td&&(v.td.tr||''));if(/移動/.test(nm)&&!/帰宅/.test(nm))sc['C:move']=1;else if(/最終日|帰宅/.test(nm))sc['C:last']=1;else sc['C:day']=1;}
+  if(/^公欠/.test(v.school||'')){const asked=(S.frags||[]).some(f=>f.qid==='K-abs-1'&&f.d>=addD(TODAY,-14));if(!asked)sc['K:公欠']=1;}
+  if(/ラーケーション/.test(v.school||''))sc['K:ラーケーション']=1;
+  const kw=[['考査','考査|テスト'],['文化祭','文化祭'],['踏破','踏破'],['発表','発表'],['面談','面談']];const sy=x=>x?String(x.sy||''):'';
+  kw.forEach(([k,re])=>{const R=new RegExp(re);if(R.test(sy(d)))sc['K:'+k+':day']=1;if(R.test(sy(t))&&!R.test(sy(d)))sc['K:'+k+':prev']=1;if(R.test(sy(y))&&!R.test(sy(d)))sc['K:'+k+':next']=1;if(k==='考査'&&R.test(sy(d))&&R.test(sy(y)))sc['K:考査:mid']=1;});
+  const EV=/(修学旅行|球技大会|体育祭|遠足|入学式|始業式|終業式|卒業式|講演|宿泊|遠征)/;const evOf=x=>{const m=sy(x).match(EV);return m?m[1]:'';};
+  if(evOf(d)&&!Object.keys(sc).some(k=>/^K:/.test(k)))sc['K:行事:day']=evOf(d);if(evOf(t)&&!evOf(d))sc['K:行事:prev']=evOf(t);if(evOf(y)&&!evOf(d))sc['K:行事:next']=evOf(y);
+  const club=(S.acts[TODAY]||[]).find(a=>a.kind==='部活'&&a.st==='実施'),clubY=(S.acts[addD(TODAY,-1)]||[]).find(a=>a.kind==='部活'&&a.st==='実施');
+  if(club){if(/公演|大会/.test(club.c||''))sc['B:show']=1;else sc['B:prac']=1;}
+  if(clubY&&/公演|大会/.test(clubY.c||'')){sc['B:shownext']=1;if(/県大会/.test(clubY.c||''))sc['B:kencup_next']=1;}
+  const inq=x=>x&&(view(x).items.some(i=>i.kind==='探究')||(S.acts[x.d]||[]).some(a=>a.kind==='探究'));if(inq(d))sc['Q:day']=1;if(inq(y)&&!inq(d))sc['Q:next']=1;
+  const stk=streak();if(stk===7)sc['M:streak7']=1;if(stk===30)sc['M:streak30']=1;if(stk===100)sc['M:streak100']=1;
+  if(y&&pendRows(y).length&&!(S.acts[y.d]||[]).length&&!view(y).off)sc['M:break']=1;
+  if(rows.some(r=>r.act&&r.act.st==='やらなかった'))sc['M:skip']=1;if(rows.some(r=>!r.planned&&r.act&&r.act.st==='実施'&&r.kind!=='部活'))sc['M:extra']=1;
+  const nt=S.notes[TODAY];if(nt&&/[△×]/.test(nt.cond||''))sc['M:cond']=1;
+  const done=rows.filter(r=>r.act&&r.act.st==='実施').map(r=>r.kind);
+  if(done.indexOf('ROMベーシック')>=0)sc['T:ROM']=1;if(done.indexOf('エクスプロッシブ')>=0)sc['T:EX']=1;if(done.indexOf('エクスプロッシブ')>=0||done.indexOf('ROMプラス')>=0)sc['T:EXP']=1;
+  if(done.indexOf('WJ')>=0)sc['T:WJ']=1;if(done.indexOf('雪上')>=0)sc['T:SNOW']=1;if(v.off&&!done.length)sc['T:OFF']=1;
+  const dow=new Date(TODAY+'T00:00:00').getDay();if(dow===0)sc['L:sun']=1;const last=new Date(+TODAY.slice(0,4),+TODAY.slice(5,7),0).getDate();if(+TODAY.slice(8,10)===last)sc['L:monthend']=1;sc['L:weekday']=1;
+  return sc;}
+/** 連鎖：いま出すべき段階（なければ null） */
+function qChain(){const term=termOf(TODAY),[ta,tb]=termRange(term);const F=(S.frags||[]);
+  const chains=[1,2,3,4].map(n=>{const id='S'+n+'-'+term,fs=F.filter(f=>f.chain===id).sort((a,b)=>a.stage-b.stage||(a.d<b.d?-1:1));return {n,id,fs,last:fs[fs.length-1]||null,x:(fs.find(f=>f.stage===1)||{}).x||''};});
+  const active=chains.find(c=>c.last&&c.last.stage<6&&!c.last.closed);
+  const termEnd=TODAY>=addD(tb,-13);
+  if(active){const c=active,st=c.last.stage+1;if(c.last.d>=TODAY)return null;   // 1日は空ける
+    if(c.n===4&&st===4){const s3=c.fs.find(f=>f.stage===3);if(!s3||TODAY<addD(s3.d,28))return null;}
+    if(c.n===4&&st===6&&!termEnd)return null;
+    return {qid:'S'+c.n+'-'+st,chain:c.id,stage:st,X:c.x};}
+  const fresh=chains.find(c=>!c.fs.length);if(fresh)return {qid:'S'+fresh.n+'-1',chain:fresh.id,stage:1,X:''};
+  if(termEnd){if(!F.some(f=>f.qid==='S9-1'&&f.d>=ta))return {qid:'S9-1',chain:'S9-'+term,stage:1,X:''};if(!F.some(f=>f.qid==='S9-2'&&f.d>=ta))return {qid:'S9-2',chain:'S9-'+term,stage:2,X:''};}
+  return null;}
+/** 今日出す問い（配列。イベントの日は最大4、普段は1） */
+function qToday(){if(who!=='本人'||!S||!S.qbank||!S.qbank.length)return [];if(LS.get('qlater')===TODAY)return [];
+  const sc=qScenes(),B=S.qbank,out=[];const ok=q=>{if(qAnsweredToday(q.id))return false;const la=qAskedAt(q.id);if(q.gap&&la&&la>addD(TODAY,-q.gap))return false;
+    if(q.id.indexOf('T-ROM')===0&&qCount('T-ROM',7)>=2)return false;if((q.id==='B-1'||q.id==='B-2')&&qCount('B-1',7)+qCount('B-2',7)>=1)return false;return true;};
+  const rank=q=>{const la=qAskedAt(q.id);return la||'0000';};
+  Object.keys(sc).forEach(k=>{if(/^(L:weekday)$/.test(k))return;B.filter(q=>q.cond===k&&ok(q)).sort((a,b)=>rank(a)<rank(b)?-1:1).forEach(q=>out.push({q,pri:q.pri,E:typeof sc[k]==='string'?sc[k]:''}));});
+  const ch=qChain();if(ch){const q=B.find(x=>x.id===ch.qid);if(q&&!qAnsweredToday(q.id))out.push({q,pri:q.pri,chain:ch.chain,stage:ch.stage,X:ch.X});}
+  if(!out.length){const L=B.filter(q=>q.cond==='L:weekday'&&ok(q)).sort((a,b)=>rank(a)<rank(b)?-1:1);if(L.length)out.push({q:L[0],pri:L[0].pri});}
+  out.sort((a,b)=>b.pri-a.pri);const seen={};const uniq=out.filter(o=>{if(seen[o.q.id])return false;seen[o.q.id]=1;return true;});
+  // イベントの日（優先80以上の問いが出る日）は、その問いだけ。答え終わったら今日はおしまい（連鎖や日々の問いは出さない）
+  const evDay=Object.keys(sc).some(k=>B.some(q=>q.cond===k&&q.pri>=80));
+  const evn=uniq.filter(o=>o.pri>=80);if(evDay)return evn.slice(0,4);return uniq.slice(0,1);}
+let qsel={};   // 問いID → 押したかけら
+function qText(o){return o.q.q.replace(/\{X\}/g,o.X||'それ').replace(/\{E\}/g,o.E||'行事');}
+function questionCard(){if(who!=='本人')return '';const list=qToday();if(!list.length)return '';const o=list[0],q=o.q,sel=qsel[q.id]||[];
+  const needInput=!!q.inp&&(!q.chips.length||sel.some(c=>!QCLOSE.test(c))||sel.indexOf('自分の言葉で')>=0);
+  const canOk=sel.length>0||needInput;
+  let h='<div class="qcard" data-qid="'+esc(q.id)+'"><div class="qhead"><span class="qlab">今日のひとこと'+(list.length>1?'（あと'+(list.length-1)+'）':'')+'</span></div><p class="qq">'+esc(qText(o))+'</p>';
+  if(q.chips.length)h+='<div class="wrap">'+q.chips.map(c=>'<button class="opt sm qchip" data-qchip="'+esc(c)+'" aria-pressed="'+(sel.indexOf(c)>=0)+'">'+esc(c)+'</button>').join('')+'</div>';
+  if(needInput)h+='<input type="text" id="q-text" class="qin" maxlength="200" placeholder="'+esc(q.inp)+'" autocomplete="off">';
+  h+='<div class="acts"><button class="btn sm2" data-act="qLater">あとで</button><button class="btn pri sm2" data-act="qOk"'+(canOk?'':' disabled')+'>これでOK</button></div></div>';
+  return h;}
+function qAnswerSave(){const list=qToday();if(!list.length)return;const o=list[0],q=o.q,sel=qsel[q.id]||[],text=(document.getElementById('q-text')||{value:''}).value.trim();
+  if(!sel.length&&!text)return;
+  const f={d:TODAY,qid:q.id,chain:o.chain||'',stage:o.stage||0,x:(o.stage===1)?(sel.indexOf('自分の言葉で')>=0?text:(sel[0]||text)):'',closed:sel.length===1&&QCLOSE.test(sel[0])&&!text};
+  S.frags=(S.frags||[]).concat([f]);delete qsel[q.id];render();
+  call('saveFragment',{who,key,date:TODAY,qid:q.id,chain:f.chain,stage:f.stage,q:qText(o),chips:sel.indexOf('自分の言葉で')>=0?[]:sel,text:sel.indexOf('自分の言葉で')>=0&&!text?'':text}).then(r=>{if(r&&r.frags)S.frags=r.frags;}).catch(e=>{reportErr('今日の1問',errMsg(e));});}
+
+window.__q={today:qToday,scenes:qScenes,chain:qChain};
+// ---------- 本人の言葉：かけらから下書きを組む（本人・父母） ----------
+const WORD_KINDS=['目指す人間像','大切にしていること','社会とのかかわり','結果以外の目標と実践','支えてくださる方へ'];
+let WD={loaded:false,words:[],frags:[],busy:false};
+function ensureWords(){if(WD.loaded||WD.busy||!who||!canEdit())return;WD.busy=true;Promise.all([call('getWords',{who}),call('getFragments',{who})]).then(([a,b])=>{WD.busy=false;WD.loaded=true;WD.words=(a&&a.words)||[];WD.frags=(b&&b.frags)||[];if(tab==='help')render();}).catch(()=>{WD.busy=false;});}
+function wordOf(kind){return WD.words.filter(w=>w.kind===kind).sort((a,b)=>a.date<b.date?1:-1)[0]||null;}
+/** 連鎖のかけらを本人の言葉のまま並べる（接続だけ） */
+function draftWord(kind){const term=termOf(TODAY);const F=WD.frags;const chain=n=>{const id='S'+n+'-'+term;const fs=F.filter(f=>f.chain===id);const by={};fs.forEach(f=>by[f.stage]=f);return by;};
+  const val=f=>f?((f.chips&&f.chips!=='自分の言葉で'?f.chips:'')+(f.text?(f.chips&&f.chips!=='自分の言葉で'?'。':'')+f.text:'')):'';
+  const bad=t=>!t||QCLOSE.test(t.trim());
+  if(kind==='目指す人間像'){const c=chain(1),X=val(c[1]);if(!X)return '';let t='3年後、まわりの人から「'+X+'」と言われる人になりたい。';if(!bad(val(c[2])))t+='\n'+val(c[2])+'。';if(!bad(val(c[3])))t+='\n'+val(c[3])+'。そのとき、自分は'+X+'と思えた。';if(!bad(val(c[4])))t+='\nそのとき、「'+c[4].text+'」。';if(!bad(val(c[5]))&&c[5].text)t+='\nいまは、'+c[5].text+'。';if(c[6]&&c[6].text)t+='\n'+c[6].text+'。';return t;}
+  if(kind==='大切にしていること'){const c=chain(2),X=val(c[1]);if(!X)return '';let t='「'+X+'」をすごいと思う。';if(c[2]&&c[2].chips)t+='\n'+c[2].chips+'のことだ。';if(!bad(val(c[3])))t+='\n'+val(c[3])+'。';if(c[4]&&c[4].text)t+='\n「'+c[4].text+'」と言われたことがある。';if(c[5]&&c[5].text)t+='\n自分もそうなるために、'+c[5].text+'。';if(c[6]&&c[6].text)t+='\n'+c[6].text+'。';return t;}
+  if(kind==='社会とのかかわり'){const c=chain(3),X=val(c[1]);if(!X||bad(X))return '';let t='モーグル以外では、'+X+'。';if(c[2]&&c[2].text)t+='\nきっかけは、'+c[2].text+'。';if(!bad(val(c[3])))t+='\n'+val(c[3])+'。';if(c[4]&&c[4].text)t+='\n「'+c[4].text+'」。';if(c[5]&&c[5].text)t+='\nモーグルとつながるのは、'+c[5].text+'。';if(c[6]&&c[6].chips)t+='\n3年後も'+(c[6].chips==='思う'?'続けていると思う':c[6].chips)+'。';return t;}
+  if(kind==='結果以外の目標と実践'){const c=chain(4),X=val(c[1]);if(!X)return '';let t='順位以外で、この学期は「'+X+'」をできるようになりたい。';if(c[2]&&c[2].text)t+='\n'+c[2].text+'。';if(c[3]&&c[3].text)t+='\nそのために、毎週'+c[3].text+'。';if(c[4]&&c[4].chips)t+='\n4週間たって、'+c[4].chips+'。';if(c[5]&&c[5].text)t+='\n'+c[5].text+'。';if(c[6]&&(c[6].chips||c[6].text))t+='\n'+val(c[6])+'。';return t;}
+  if(kind==='支えてくださる方へ'){const fs=F.filter(f=>/感謝/.test(f.tags||'')&&f.d>=termRange(term)[0]).sort((a,b)=>a.d<b.d?-1:1);const parts=fs.map(f=>(f.chips&&!QCLOSE.test(f.chips)?f.chips:'')+(f.text?(f.chips?'：':'')+f.text:'')).filter(x=>x&&!QCLOSE.test(x));if(!parts.length)return '';return '支えてくれていると感じるのは、'+parts.join('、')+'。';}
+  return '';}
+let wedit=null;
+function openWord(kind){const w=wordOf(kind);const draft=w?w.text:draftWord(kind);wedit={kind,id:w?w.id:'',text:draft,fromDraft:!w};
+  SH.innerHTML='<div class="grab"></div><h3 id="sh-title">'+esc(kind)+'</h3><p class="note">'+(w?'いまの言葉です。直して保存できます。':(draft?'今日の1問の答えを、言った順につないだ下書きです。言い回しは自分の言葉に直してください。':'まだ材料（今日の1問の答え）がありません。学期の問いに答えると、ここに下書きが出ます。'))+'</p>'+
+    '<textarea id="w-text" rows="8" style="width:100%;box-sizing:border-box;font-size:15px;line-height:1.6;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--bg);color:var(--ink)">'+esc(draft)+'</textarea>'+
+    '<div class="acts">'+(w?'<button class="btn del" data-act="wDel">消す</button>':'')+'<button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="wSave">保存</button></div>';openS('word');}
+function wordsSection(){if(!canEdit()||!who)return '';if(!WD.loaded)return '<h3>本人の言葉</h3><p class="note">読み込み中…</p>';
+  return '<h3>本人の言葉（学校・スポンサーへの報告の先頭に載ります）</h3><div class="list">'+WORD_KINDS.map(k=>{const w=wordOf(k),dr=!w&&draftWord(k);return '<div><b>'+esc(k)+'</b>'+(w?'<br>'+esc(w.text).replace(/\n/g,'<br>'):(dr?'<br><span class="s">下書きができています（今日の1問の答えから）</span>':'<br><span class="s">まだありません</span>'))+'<br><button class="btn sm2" data-word="'+esc(k)+'" style="margin-top:4px">'+(w?'直す':(dr?'下書きを見る':'書く'))+'</button></div>';}).join('')+'</div><p class="note">本人の言葉は、学期の問い（今日の1問）の答えから自動で下書きになります。父・母が整えることもできますが、言葉は本人のものを残してください。</p>';}
 // ---------- 実績 ----------
 function czRanges(){const L=S.coachings.filter(x=>x.d<=TODAY);return L.map((x,i)=>[x.d,L[i+1]?addD(L[i+1].d,-1):TODAY]);}
 function statRange(){
@@ -1238,13 +1342,17 @@ let arep=null;
 const GR={loaded:false,list:[],busy:false};
 function ensureGrades(){if(GR.loaded||GR.busy||!canEdit()||who==='本人')return;GR.busy=true;call('getGrades',{who}).then(r=>{GR.busy=false;GR.loaded=true;GR.list=(r&&r.grades)||[];GR.details=(r&&r.details)||[];if(tab==='stats')render();}).catch(()=>{GR.busy=false;});}
 let gedit=null;
-function openGrade(){const y=fy(TODAY);gedit=gedit||{term:y+'前期',gpa:'',rank:'',memo:'',file:null};drawGrade();openS('grade');}
-function drawGrade(){const c=gedit,y=fy(TODAY);const terms=[y+'前期',y+'後期',(y-1)+'前期',(y-1)+'後期'];
-  let h='<div class="grab"></div><h3 id="sh-title">学期の成績を登録</h3><div class="lab">学期</div><div class="wrap">'+terms.map(t=>'<button class="opt sm" data-gterm="'+t+'" aria-pressed="'+(c.term===t)+'">'+t+'</button>').join('')+'</div>';
+function gradeOf(term){return (GR.list||[]).find(g=>g.term===term)||null;}
+function openGrade(term){const y=fy(TODAY);const t=term||((GR.list||[]).slice().sort((a,b)=>a.term<b.term?1:-1)[0]||{}).term||(y+'前期');const g=gradeOf(t);gedit={term:t,gpa:g?g.gpa:'',rank:g?g.rank:'',memo:g?g.memo:'',files:[],existing:g};drawGrade();openS('grade');}
+function drawGrade(){const c=gedit,y=fy(TODAY);const terms=[...new Set([y+'前期',y+'後期',(y+1)+'前期',(y+1)+'後期',(y+2)+'前期',(y+2)+'後期'].concat((GR.list||[]).map(g=>g.term)))].sort();
+  const g=c.existing;
+  let h='<div class="grab"></div><h3 id="sh-title">'+(g?c.term+' の成績を更新':'学期の成績を登録')+'</h3><div class="lab">学期（登録済みには ✓）</div><div class="wrap">'+terms.map(t=>'<button class="opt sm" data-gterm="'+t+'" aria-pressed="'+(c.term===t)+'">'+(gradeOf(t)?'✓ ':'')+t+'</button>').join('')+'</div>';
+  if(g)h+='<div class="note" style="margin-top:6px">いまの登録：評定平均 <b>'+esc(g.gpa||'－')+'</b>／学年順位 <b>'+esc(g.rank||'－')+'</b>'+((g.urls||[]).length?'／資料 '+(g.urls||[]).map((u,i)=>'<a href="'+esc(u)+'" target="_blank" rel="noopener">'+(i+1)+'</a>').join(' '):'／資料なし')+(g.memo?'<br>メモ：'+esc(g.memo):'')+'<br><span class="s">下の欄を直して保存すると上書きされます。写真は追加になります（前の写真は残ります）。</span></div>';
+  else h+='<p class="note">この学期はまだ登録がありません。</p>';
   h+='<div class="qrow"><label class="lab">評定平均<input type="text" id="g-gpa" inputmode="decimal" placeholder="例：4.3" value="'+esc(c.gpa)+'"></label><label class="lab">学年順位（任意）<input type="text" id="g-rank" placeholder="例：12/240" value="'+esc(c.rank)+'"></label></div>';
   h+='<label class="lab">成績資料の写真（通知表・成績一覧など。複数選べます）<input type="file" id="g-file" accept="image/*" multiple></label>'+(c.files&&c.files.length?'<p class="note">選択中：'+c.files.map(f=>esc(f.name)).join('、')+'</p>':'')+'<p class="note">評定平均・学年順位は、資料の写真を開発者（Claude）に送ると読み取って計算します。その値をここに入れてください。</p>';
   h+='<label class="lab">メモ<input type="text" id="g-memo" maxlength="300" value="'+esc(c.memo)+'"></label>';
-  h+='<div class="acts"><button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="gradeSave"'+(saving?' disabled':'')+'>'+(saving?'保存中…':'保存')+'</button></div>';SH.innerHTML=h;
+  h+='<div class="acts">'+(g?'<button class="btn del" data-act="gradeDel">この学期を削除</button>':'')+'<button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="gradeSave"'+(saving?' disabled':'')+'>'+(saving?'保存中…':(g?'更新を保存':'保存'))+'</button></div>';SH.innerHTML=h;
   const f=document.getElementById('g-file');if(f)f.onchange=()=>{gedit.files=[...f.files].slice(0,4);};}
 function saveGrade(){const c=gedit;c.gpa=val('g-gpa');c.rank=val('g-rank');c.memo=val('g-memo');if(!c.term){toast('学期を選んでください');return;}
   const send=(photos)=>{saving=true;drawGrade();call('saveGrade',{who,term:c.term,gpa:c.gpa,rank:c.rank,memo:c.memo,photos}).then(r=>{saving=false;GR.list=(r&&r.grades)||GR.list;GR.details=(r&&r.details)||GR.details;GR.loaded=true;closeSheet();gedit=null;render();toast(c.term+'の成績を登録しました');}).catch(e=>{saving=false;drawGrade();toast('保存できませんでした：'+errMsg(e).replace(/^(Exception|Error):\s*/,''));});};
@@ -1340,7 +1448,7 @@ function renderStats(){ensureReports();ensureGrades();
   V.innerHTML=h;}
 
 // ---------- 使い方 ----------
-function renderHelp(){
+function renderHelp(){ensureWords();
   V.innerHTML='<main class="help"><h2>使い方</h2>'+
   '<h3>1. はじめに：週の型を作る</h3><p>「予定」画面の「週の型で予定を作る」を押します。曜日×朝・昼・夜のマスを押して選び、下のボタンでやる活動を入れます（1つのマスに複数入れられます）。「平日にコピー」「土日にコピー」を使うと早く作れます。名前を付けて「保存して当てはめる」を押すと、選んだ期間の予定になります。試験・学校行事の日、遠征・合宿の日、手で変えた日は変わりません（チェックで外せます）。</p><p>型はいくつでも作れます（通常週、テスト週間、雪上シーズンなど）。期間ごとに当てはめ直してください。</p>'+
   '<h3>2. 毎日の記録</h3><p>ホームの「今日」に、その日の活動が時間帯ごとに並びます。</p><ul class="hl"><li><b>やった</b>：押すだけで記録します。ROM・エクスプロッシブは、前回と同じ内容（初回はメニューどおり）で記録されます</li><li><b>内容</b>：セット数・回数／秒数・重量を直して記録します。WJは技ごとの本数を入れます</li><li><b>やらなかった</b>：「内容」を開いて「やらなかった」を選び、理由を書いて保存します</li><li>予定にない活動をした日は「＋ 予定にない活動を記録」から</li><li>体調と備考は1日に1つ、「体調・備考を書く」から</li></ul><p><b>何日分かをまとめて記録するとき</b>は、ホームの知らせか「予定」画面の「まとめて記録」を押します。記録していない予定が日ごとに並びます。実際にやったものだけ押して「✓」にし（もう一度押すと「✕やらなかった」）、下のボタンを1回押せば記録できます。押さなかったものは記録されません。予定が入っていない日は、週の型の内容が「候補」として並びます。</p><p>ボタンを押すと、すぐに画面が変わります。保存は裏で行い、右上に「保存中…」→「✓ 保存しました」と出ます。</p><p>ROMプラスとエクスプロッシブのように、同じ時間帯に複数の活動がある日は、活動ごとに色の違う行で並びます。記録の画面の上には、どの活動を記録しているかが大きく出ます。</p><p>昨日の記録を忘れていると、ホームの上に知らせが出ます。</p>'+
@@ -1352,7 +1460,8 @@ function renderHelp(){
   '<h3>実績を事実に合わせる（v4.22）</h3><ul class="hl"><li>カレンダーの「Rフ」「Rハ」は、記録前は予定の区分、記録後は実際にやった区分です</li><li>朝の予定を夜にやった場合も、同じ日・同じ活動なら予定の実施と数え、「（夜に実施）」と注記します</li><li>記録があるのに予定が空だった日は、日の画面の「記録どおりに予定を入れる」、または「⋯」→「記録どおりに予定を埋める」で、記録した活動を予定として入れられます（達成率・報告の「予定」が事実に合います）</li><li>過去の日の予定も「予定を変更」「複数日を選ぶ」「週の型（期間を指定）」で変えられます</li><li>記録のフル／ハーフをまとめて直すときは、「複数日を選ぶ」→日を選ぶ→「記録のフル／ハーフを直す」（種目・回数はその区分のメニューの標準値になります）</li></ul>'+
   '<h3>月次チェック（月末の締め）</h3><p>スプレッドシートのメニュー「行動予定アプリ」→「月次チェック」で、その月の点検表（1日1行）ができます。予定・実績・体調・問題（未記録／予定外／時間帯ちがい／区分ちがい／標準より少ない／明細なし）が並び、「どうする」の列に<b>おすすめが入っています</b>。違う日だけ▼で「そのまま／記録が正しい／予定が正しい／この日は休み／本人に聞く」から選び、メニュー「月次チェックの修正を反映」を押すだけです。</p><p>「本人に聞く」にした日は、本人のアプリのホームに知らせが出て、「まとめて記録」の先頭に「父から確認」として並びます。まとめて記録では、ROMベーシックの行に予定の区分（フル／ハーフ）が出て、✓にすると区分の切替と「内容を直して記録」（セット数を減らしたときなど）が使えます。セット数を個別に直すときは「月次チェック_○○_種目」シートに数を書きます。</p>'+
   '<h3>標準値（メニュー）をアプリで変える</h3><p>活動名を押して「今日のメニュー」→「標準値（回数・セット数）を変える」で、フル／ハーフそれぞれの回数・セット数を−／＋で直せます。記録画面でセット数を直したあと「この内容を標準値にする」を押しても同じです。変えた値は目安と初回の初期値になり、すでに記録した内容は変わりません。コーチは変えられません。</p>'+
-  '<h3>学校・スポンサーへの報告PDF</h3><p>「実績」画面の一番下の「活動報告PDFを作る」。宛先（学校／スポンサー）と期間（今年度・上期・下期・シーズン・期間指定）を選ぶだけです。学校向けは遠征・合宿・大会の予定と実績、公欠・欠席・ラーケーションの日付一覧、今後の予定。スポンサー向けは大会結果とトレーニングの量。選手名・所属は「設定」シートに書いておくと載ります。</p><h3>予定変更画面の見方</h3><p>ROMベーシックを選ぶと、その下に「└ ROMベーシックの区分：フル／ハーフ／当日決める」の段が出ます。どれかを選ぶまで保存できません（週の型・複数日も同じ）。「この日にパーソナルを受ける」で、未来の日にパーソナルを予定できます。</p>'+
+  '<h3>学校・スポンサーへの報告PDF</h3><p>「実績」画面の一番下の「活動報告PDFを作る」。宛先（学校／スポンサー）と期間を選ぶだけです。PDFは「誰か（プロフィール）→今季の目標→ハイライト（ベスト成績・大会数・評定平均・部活）→文武両道→大会→遠征・合宿→日々のトレーニング→今後の予定→支援のお願い・連絡先」の順で、応援したくなる構成にしています。「設定」シートの「選手名」「所属」「学年・カテゴリー」「プロフィール」「今季の目標」「支援のお願い」「連絡先」を書いておくと載ります（setupで行が増えます）。学校向けは出欠の一覧と備考欄つき、支援のお願いは載りません。</p><h3>予定変更画面の見方</h3><p>ROMベーシックを選ぶと、その下に「└ ROMベーシックの区分：フル／ハーフ／当日決める」の段が出ます。どれかを選ぶまで保存できません（週の型・複数日も同じ）。「この日にパーソナルを受ける」で、未来の日にパーソナルを予定できます。</p>'+
+  '<h3>今日のひとこと（本人だけ）</h3><p>記録を押したあと、ホームに1問だけ出ます。かけらを押すか、ひとこと入れて「これでOK」。大会・パーソナル・合宿・学校行事・部活の公演・探究の日は2〜4問続きます。答えは「ことばのかけら」シートに貯まり、学期の終わりに「本人の言葉」（使い方の下にあります）の下書きになります。家族が「問い」シートで文面を直せます。</p>'+
   '<h3>部活（演劇部）と学業</h3><p><b>部活の入れ方</b>：予定は「予定を変更」（または週の型）で時間帯の「部活」ボタンを押す。参加の記録は、その日の行の［やった］か、日の画面の「部活（演劇部）に参加した」ボタン（1タップ・内容は練習）。公演・大会・合宿は［記録］で内容を選ぶ。カレンダーは「部」。コーチにも見えます。学業（学期・評定平均・順位・通知表の写真）は「実績」画面の一番下で父・母だけが登録・閲覧でき、本人・コーチには見えません。学校・スポンサー向けPDFには、全期間を通じた評定平均と学期ごとの評定平均が載ります。科目ごとの評定や試験ごとの学年順位は「学業明細」シートに貼り付けると、学期ごとの表と「学年順位の推移」で見られます。</p>'+
   '<h3>続ける・共有する（v4.22）</h3><ul class="hl"><li>ホームに「今週の達成率」「連続記録」が出ます。連続記録は、記録した日と記録の要らない日（予定なし・休養日）をつなぎ、予定があって未記録の日で途切れます</li><li>家族が予定を変えると、ホームの「最近の予定変更」に3日間出ます</li><li>「設定」シートの「未記録の通知メール」に宛先を書くと、毎晩21時に、その日の未記録があればメールが届きます</li><li>活動名を押すと今日のメニュー（目安）が見られます。記録は［記録］か、その画面の「記録する」から</li><li>文字が小さいときは、この画面の「文字を大きくする」</li></ul>'+
   '<h3>休養日（OFF）</h3><p>休養日は「その日の位置づけ」で、トレーニングの予定とは別に持っています。合宿中でも休養日にでき、休養日に軽く動く予定を入れることもできます。設定は、日を押して「予定を変更」→「休養日（OFF）」、複数日を選んで「休養日にする」、週の型の「OFF」の行、のいずれかです。カレンダーには上段に「OFF」（合宿中なら「合宿／OFF」）と出ます。</p>'+
@@ -1361,7 +1470,7 @@ function renderHelp(){
   '<h3>5. 実績とコーチ報告PDF</h3><p>週・月・年度・パーソナルごとに、活動の予定と実施の回数、ROMの回数、メニューの合計（セット数・最大重量、WJの本数）、大会結果、記録の一覧を見られます。「月」または「パーソナル」でPDFを作ると、コーチに渡す報告書ができます。パーソナルを受けた日は「パーソナル」の画面か、日付の画面から登録します。</p>'+
   '<h3>6. メニュー</h3><p>ROMベーシック（フル／ハーフ）、ROMプラス、エクスプロッシブ、WJのメニューは、管理用スプレッドシートの「メニュー」シートにあります。種目、回数・秒数、セット数、インターバル、左右、やり方の説明を書き換えると、記録画面の目安と初期値が変わります。新しい活動の種類を作って、同じ種類名で種目を登録すれば、メニュー付きの活動を増やせます。</p>'+
   '<h3>7. 動画</h3><p>日付を押した画面の「動画を登録」から送れます。動画は、このアプリを使っている人なら誰でも見られます。</p>'+
-  '<h3>記録者を変える</h3><p>画面上の「記録者」の「変更」から選び直せます。この端末に記憶されます。</p>'+
+  wordsSection()+'<h3>記録者を変える</h3><p>画面上の「記録者」の「変更」から選び直せます。この端末に記憶されます。</p>'+
   '<h3>文字の大きさ</h3><div class="wrap"><button class="opt sm" data-act="bigTgl" aria-pressed="'+document.documentElement.classList.contains('big')+'">文字を大きくする</button></div>'+
   '<p class="note">バージョン サーバー'+esc(S.version)+'／画面'+CLIENT_VERSION+'<br>今回の起動：HTML受信 '+(TM.html==null?'?':TM.html)+'秒／前回データの表示 '+(TM.cache!=null?TM.cache+'秒':'なし')+'／最新データ '+(TM.fresh==null?'?':TM.fresh)+'秒（うちサーバー処理 '+(TM.srv==null?'?':TM.srv)+'秒'+(TM.srvT?'：'+esc(TM.srvT):'')+'）</p></main>';}
 
@@ -1499,6 +1608,12 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
     render();return;}
   // 活動
   if(ds.clubgo){const x=ds.clubgo;const c={date:x,id:'',slot:'夜',kind:'部活',st:'実施',memo:'',sel:['練習'],fh:'',items:[]};sendRec('saveActivity',actPayload(c),'部活の参加を記録しました');toastAct('部活の参加を記録しました（練習）','内容を変える',()=>{const a=(S.acts[x]||[]).find(y=>y.kind==='部活');openAct(x,'夜','部活',a?a.id:'');});return;}
+  if(ds.qchip!==undefined){const card=b.closest('.qcard'),qid=card&&card.dataset.qid;if(!qid)return;const L=qsel[qid]=(qsel[qid]||[]);const i=L.indexOf(ds.qchip);if(i>=0)L.splice(i,1);else L.push(ds.qchip);const t=document.getElementById('q-text');const keep=t?t.value:'';render();const t2=document.getElementById('q-text');if(t2&&keep)t2.value=keep;return;}
+  if(ds.act==='qOk'){qAnswerSave();return;}
+  if(ds.word){openWord(ds.word);return;}
+  if(ds.act==='wSave'){const c=wedit,t=(document.getElementById('w-text')||{value:''}).value.trim();if(!t){toast('本文を書いてください');return;}closeSheet();call('saveWord',{who,key,kind:c.kind,id:c.id,text:t,title:''}).then(r=>{WD.words=(r&&r.words)||WD.words;render();toast('保存しました');}).catch(e=>toast('保存できませんでした：'+errMsg(e)));return;}
+  if(ds.act==='wDel'){const c=wedit;if(!confirm('「'+c.kind+'」の言葉を消しますか？'))return;closeSheet();call('saveWord',{who,key,kind:c.kind,id:c.id,text:'x',remove:true}).then(r=>{WD.words=(r&&r.words)||WD.words;render();toast('消しました');}).catch(e=>toast('消せませんでした：'+errMsg(e)));return;}
+  if(ds.act==='qLater'){LS.set('qlater',TODAY);render();return;}
   if(ds.mview){const [sl,k]=kp(ds.mview);openMenuView(ds.d,sl,k,ds.fh||'');return;}
   if(ds.mstd){const [sl,k]=kp(ds.mstd);openMenuStd(ds.d,sl,k,ds.fh||'');return;}
   if(ds.mst){const i=+ds.i,x=mstd.items[i];readMenuStd();x.sets=Math.max(0,Math.min(999,x.sets+(ds.mst==='+'?1:-1)));drawMenuStd();return;}
@@ -1664,7 +1779,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.act==='actRepOpen'){openActRep();return;}
   if(ds.act==='gradeOpen'){openGrade();return;}
   if(ds.gdt){GR.term=ds.gdt;render();return;}
-  if(ds.gterm){gedit.gpa=val('g-gpa');gedit.rank=val('g-rank');gedit.memo=val('g-memo');gedit.term=ds.gterm;drawGrade();return;}
+  if(ds.gterm){const g=gradeOf(ds.gterm);gedit={term:ds.gterm,gpa:g?g.gpa:'',rank:g?g.rank:'',memo:g?g.memo:'',files:[],existing:g};drawGrade();return;}
+  if(ds.act==='gradeDel'){const c=gedit;if(!confirm(c.term+'の登録を削除しますか？（写真はドライブに残ります）'))return;saving=true;drawGrade();call('saveGrade',{who,term:c.term,remove:true}).then(r=>{saving=false;GR.list=(r&&r.grades)||[];GR.details=(r&&r.details)||GR.details;closeSheet();gedit=null;render();toast('削除しました');}).catch(e=>{saving=false;drawGrade();toast('削除できませんでした：'+errMsg(e));});return;}
   if(ds.act==='gradeSave'){if(saving)return;saveGrade();return;}
   if(ds.arepaud){arep.aud=ds.arepaud;drawActRep();return;}
   if(ds.areppre){if(arep.pre==='custom'){arep.a=val('ar-a')||arep.a;arep.b=val('ar-b')||arep.b;}arep.pre=ds.areppre;drawActRep();return;}
@@ -1705,6 +1821,8 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 window.addEventListener('focus',()=>{if(!draftDiff().length)refreshIfStale(60000);});
 if(inAppGuide()){}else if(INSIDE_GAS||API_URL)load(false);
 else V.innerHTML='<main><p class="empty">このページは、デプロイしたウェブアプリのURLから開くか、通信先（API_URL）を設定してください。</p></main>';
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='q-text'){const card=e.target.closest('.qcard');const btn=card&&card.querySelector('[data-act="qOk"]');if(btn)btn.disabled=!(e.target.value.trim()||((qsel[card.dataset.qid]||[]).length));}});
+
 })();
 
 </script>
