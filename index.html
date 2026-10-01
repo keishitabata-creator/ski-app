@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.36.0 -->
+<!-- スキー行動予定アプリ 画面側 v4.37.1 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -457,7 +457,7 @@ html.big .btn{font-size:17px}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.36.0';
+const CLIENT_VERSION='4.37.1';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -1288,10 +1288,16 @@ function qToday(){if(who!=='本人'||!S||!S.qbank||!S.qbank.length)return [];if(
   out.sort((a,b)=>b.pri-a.pri);const seen={};const uniq=out.filter(o=>{if(seen[o.q.id])return false;seen[o.q.id]=1;return true;});
   // イベントの日（優先80以上の問いが出る日）は、その問いだけ。答え終わったら今日はおしまい（連鎖や日々の問いは出さない）
   const evDay=Object.keys(sc).some(k=>B.some(q=>q.cond===k&&q.pri>=80));
-  const evn=uniq.filter(o=>o.pri>=80);if(evDay)return evn.slice(0,4);return uniq.slice(0,1);}
+  const todayN=(S.frags||[]).filter(f=>f.d===TODAY).length;
+  // 学期の初日（この学期の連鎖に初めて答える日）：入口4本を出す。イベントの日と同じく合計4問まで
+  const term=termOf(TODAY),tf=(S.frags||[]).filter(f=>f.chain&&/^S[1-4]-/.test(f.chain)&&f.chain.slice(3)===term),openDay=tf.length?tf.map(f=>f.d).sort()[0]:TODAY;
+  if(openDay===TODAY){const ent=[1,2,3,4].map(n=>{const id='S'+n+'-1',q=B.find(x=>x.id===id);return q&&!tf.some(f=>f.chain==='S'+n+'-'+term)?{q,pri:75,chain:'S'+n+'-'+term,stage:1,X:''}:null;}).filter(Boolean);
+    const evn=evDay?uniq.filter(o=>o.pri>=80):[];const lst=evn.concat(ent);if(lst.length)return todayN>=4?[]:lst.slice(0,4-Math.min(todayN,4));}
+  if(evDay){const evn=uniq.filter(o=>o.pri>=80);return todayN>=4?[]:evn.slice(0,4-Math.min(todayN,4));}
+  return todayN>=1?[]:uniq.slice(0,1);}
 let qsel={};   // 問いID → 押したかけら
 function qText(o){return o.q.q.replace(/\{X\}/g,o.X||'それ').replace(/\{E\}/g,o.E||'行事');}
-function questionCard(){if(who!=='本人')return '';const list=qToday();if(!list.length)return '';const o=list[0],q=o.q,sel=qsel[q.id]||[];
+function questionCard(){if(who!=='本人')return '';const list=qToday();if(!list.length||list[0].pri<80){const wc=wordCard();if(wc)return wc;}if(!list.length)return '';const o=list[0],q=o.q,sel=qsel[q.id]||[];
   const needInput=!!q.inp&&(!q.chips.length||sel.some(c=>!QCLOSE.test(c))||sel.indexOf('自分の言葉で')>=0);
   const canOk=sel.length>0||needInput;
   let h='<div class="qcard" data-qid="'+esc(q.id)+'"><div class="qhead"><span class="qlab">今日のひとこと'+(list.length>1?'（あと'+(list.length-1)+'）':'')+'</span></div><p class="qq">'+esc(qText(o))+'</p>';
@@ -1299,17 +1305,18 @@ function questionCard(){if(who!=='本人')return '';const list=qToday();if(!list
   if(needInput)h+='<input type="text" id="q-text" class="qin" maxlength="200" placeholder="'+esc(q.inp)+'" autocomplete="off">';
   h+='<div class="acts"><button class="btn sm2" data-act="qLater">あとで</button><button class="btn pri sm2" data-act="qOk"'+(canOk?'':' disabled')+'>これでOK</button></div></div>';
   return h;}
-function qAnswerSave(){const list=qToday();if(!list.length)return;const o=list[0],q=o.q,sel=qsel[q.id]||[],text=(document.getElementById('q-text')||{value:''}).value.trim();
+let qaBusy=false;
+function qAnswerSave(){if(qaBusy)return;const list=qToday();if(!list.length)return;const o=list[0],q=o.q,sel=qsel[q.id]||[],text=(document.getElementById('q-text')||{value:''}).value.trim();
   if(!sel.length&&!text)return;
   const f={d:TODAY,qid:q.id,chain:o.chain||'',stage:o.stage||0,x:(o.stage===1)?(sel.indexOf('自分の言葉で')>=0?text:(sel[0]||text)):'',closed:sel.length===1&&QCLOSE.test(sel[0])&&!text};
-  S.frags=(S.frags||[]).concat([f]);delete qsel[q.id];render();
-  call('saveFragment',{who,key,date:TODAY,qid:q.id,chain:f.chain,stage:f.stage,q:qText(o),chips:sel.indexOf('自分の言葉で')>=0?[]:sel,text:sel.indexOf('自分の言葉で')>=0&&!text?'':text}).then(r=>{if(r&&r.frags)S.frags=r.frags;}).catch(e=>{reportErr('今日の1問',errMsg(e));});}
+  qaBusy=true;setTimeout(()=>{qaBusy=false;},800);S.frags=(S.frags||[]).concat([f]);delete qsel[q.id];render();
+  call('saveFragment',{who,key,date:TODAY,qid:q.id,chain:f.chain,stage:f.stage,q:qText(o),chips:sel.indexOf('自分の言葉で')>=0?[]:sel,text:sel.indexOf('自分の言葉で')>=0&&!text?'':text}).then(r=>{if(r&&r.frags){const k=x=>x.d+'|'+x.qid;const have={};r.frags.forEach(x=>have[k(x)]=1);S.frags=r.frags.concat((S.frags||[]).filter(x=>!have[k(x)]));}}).catch(e=>{reportErr('今日の1問',errMsg(e));});}
 
 window.__q={today:qToday,scenes:qScenes,chain:qChain};
 // ---------- 本人の言葉：かけらから下書きを組む（本人・父母） ----------
 const WORD_KINDS=['目指す人間像','大切にしていること','社会とのかかわり','結果以外の目標と実践','支えてくださる方へ'];
 let WD={loaded:false,words:[],frags:[],busy:false};
-function ensureWords(){if(WD.loaded||WD.busy||!who||!canEdit())return;WD.busy=true;Promise.all([call('getWords',{who}),call('getFragments',{who})]).then(([a,b])=>{WD.busy=false;WD.loaded=true;WD.words=(a&&a.words)||[];WD.frags=(b&&b.frags)||[];if(tab==='help')render();}).catch(()=>{WD.busy=false;});}
+function ensureWords(){if(WD.loaded||WD.busy||!who||!canEdit())return;WD.busy=true;Promise.all([call('getWords',{who}),call('getFragments',{who})]).then(([a,b])=>{WD.busy=false;WD.loaded=true;WD.words=(a&&a.words)||[];WD.frags=(b&&b.frags)||[];if(tab==='stats'||tab==='home')render();}).catch(()=>{WD.busy=false;});}
 function wordOf(kind){return WD.words.filter(w=>w.kind===kind).sort((a,b)=>a.date<b.date?1:-1)[0]||null;}
 /** 連鎖のかけらを本人の言葉のまま並べる（接続だけ） */
 function draftWord(kind){const term=termOf(TODAY);const F=WD.frags;const chain=n=>{const id='S'+n+'-'+term;const fs=F.filter(f=>f.chain===id);const by={};fs.forEach(f=>by[f.stage]=f);return by;};
@@ -1326,8 +1333,16 @@ function openWord(kind){const w=wordOf(kind);const draft=w?w.text:draftWord(kind
   SH.innerHTML='<div class="grab"></div><h3 id="sh-title">'+esc(kind)+'</h3><p class="note">'+(w?'いまの言葉です。直して保存できます。':(draft?'今日の1問の答えを、言った順につないだ下書きです。言い回しは自分の言葉に直してください。':'まだ材料（今日の1問の答え）がありません。学期の問いに答えると、ここに下書きが出ます。'))+'</p>'+
     '<textarea id="w-text" rows="8" style="width:100%;box-sizing:border-box;font-size:15px;line-height:1.6;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--bg);color:var(--ink)">'+esc(draft)+'</textarea>'+
     '<div class="acts">'+(w?'<button class="btn del" data-act="wDel">消す</button>':'')+'<button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="wSave">保存</button></div>';openS('word');}
-function wordsSection(){if(!canEdit()||!who)return '';if(!WD.loaded)return '<h3>本人の言葉</h3><p class="note">読み込み中…</p>';
-  return '<h3>本人の言葉（学校・スポンサーへの報告の先頭に載ります）</h3><div class="list">'+WORD_KINDS.map(k=>{const w=wordOf(k),dr=!w&&draftWord(k);return '<div><b>'+esc(k)+'</b>'+(w?'<br>'+esc(w.text).replace(/\n/g,'<br>'):(dr?'<br><span class="s">下書きができています（今日の1問の答えから）</span>':'<br><span class="s">まだありません</span>'))+'<br><button class="btn sm2" data-word="'+esc(k)+'" style="margin-top:4px">'+(w?'直す':(dr?'下書きを見る':'書く'))+'</button></div>';}).join('')+'</div><p class="note">本人の言葉は、学期の問い（今日の1問）の答えから自動で下書きになります。父・母が整えることもできますが、言葉は本人のものを残してください。</p>';}
+function wordsSection(){if(!canEdit()||!who||who==='本人')return '';if(!WD.loaded)return '<h2>本人の言葉（家族だけに表示・報告用）</h2><p class="note">読み込み中…</p>';
+  return '<h2>本人の言葉（家族だけに表示・報告用）</h2><div class="list">'+WORD_KINDS.map(k=>{const w=wordOf(k),dr=!w&&draftWord(k);return '<div><b>'+esc(k)+'</b>'+(w?'<br>'+esc(w.text).replace(/\n/g,'<br>'):(dr?'<br><span class="s">本人がまだ確認していない下書きがあります（今日のひとことの答えから）</span>':'<br><span class="s">まだありません（学期の問いに答えると下書きができます）</span>'))+(w?'<br><button class="btn sm2" data-word="'+esc(k)+'" style="margin-top:4px">整える</button>':'')+'</div>';}).join('')+'</div><p class="note">学校・スポンサーへの報告PDFの先頭に載ります。本人の言葉を残し、言い回しを整えるだけにしてください。本人の画面には、学期の言葉がまとまったときに「読んでみる？」として出ます。</p>';}
+/** 本人：連鎖がまとまった学期の言葉を、今日のひとことの席で1回だけ案内する */
+function wordReadyKind(){if(who!=='本人'||!WD.loaded)return '';const term=termOf(TODAY);const F=WD.frags;
+  const map={'目指す人間像':1,'大切にしていること':2,'社会とのかかわり':3,'結果以外の目標と実践':4};
+  for(const k of Object.keys(map)){const id='S'+map[k]+'-'+term;const fs=F.filter(f=>f.chain===id);if(!fs.length)continue;const last=fs.slice().sort((a,b)=>a.stage-b.stage)[fs.length-1];
+    const done=last.stage>=6||QCLOSE.test(String(last.chips||'').trim());if(!done)continue;if(wordOf(k)&&wordOf(k).date>=termRange(term)[0])continue;if(LS.get('wlater:'+k)===TODAY)continue;if(draftWord(k))return k;}
+  return '';}
+function wordCard(){if(who!=='本人')return '';if(!WD.loaded){ensureWords();return '';}const k=wordReadyKind();if(!k)return '';
+  return '<div class="qcard" data-wkind="'+esc(k)+'"><div class="qhead"><span class="qlab">まとまったよ</span></div><p class="qq">この学期の「'+esc(k)+'」、きみの言葉でまとまった。読んでみる？</p><div class="acts"><button class="btn sm2" data-act="wLater" data-k="'+esc(k)+'">あとで</button><button class="btn pri sm2" data-word="'+esc(k)+'">読む</button></div></div>';}
 // ---------- 実績 ----------
 function czRanges(){const L=S.coachings.filter(x=>x.d<=TODAY);return L.map((x,i)=>[x.d,L[i+1]?addD(L[i+1].d,-1):TODAY]);}
 function statRange(){
@@ -1426,7 +1441,7 @@ function renderStats(){ensureReports();ensureGrades();
   const dk=Object.keys(byDay).sort().reverse();
   h+='<h2>記録の一覧</h2>'+(dk.length?'<div class="list">'+dk.map(x=>{const n=S.notes[x];return '<div class="rl"><button class="linkbtn2" data-day="'+x+'" style="min-height:auto;padding:0">'+mdw(x)+'</button>'+byDay[x].map(r=>'<div class="arow mini"><span class="slot">'+r.slot+'</span><span class="atag sm '+kCls(r.kind)+'">'+esc(r.kind)+(fhOf(r.act,r.fh)?'<small class="fhtag">'+esc(fhOf(r.act,r.fh))+'</small>':'')+'</span><span class="asum">'+esc(actSum(r.act))+'</span></div>').join('')+(n?'<small class="memo">体調 '+esc(n.cond||'－')+'　'+esc(n.note||'')+'</small>':'')+'</div>';}).join('')+'</div>':'<p class="note">この期間の記録はありません。</p>');
   if(loading)h+='<p class="note">古い期間の内容を読み込んでいます…</p>';
-  if(canEdit()&&who!=='本人'){h+='<h2>学業（家族だけに表示）</h2>';
+  if(canEdit()&&who!=='本人'){ensureWords();h+=wordsSection();h+='<h2>学業（家族だけに表示）</h2>';
     if(!GR.loaded)h+='<p class="note">読み込み中…</p>';
     else{h+=(GR.list.length?'<div class="tbl t4"><div class="tr th"><span>学期</span><span>評定平均</span><span>順位</span><span>通知表</span></div>'+GR.list.map(g=>'<div class="tr"><span>'+esc(g.term)+'</span><span>'+esc(g.gpa||'－')+'</span><span>'+esc(g.rank||'')+'</span><span>'+((g.urls||[]).length?(g.urls||[]).map((u,i)=>'<a href="'+esc(u)+'" target="_blank" rel="noopener">資料'+(i+1)+'</a>').join('　'):'')+'</span></div>').join('')+'</div>':'<p class="note">まだ登録がありません。</p>')+
       '<button class="btn" data-act="gradeOpen" style="width:100%">✎ 学期の成績を登録・更新</button><p class="note">学校・スポンサー向けPDFには評定平均だけが載ります。本人・コーチの画面には出ません。</p>';
@@ -1448,7 +1463,7 @@ function renderStats(){ensureReports();ensureGrades();
   V.innerHTML=h;}
 
 // ---------- 使い方 ----------
-function renderHelp(){ensureWords();
+function renderHelp(){
   V.innerHTML='<main class="help"><h2>使い方</h2>'+
   '<h3>1. はじめに：週の型を作る</h3><p>「予定」画面の「週の型で予定を作る」を押します。曜日×朝・昼・夜のマスを押して選び、下のボタンでやる活動を入れます（1つのマスに複数入れられます）。「平日にコピー」「土日にコピー」を使うと早く作れます。名前を付けて「保存して当てはめる」を押すと、選んだ期間の予定になります。試験・学校行事の日、遠征・合宿の日、手で変えた日は変わりません（チェックで外せます）。</p><p>型はいくつでも作れます（通常週、テスト週間、雪上シーズンなど）。期間ごとに当てはめ直してください。</p>'+
   '<h3>2. 毎日の記録</h3><p>ホームの「今日」に、その日の活動が時間帯ごとに並びます。</p><ul class="hl"><li><b>やった</b>：押すだけで記録します。ROM・エクスプロッシブは、前回と同じ内容（初回はメニューどおり）で記録されます</li><li><b>内容</b>：セット数・回数／秒数・重量を直して記録します。WJは技ごとの本数を入れます</li><li><b>やらなかった</b>：「内容」を開いて「やらなかった」を選び、理由を書いて保存します</li><li>予定にない活動をした日は「＋ 予定にない活動を記録」から</li><li>体調と備考は1日に1つ、「体調・備考を書く」から</li></ul><p><b>何日分かをまとめて記録するとき</b>は、ホームの知らせか「予定」画面の「まとめて記録」を押します。記録していない予定が日ごとに並びます。実際にやったものだけ押して「✓」にし（もう一度押すと「✕やらなかった」）、下のボタンを1回押せば記録できます。押さなかったものは記録されません。予定が入っていない日は、週の型の内容が「候補」として並びます。</p><p>ボタンを押すと、すぐに画面が変わります。保存は裏で行い、右上に「保存中…」→「✓ 保存しました」と出ます。</p><p>ROMプラスとエクスプロッシブのように、同じ時間帯に複数の活動がある日は、活動ごとに色の違う行で並びます。記録の画面の上には、どの活動を記録しているかが大きく出ます。</p><p>昨日の記録を忘れていると、ホームの上に知らせが出ます。</p>'+
@@ -1461,7 +1476,7 @@ function renderHelp(){ensureWords();
   '<h3>月次チェック（月末の締め）</h3><p>スプレッドシートのメニュー「行動予定アプリ」→「月次チェック」で、その月の点検表（1日1行）ができます。予定・実績・体調・問題（未記録／予定外／時間帯ちがい／区分ちがい／標準より少ない／明細なし）が並び、「どうする」の列に<b>おすすめが入っています</b>。違う日だけ▼で「そのまま／記録が正しい／予定が正しい／この日は休み／本人に聞く」から選び、メニュー「月次チェックの修正を反映」を押すだけです。</p><p>「本人に聞く」にした日は、本人のアプリのホームに知らせが出て、「まとめて記録」の先頭に「父から確認」として並びます。まとめて記録では、ROMベーシックの行に予定の区分（フル／ハーフ）が出て、✓にすると区分の切替と「内容を直して記録」（セット数を減らしたときなど）が使えます。セット数を個別に直すときは「月次チェック_○○_種目」シートに数を書きます。</p>'+
   '<h3>標準値（メニュー）をアプリで変える</h3><p>活動名を押して「今日のメニュー」→「標準値（回数・セット数）を変える」で、フル／ハーフそれぞれの回数・セット数を−／＋で直せます。記録画面でセット数を直したあと「この内容を標準値にする」を押しても同じです。変えた値は目安と初回の初期値になり、すでに記録した内容は変わりません。コーチは変えられません。</p>'+
   '<h3>学校・スポンサーへの報告PDF</h3><p>「実績」画面の一番下の「活動報告PDFを作る」。宛先（学校／スポンサー）と期間を選ぶだけです。PDFは「誰か（プロフィール）→今季の目標→ハイライト（ベスト成績・大会数・評定平均・部活）→文武両道→大会→遠征・合宿→日々のトレーニング→今後の予定→支援のお願い・連絡先」の順で、応援したくなる構成にしています。「設定」シートの「選手名」「所属」「学年・カテゴリー」「プロフィール」「今季の目標」「支援のお願い」「連絡先」を書いておくと載ります（setupで行が増えます）。学校向けは出欠の一覧と備考欄つき、支援のお願いは載りません。</p><h3>予定変更画面の見方</h3><p>ROMベーシックを選ぶと、その下に「└ ROMベーシックの区分：フル／ハーフ／当日決める」の段が出ます。どれかを選ぶまで保存できません（週の型・複数日も同じ）。「この日にパーソナルを受ける」で、未来の日にパーソナルを予定できます。</p>'+
-  '<h3>今日のひとこと（本人だけ）</h3><p>記録を押したあと、ホームに1問だけ出ます。かけらを押すか、ひとこと入れて「これでOK」。大会・パーソナル・合宿・学校行事・部活の公演・探究の日は2〜4問続きます。答えは「ことばのかけら」シートに貯まり、学期の終わりに「本人の言葉」（使い方の下にあります）の下書きになります。家族が「問い」シートで文面を直せます。</p>'+
+  '<h3>今日のひとこと（本人だけ）</h3><p>記録を押したあと、ホームに1問だけ出ます。かけらを押すか、ひとこと入れて「これでOK」。大会・パーソナル・合宿・学校行事・部活の公演・探究の日は2〜4問続きます。答えは「ことばのかけら」シートに貯まります。学期の問いが一通り終わると、ホームに「まとまったよ」と出て、自分の言葉でまとめた文章を読んで直せます（学校・スポンサーへの報告の先頭に載ります）。家族が「問い」シートで文面を直せます。</p>'+
   '<h3>部活（演劇部）と学業</h3><p><b>部活の入れ方</b>：予定は「予定を変更」（または週の型）で時間帯の「部活」ボタンを押す。参加の記録は、その日の行の［やった］か、日の画面の「部活（演劇部）に参加した」ボタン（1タップ・内容は練習）。公演・大会・合宿は［記録］で内容を選ぶ。カレンダーは「部」。コーチにも見えます。学業（学期・評定平均・順位・通知表の写真）は「実績」画面の一番下で父・母だけが登録・閲覧でき、本人・コーチには見えません。学校・スポンサー向けPDFには、全期間を通じた評定平均と学期ごとの評定平均が載ります。科目ごとの評定や試験ごとの学年順位は「学業明細」シートに貼り付けると、学期ごとの表と「学年順位の推移」で見られます。</p>'+
   '<h3>続ける・共有する（v4.22）</h3><ul class="hl"><li>ホームに「今週の達成率」「連続記録」が出ます。連続記録は、記録した日と記録の要らない日（予定なし・休養日）をつなぎ、予定があって未記録の日で途切れます</li><li>家族が予定を変えると、ホームの「最近の予定変更」に3日間出ます</li><li>「設定」シートの「未記録の通知メール」に宛先を書くと、毎晩21時に、その日の未記録があればメールが届きます</li><li>活動名を押すと今日のメニュー（目安）が見られます。記録は［記録］か、その画面の「記録する」から</li><li>文字が小さいときは、この画面の「文字を大きくする」</li></ul>'+
   '<h3>休養日（OFF）</h3><p>休養日は「その日の位置づけ」で、トレーニングの予定とは別に持っています。合宿中でも休養日にでき、休養日に軽く動く予定を入れることもできます。設定は、日を押して「予定を変更」→「休養日（OFF）」、複数日を選んで「休養日にする」、週の型の「OFF」の行、のいずれかです。カレンダーには上段に「OFF」（合宿中なら「合宿／OFF」）と出ます。</p>'+
@@ -1470,7 +1485,7 @@ function renderHelp(){ensureWords();
   '<h3>5. 実績とコーチ報告PDF</h3><p>週・月・年度・パーソナルごとに、活動の予定と実施の回数、ROMの回数、メニューの合計（セット数・最大重量、WJの本数）、大会結果、記録の一覧を見られます。「月」または「パーソナル」でPDFを作ると、コーチに渡す報告書ができます。パーソナルを受けた日は「パーソナル」の画面か、日付の画面から登録します。</p>'+
   '<h3>6. メニュー</h3><p>ROMベーシック（フル／ハーフ）、ROMプラス、エクスプロッシブ、WJのメニューは、管理用スプレッドシートの「メニュー」シートにあります。種目、回数・秒数、セット数、インターバル、左右、やり方の説明を書き換えると、記録画面の目安と初期値が変わります。新しい活動の種類を作って、同じ種類名で種目を登録すれば、メニュー付きの活動を増やせます。</p>'+
   '<h3>7. 動画</h3><p>日付を押した画面の「動画を登録」から送れます。動画は、このアプリを使っている人なら誰でも見られます。</p>'+
-  wordsSection()+'<h3>記録者を変える</h3><p>画面上の「記録者」の「変更」から選び直せます。この端末に記憶されます。</p>'+
+  '<h3>記録者を変える</h3><p>画面上の「記録者」の「変更」から選び直せます。この端末に記憶されます。</p>'+
   '<h3>文字の大きさ</h3><div class="wrap"><button class="opt sm" data-act="bigTgl" aria-pressed="'+document.documentElement.classList.contains('big')+'">文字を大きくする</button></div>'+
   '<p class="note">バージョン サーバー'+esc(S.version)+'／画面'+CLIENT_VERSION+'<br>今回の起動：HTML受信 '+(TM.html==null?'?':TM.html)+'秒／前回データの表示 '+(TM.cache!=null?TM.cache+'秒':'なし')+'／最新データ '+(TM.fresh==null?'?':TM.fresh)+'秒（うちサーバー処理 '+(TM.srv==null?'?':TM.srv)+'秒'+(TM.srvT?'：'+esc(TM.srvT):'')+'）</p></main>';}
 
@@ -1611,6 +1626,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.qchip!==undefined){const card=b.closest('.qcard'),qid=card&&card.dataset.qid;if(!qid)return;const L=qsel[qid]=(qsel[qid]||[]);const i=L.indexOf(ds.qchip);if(i>=0)L.splice(i,1);else L.push(ds.qchip);const t=document.getElementById('q-text');const keep=t?t.value:'';render();const t2=document.getElementById('q-text');if(t2&&keep)t2.value=keep;return;}
   if(ds.act==='qOk'){qAnswerSave();return;}
   if(ds.word){openWord(ds.word);return;}
+  if(ds.act==='wLater'){LS.set('wlater:'+ds.k,TODAY);render();return;}
   if(ds.act==='wSave'){const c=wedit,t=(document.getElementById('w-text')||{value:''}).value.trim();if(!t){toast('本文を書いてください');return;}closeSheet();call('saveWord',{who,key,kind:c.kind,id:c.id,text:t,title:''}).then(r=>{WD.words=(r&&r.words)||WD.words;render();toast('保存しました');}).catch(e=>toast('保存できませんでした：'+errMsg(e)));return;}
   if(ds.act==='wDel'){const c=wedit;if(!confirm('「'+c.kind+'」の言葉を消しますか？'))return;closeSheet();call('saveWord',{who,key,kind:c.kind,id:c.id,text:'x',remove:true}).then(r=>{WD.words=(r&&r.words)||WD.words;render();toast('消しました');}).catch(e=>toast('消せませんでした：'+errMsg(e)));return;}
   if(ds.act==='qLater'){LS.set('qlater',TODAY);render();return;}
