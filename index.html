@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.51.0 -->
+<!-- スキー行動予定アプリ 画面側 v4.51.1 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,6 +13,13 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <script>window.APP_CONFIG={apiUrl:'https://script.google.com/macros/s/AKfycbxtq3J0htSIzjDbGKf90LSj82dBYTT_4OSzW8eP2vvBaMtLNrPc3PkXdN_O3k5vKZug_w/exec'};</script>
+<script>/* コーチのリンク（#r=…）：本体のプログラムを読み込む前に、相談の中身の問い合わせを始めておく（待ち時間を重ねて短くする） */
+(function(){try{var m=/^#r=([0-9a-z]+)/.exec(location.hash);if(!m||!window.fetch)return;var g=function(k){try{return localStorage.getItem(k)||'';}catch(e){return '';}};
+var dev=g('dev');if(!dev){dev='D'+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);try{localStorage.setItem('dev',dev);}catch(e){}}
+var tz='';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'';}catch(e){}
+window.__xr={key:m[1],t0:performance.now(),p:fetch(window.APP_CONFIG.apiUrl,{method:'POST',body:JSON.stringify({fn:'reqOpen',arg:{key:m[1]},vkey:'',ukey:'',dev:dev,tz:tz,cv:'リンク'}),headers:{'Content-Type':'text/plain;charset=utf-8'},redirect:'follow'})
+  .then(function(r){if(!r.ok)throw new Error('通信エラー（'+r.status+'）');return r.json();}).then(function(j){window.__xr.t1=performance.now();if(!j||j.ok!==true)throw new Error((j&&j.error)||'通信エラー');return j.data;})};
+window.__xr.p.catch(function(){});}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>スキー行動予定</title>
 <style>
@@ -592,7 +599,7 @@ body.locked nav.tabs,body.locked #whoin,body.locked #hdrsub,body.locked .hdrx{di
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.51.0';
+const CLIENT_VERSION='4.51.1';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -1905,7 +1912,9 @@ const XLINK=k=>location.origin+location.pathname.replace(/index\.html$/,'')+'?op
 let XR=null;
 function extMain(key){XR={key,data:null,vid:null,url:{},t:null,part:'',ev:'',img:'',gat:{}};document.body.classList.add('extmode');
   V.innerHTML='<main><p class="note">読み込み中…</p></main>';
-  call('reqOpen',{key}).then(d=>{xSet(d);extList();}).catch(e=>{V.innerHTML='<main><div class="xmsg">'+esc(errMsg(e).replace(/^(Exception|Error):\s*/,''))+'</div></main>';});
+  const E0=window.__xr&&window.__xr.key===key?window.__xr:null,tMain=performance.now(),tReq=E0?E0.t0:tMain;let early=!!E0;
+  (E0?E0.p.catch(()=>{early=false;return call('reqOpen',{key});}):call('reqOpen',{key})).then(d=>{const tRes=E0&&early&&E0.t1?E0.t1:performance.now();xSet(d);extList();xOpenTime(tReq,tMain,tRes,d,early);})
+    .catch(e=>{V.innerHTML='<main><div class="xmsg">'+esc(errMsg(e).replace(/^(Exception|Error):\s*/,''))+'</div></main>';});
   // 戻ってきたとき（30分以上たっていれば）：返事・見た・置き場のアドレスを裏で取り直す。動画を開いている間はしない
   const back=()=>{if(!XR||!XR.data||XR.ended||Date.now()-XR.loadedAt<1800000)return;const pv=document.getElementById('vplayer');if(pv&&!pv.hidden)return;
     call('reqOpen',{key:XR.key}).then(d=>{const pv2=document.getElementById('vplayer');if(pv2&&!pv2.hidden)return;xSet(d);extList();}).catch(e=>{const m=errMsg(e).replace(/^(Exception|Error):\s*/,'');if(/受付を終え|使えなくなって/.test(m))xEnded(m);});};
@@ -1914,6 +1923,10 @@ function extMain(key){XR={key,data:null,vid:null,url:{},t:null,part:'',ev:'',img
 /** 受付が終わっていたとき：動画を閉じて、そう表示し、書きかけを片付ける */
 function xEnded(m){XR.ended=true;XR.id=null;if(XR.ac)XR.ac.abort();const pv=document.getElementById('vplayer');if(pv){const ve=pv.querySelector('video');if(ve){try{ve.pause();ve.removeAttribute('src');ve.load();}catch(e){}}pv.innerHTML='';pv.hidden=true;}
   document.body.classList.remove('noscroll');try{localStorage.removeItem(xDraftKey());}catch(e){}V.innerHTML='<main><div class="xmsg">'+esc(m)+'</div></main>';}
+/** リンクを開いてから一覧が出るまでの時間と内訳を、エラーシートに「情報」として1行残す（どこに時間がかかっているかを測るため） */
+function xOpenTime(tReq,tMain,tRes,d,early){try{const tShow=performance.now(),T=performance.timing||{},nav=T.navigationStart||0,html=T.responseEnd&&nav?T.responseEnd-nav:null,s=x=>(Math.round(x/100)/10)+'秒';
+  const msg='一覧が出るまで '+s(tShow)+'（ページ受信 '+(html!=null?s(html):'?')+'・問い合わせ開始 '+s(tReq)+(early?'（先頭で）':'（本体のあと）')+'・本体の準備 '+s(tMain)+'・応答 '+s(tRes)+'（往復 '+s(tRes-tReq)+'、うちサーバー処理 '+s(d.srvMs||0)+'：'+(d.srvT||'内訳なし')+'）・表示 '+s(tShow-Math.max(tRes,tMain))+'）'+(inAppBrowser()?'｜アプリ内ブラウザ':'');
+  call('logError',{who:'リンク：'+(d.name||''),ver:CLIENT_VERSION,screen:'リンク',action:'リンクを開く時間（情報）',msg:msg.slice(0,500),ua:(navigator.userAgent||'').slice(0,120)}).catch(()=>{});}catch(e){}}
 /** 受け取った内容を入れる（置き場のアドレスを受け取った時刻も） */
 function xSet(d){XR.data=d;XR.loadedAt=Date.now();XR.gat={};(d.videos||[]).forEach(v=>{if(v.gurl)XR.gat[v.id]=d.gurlAt||Date.now();});}
 /** 書きかけ（返事と、動画ごとのひとこと）を、送るまでこの端末に残す */
