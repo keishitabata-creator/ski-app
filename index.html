@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.51.1 -->
+<!-- スキー行動予定アプリ 画面側 v4.52.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -575,6 +575,7 @@ body.extmode nav.tabs,body.extmode header{display:none}
 nav.tabs button{position:relative}nav.tabs button[data-badge]::after{content:attr(data-badge);position:absolute;top:2px;right:calc(50% - 22px);background:#C42B5E;color:#fff;font-size:10px;font-weight:800;border-radius:999px;padding:0 5px;min-width:16px;line-height:16px;text-align:center}
 .vth .vcat{position:absolute;right:4px;bottom:4px;background:rgba(22,50,79,.85);color:#fff;font-size:10px;border-radius:4px;padding:0 4px}
 .cslt{background:var(--card);border:1px solid var(--line);border-left:4px solid #1F4E78;border-radius:10px;padding:8px 10px;margin:6px 0}.cslt-r{margin-top:4px;line-height:1.6}.cslt-r small{display:block}
+.xstate{background:#F3F7FB;border-radius:8px;padding:4px 8px;margin:4px 0}
 .xprog{margin:6px 0;color:var(--sub)}.xprog b{color:var(--ink)}.xseen{position:absolute;left:6px;bottom:4px;background:#2E8B57;color:#fff;font-size:11px;border-radius:8px;padding:1px 6px}
 .xthr .xc{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;line-height:1.7}.xthr .xc small{color:var(--sub)}
 .xfrom{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:6px 0;font-weight:700}.xfrom small{font-weight:500;color:var(--sub)}
@@ -599,7 +600,7 @@ body.locked nav.tabs,body.locked #whoin,body.locked #hdrsub,body.locked .hdrx{di
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.51.1';
+const CLIENT_VERSION='4.52.0';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -1913,22 +1914,32 @@ let XR=null;
 function extMain(key){XR={key,data:null,vid:null,url:{},t:null,part:'',ev:'',img:'',gat:{}};document.body.classList.add('extmode');
   V.innerHTML='<main><p class="note">読み込み中…</p></main>';
   const E0=window.__xr&&window.__xr.key===key?window.__xr:null,tMain=performance.now(),tReq=E0?E0.t0:tMain;let early=!!E0;
-  (E0?E0.p.catch(()=>{early=false;return call('reqOpen',{key});}):call('reqOpen',{key})).then(d=>{const tRes=E0&&early&&E0.t1?E0.t1:performance.now();xSet(d);extList();xOpenTime(tReq,tMain,tRes,d,early);})
-    .catch(e=>{V.innerHTML='<main><div class="xmsg">'+esc(errMsg(e).replace(/^(Exception|Error):\s*/,''))+'</div></main>';});
+  // 2回目以降：前回の内容をこの端末からすぐ表示し、裏で最新の内容に取り直す（受付が終わっていたら消す）
+  const C0=xCacheGet(key);let tCache=null;if(C0){xSet(C0.d,C0.at);XR.cached=true;extList();tCache=performance.now();}
+  (E0?E0.p.catch(()=>{early=false;return call('reqOpen',{key});}):call('reqOpen',{key})).then(d=>{const tRes=E0&&early&&E0.t1?E0.t1:performance.now();XR.cached=false;xSet(d);xCachePut(key,d);xRender();xOpenTime(tReq,tMain,tRes,d,early,tCache);})
+    .catch(e=>{const m=errMsg(e).replace(/^(Exception|Error):\s*/,'');if(/受付を終え|使えなくなって/.test(m)){xEnded(m);return;}
+      if(C0){XR.cached=false;XR.stale=true;xRender();return;}   // 通信できないときは前回の内容のまま（「確かめています」を「取れませんでした」に）
+      V.innerHTML='<main><div class="xmsg">'+esc(m)+'</div></main>';});
   // 戻ってきたとき（30分以上たっていれば）：返事・見た・置き場のアドレスを裏で取り直す。動画を開いている間はしない
   const back=()=>{if(!XR||!XR.data||XR.ended||Date.now()-XR.loadedAt<1800000)return;const pv=document.getElementById('vplayer');if(pv&&!pv.hidden)return;
-    call('reqOpen',{key:XR.key}).then(d=>{const pv2=document.getElementById('vplayer');if(pv2&&!pv2.hidden)return;xSet(d);extList();}).catch(e=>{const m=errMsg(e).replace(/^(Exception|Error):\s*/,'');if(/受付を終え|使えなくなって/.test(m))xEnded(m);});};
+    call('reqOpen',{key:XR.key}).then(d=>{xCachePut(XR.key,d);const pv2=document.getElementById('vplayer');if(pv2&&!pv2.hidden)return;xSet(d);xRender();}).catch(e=>{const m=errMsg(e).replace(/^(Exception|Error):\s*/,'');if(/受付を終え|使えなくなって/.test(m))xEnded(m);});};
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)back();});
   window.addEventListener('pageshow',e=>{if(e.persisted)back();});}   // 「戻る」でページがそのまま復元されたときも
 /** 受付が終わっていたとき：動画を閉じて、そう表示し、書きかけを片付ける */
 function xEnded(m){XR.ended=true;XR.id=null;if(XR.ac)XR.ac.abort();const pv=document.getElementById('vplayer');if(pv){const ve=pv.querySelector('video');if(ve){try{ve.pause();ve.removeAttribute('src');ve.load();}catch(e){}}pv.innerHTML='';pv.hidden=true;}
-  document.body.classList.remove('noscroll');try{localStorage.removeItem(xDraftKey());}catch(e){}V.innerHTML='<main><div class="xmsg">'+esc(m)+'</div></main>';}
+  document.body.classList.remove('noscroll');try{localStorage.removeItem(xDraftKey());localStorage.removeItem(xCacheKey(XR.key));}catch(e){}V.innerHTML='<main><div class="xmsg">'+esc(m)+'</div></main>';}
+/** 前回の内容（この端末だけに保存。受付が終わったら消す。30日より古いものは使わない） */
+const xCacheKey=k=>'xcache:'+k;
+function xCacheGet(k){try{const c=JSON.parse(LS.get(xCacheKey(k))||'null');if(!c||!c.d||!c.at||Date.now()-c.at>30*864e5)return null;return c;}catch(e){return null;}}
+function xCachePut(k,d){try{LS.set(xCacheKey(k),JSON.stringify({at:Date.now(),d}));}catch(e){}}
+/** 一覧を描き直す。返事を書いている途中なら、書き終えて欄を離れたときに描き直す（書いている文字や位置を崩さない） */
+function xRender(){const a=document.activeElement;if(a&&(a.id==='xr-text')){if(!XR.pendRender){XR.pendRender=true;a.addEventListener('blur',()=>{XR.pendRender=false;if(!XR.ended)extList();},{once:true});}return;}extList();}
 /** リンクを開いてから一覧が出るまでの時間と内訳を、エラーシートに「情報」として1行残す（どこに時間がかかっているかを測るため） */
-function xOpenTime(tReq,tMain,tRes,d,early){try{const tShow=performance.now(),T=performance.timing||{},nav=T.navigationStart||0,html=T.responseEnd&&nav?T.responseEnd-nav:null,s=x=>(Math.round(x/100)/10)+'秒';
-  const msg='一覧が出るまで '+s(tShow)+'（ページ受信 '+(html!=null?s(html):'?')+'・問い合わせ開始 '+s(tReq)+(early?'（先頭で）':'（本体のあと）')+'・本体の準備 '+s(tMain)+'・応答 '+s(tRes)+'（往復 '+s(tRes-tReq)+'、うちサーバー処理 '+s(d.srvMs||0)+'：'+(d.srvT||'内訳なし')+'）・表示 '+s(tShow-Math.max(tRes,tMain))+'）'+(inAppBrowser()?'｜アプリ内ブラウザ':'');
+function xOpenTime(tReq,tMain,tRes,d,early,tCache){try{const tShow=performance.now(),T=performance.timing||{},nav=T.navigationStart||0,html=T.responseEnd&&nav?T.responseEnd-nav:null,s=x=>(Math.round(x/100)/10)+'秒';
+  const msg=(tCache!=null?'前回の内容を表示 '+s(tCache)+'／最新の':'')+'一覧が出るまで '+s(tShow)+'（ページ受信 '+(html!=null?s(html):'?')+'・問い合わせ開始 '+s(tReq)+(early?'（先頭で）':'（本体のあと）')+'・本体の準備 '+s(tMain)+'・応答 '+s(tRes)+'（往復 '+s(tRes-tReq)+'、うちサーバー処理 '+s(d.srvMs||0)+'：'+(d.srvT||'内訳なし')+'）・表示 '+s(tShow-Math.max(tRes,tMain))+'）'+(inAppBrowser()?'｜アプリ内ブラウザ':'');
   call('logError',{who:'リンク：'+(d.name||''),ver:CLIENT_VERSION,screen:'リンク',action:'リンクを開く時間（情報）',msg:msg.slice(0,500),ua:(navigator.userAgent||'').slice(0,120)}).catch(()=>{});}catch(e){}}
 /** 受け取った内容を入れる（置き場のアドレスを受け取った時刻も） */
-function xSet(d){XR.data=d;XR.loadedAt=Date.now();XR.gat={};(d.videos||[]).forEach(v=>{if(v.gurl)XR.gat[v.id]=d.gurlAt||Date.now();});}
+function xSet(d,at){XR.data=d;XR.loadedAt=at||Date.now();XR.stale=false;XR.gat={};(d.videos||[]).forEach(v=>{if(v.gurl)XR.gat[v.id]=d.gurlAt||Date.now();});}
 /** 書きかけ（返事と、動画ごとのひとこと）を、送るまでこの端末に残す */
 const xDraftKey=()=>'xdraft:'+XR.key;
 function xDraft(){try{return JSON.parse(LS.get(xDraftKey())||'{}');}catch(e){return {};}}
@@ -1937,7 +1948,7 @@ function xDraftSet(f){const d=xDraft();f(d);d.c=d.c||{};Object.keys(d.c).forEach
 const xThumb=v=>v.thumb&&XR.data.vkey?'https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(v.thumb)+'?alt=media&key='+encodeURIComponent(XR.data.vkey):'';
 const xSrc=v=>v.fileId&&XR.data.vkey?'https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(v.fileId)+'?alt=media&key='+encodeURIComponent(XR.data.vkey):'';
 function extList(){const d=XR.data,f=d.from||{},seen=d.seen||[],vs=d.videos.slice().sort((a,b)=>(b.star?1:0)-(a.star?1:0)),ns=vs.filter(v=>seen.indexOf(v.id)>=0).length,all=d.coms.filter(c=>!c.vid);
-  V.innerHTML='<main><p class="xfrom">'+esc([f.sport,f.athlete].filter(Boolean).join('　'))+(f.org?'（'+esc(f.org)+'）':'')+' より'+(f.sender?'<br><small>送った人：'+esc(f.sender)+'</small>':'')+'</p><h2>'+esc(d.name)+'へ</h2>'+(d.text?'<div class="xmsg">'+esc(d.text).replace(/\n/g,'<br>')+'</div>':'')+
+  V.innerHTML='<main>'+(XR.cached?'<p class="note xstate">前回の内容を表示しています。最新の内容を確かめています…</p>':XR.stale?'<p class="note xstate">最新の内容を取れませんでした（前回の内容を表示しています）。電波のよいところで開き直してください。</p>':'')+'<p class="xfrom">'+esc([f.sport,f.athlete].filter(Boolean).join('　'))+(f.org?'（'+esc(f.org)+'）':'')+' より'+(f.sender?'<br><small>送った人：'+esc(f.sender)+'</small>':'')+'</p><h2>'+esc(d.name)+'へ</h2>'+(d.text?'<div class="xmsg">'+esc(d.text).replace(/\n/g,'<br>')+'</div>':'')+
     '<p class="xprog">見た動画 <b>'+ns+'／'+vs.length+'本</b>'+((d.star||[]).length?'　☆は特に見てほしい動画です':'')+'</p><div class="vgrid">'+
     vs.map(v=>{const n=d.coms.filter(c=>c.vid===v.id).length,tu=xThumb(v);return '<button class="vcard" data-xopen="'+esc(v.id)+'"><span class="vth">'+(tu?'<img loading="lazy" alt="" src="'+esc(tu)+'" onerror="this.remove()">':'')+'<i>'+(v.photo?'📷':'▶')+'</i>'+(v.star?'<b class="vb">☆</b>':'')+(seen.indexOf(v.id)>=0?'<b class="xseen">見た</b>':'')+'</span><span class="vt">'+esc(v.title)+'</span><small>'+(n?'ひとこと '+n+'件':'')+'</small></button>';}).join('')+'</div>'+
     '<h2>返事</h2>'+(all.length?'<div class="xthr">'+all.map(c=>'<div class="xc"><small>'+esc(String(c.at||'').slice(5,16))+'</small><div>'+esc(c.text).replace(/\n/g,'<br>')+'</div>'+(c.reply?'<div class="grr">'+esc(c.rby||'')+'より：'+esc(c.reply)+'</div>':'')+'</div>').join('')+'</div>':'')+
