@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.38.0 -->
+<!-- スキー行動予定アプリ 画面側 v4.39.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -454,6 +454,31 @@ html.big .btn{font-size:17px}
 .vid.best{border-left:4px solid #E8A21A;padding-left:8px}
 .linkbtn2.star{color:#B7791F;font-weight:700}
 .arow .vcnt{display:inline-block;font-size:12px;font-weight:700;color:var(--sub);background:rgba(127,127,127,.12);border-radius:999px;padding:0 8px;cursor:pointer;margin-left:6px}
+/* v4.39：アプリの中の動画プレーヤー */
+body.noscroll{overflow:hidden}
+#vplayer{position:fixed;inset:0;z-index:60;background:#000;color:#E8EEF4;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:env(safe-area-inset-top,0px) 0 calc(16px + env(safe-area-inset-bottom,0px))}
+#vplayer[hidden]{display:none}
+.vp-top{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(0,0,0,.85)}
+.vp-close{background:#fff;color:#111;border:0;border-radius:999px;font-weight:800;font-size:16px;padding:10px 18px;min-height:44px}
+.vp-cnt{font-size:14px;color:#AFC0CF}
+.vp-stage{display:flex;justify-content:center;background:#000}
+.vp-stage video{width:100%;max-height:72vh;background:#000;display:block}
+.vp-stage iframe{width:100%;aspect-ratio:9/16;max-height:72vh;border:0}
+.vp-info{padding:10px 14px 0}.vp-info b{display:block;font-size:16px}.vp-info span{font-size:13px;color:#AFC0CF}
+.vp-nav,.vp-acts{display:flex;gap:8px;padding:10px 14px 0}.vp-nav .btn{flex:1}
+#vplayer .btn{background:#1E2A36;color:#E8EEF4;border-color:#3A4A5A}#vplayer .btn.pri{background:#E87A30;border-color:#E87A30;color:#fff}#vplayer .btn.on{background:#3A2E12;border-color:#E8A21A;color:#FFD480}
+.vp-com{padding:12px 14px}.vp-com .lab{color:#AFC0CF}
+.vp-com .vc{background:#16212B;border:1px solid #2E3B47;border-radius:10px;padding:8px 10px;margin:6px 0}.vp-com .vc.coach{border-color:#E87A30}
+.vp-com .vc b{font-size:12.5px;color:#F0A35E;margin-right:6px}.vp-com .vc span{font-size:15px}.vp-com .vc small{display:block;font-size:11px;color:#8798A8;margin-top:2px}
+.vp-com input{flex:1;min-height:44px;border-radius:10px;border:1px solid #3A4A5A;background:#0F1A24;color:#E8EEF4;padding:8px 10px;font-size:16px}
+.vplay{background:none;border:0;padding:0;color:var(--link,#1F6FB2);font:inherit;font-weight:700;text-align:left;cursor:pointer}
+.vw{display:inline-block;font-size:11px;font-weight:700;background:rgba(232,122,48,.15);color:#B85A16;border-radius:999px;padding:0 7px;margin-left:4px}
+.vnew{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-left:4px solid #E87A30;border-radius:10px;padding:8px 10px;margin:6px 0;font:inherit;font-weight:700;color:var(--ink);cursor:pointer}
+.vnew small{display:block;font-weight:500;color:var(--sub);font-size:12px}
+.vtip{background:rgba(232,162,26,.12);border:1px solid rgba(232,162,26,.45);border-radius:10px;padding:8px 10px;font-size:13px;margin:6px 0}
+.vrow{margin:6px 0}.vrow span{font-size:13px;font-weight:700}.vrow small{font-size:12px;color:var(--sub)}
+.vrow .prog{height:6px;background:rgba(127,127,127,.2);border-radius:3px;overflow:hidden;margin:3px 0}.vrow .prog div{height:100%;width:0;background:#E87A30;transition:width .2s}
+.chk{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:14px}.chk input{width:22px;height:22px}
 </style>
 </head>
 <body>
@@ -461,7 +486,7 @@ html.big .btn{font-size:17px}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.38.0';
+const CLIENT_VERSION='4.39.0';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -523,7 +548,7 @@ function applyPart(d){if(!d||!d.partial){ingest(d);return;}
   if(d.trips){S.trips=d.trips;S.races=d.races;S.tdays=d.tdays;if(d.days)S.days=d.days;ingest(S);return;}
   if(d.results){S.results=d.results;ingest(S);return;}
   if(d.coachings){S.coachings=d.coachings;ingest(S);return;}
-  if(d.videos){S.videos=d.videos;ingest(S);return;}
+  if(d.videos){S.videos=d.videos;if(d.vcoms)S.vcoms=d.vcoms;ingest(S);return;}
   if(d.sess&&!d.dates&&!d.acts){expandSess(d.sess);Object.keys(d.sess).forEach(k=>S.sess[k]=d.sess[k]);if(d.sessFrom&&d.sessFrom<S.sessFrom)S.sessFrom=d.sessFrom;ingest(S);return;}
   if(d.planDays){const m={};d.planDays.forEach(r=>m[r[0]]=r);S.days=S.days.map(r=>m[r[0]]||r);if(d.patterns)S.patterns=d.patterns;if(!d.dates){ingest(S);return;}}
   expandSess(d.sess);
@@ -778,6 +803,7 @@ function renderHome(){
   if(!planEmpty&&canEdit()){const G=planGap();if(G.length>=5)h+='<div class="nudge plan"><span>'+md(G[0])+'から、予定が入っていない日が'+G.length+'日あります（これから2週間）。週の型を当てはめると埋まります。</span><button class="btn pri sm2" data-act="patOpen">週の型を当てはめる</button></div>';}
   h+='<section class="today"><div class="thead"><span class="tlabel">今日</span><b>'+mdw(TODAY)+'</b></div>'+dayBody(DAYS[DIDX[TODAY]])+'</section>';
   h+=questionCard();
+  h+=videoNews();
   const tm=addD(TODAY,1);if(DIDX[tm]!==undefined)h+='<section class="today tmr"><div class="thead"><span class="tlabel">明日</span><b>'+mdw(tm)+'</b><button class="linkbtn2" data-day="'+tm+'" style="margin-left:auto">開く</button></div>'+dayBody(DAYS[DIDX[tm]],{compact:true})+'</section>';
   const a=monOf(TODAY),b=addD(a,6);let pl=0,dn=0;
   let ex=0;DAYS.forEach(d=>{if(d.d<a||d.d>b||d.d>TODAY)return;rowsOf(d).forEach(r=>{if(isSys(r.kind))return;if(r.planned)pl++;if(r.act&&r.act.st==='実施'){if(r.planned)dn++;else ex++;}});});
@@ -864,7 +890,7 @@ function retInfo(t){const rs=RACES.filter(r=>r.tr===t.id);if(!rs.length)return n
   const lt=TD[last];if(lt&&has(lt.etm,'帰宅'))return {txt:mdw(last)+'（大会当日）'};
   return {txt:'未登録',none:true};}
 function vidUrl(v){return v.fileId?'https://drive.google.com/file/d/'+encodeURIComponent(v.fileId)+'/view':v.url;}
-function vidItem(v){return '<div class="vid'+(v.best?' best':'')+'"><a href="'+esc(vidUrl(v))+'" target="_blank" rel="noopener">'+(v.best?'☆ ':'▶ ')+esc(v.title)+'</a><span>'+esc([md(v.d),v.slot,v.kind,v.memo,'登録：'+v.by].filter(Boolean).join('｜'))+'</span>'+(canEdit()?'<button class="linkbtn2 star" data-vstar="'+esc(v.id)+'" aria-pressed="'+!!v.best+'">'+(v.best?'☆を外す':'☆ベストにする')+'</button><button class="linkbtn2 danger" data-vdel="'+esc(v.id)+'">削除</button>':'')+'</div>';}
+function vidItem(v){const nc=(S.vcoms||[]).filter(c=>c.vid===v.id).length;return '<div class="vid'+(v.best?' best':'')+'"><button class="vplay" data-vplay="'+esc(v.id)+'">'+(v.best?'☆ ':'▶ ')+esc(v.title)+(v.want?' <small class="vw">コーチに見てほしい</small>':'')+(nc?' <small class="vw">💬'+nc+'</small>':'')+'</button><span>'+esc([md(v.d),v.slot,v.kind,v.memo,'登録：'+v.by].filter(Boolean).join('｜'))+'</span>'+(canEdit()?'<button class="linkbtn2 star" data-vstar="'+esc(v.id)+'" aria-pressed="'+!!v.best+'">'+(v.best?'☆を外す':'☆ベストにする')+'</button><button class="linkbtn2 danger" data-vdel="'+esc(v.id)+'">削除</button>':'')+'</div>';}
 function renderRace(){
   const up=TRIPS.filter(t=>!t.b||t.b>=TODAY).sort((a,b)=>a.a<b.a?-1:1), past=TRIPS.filter(t=>t.b&&t.b<TODAY).sort((a,b)=>a.a<b.a?1:-1);
   let h='<main>';
@@ -1214,39 +1240,59 @@ function openVid(date,slot,kind){sheetCtx={date};const left=vidLeft(date),per=S.
   if(!left){SH.innerHTML=h+'<p class="note" style="color:var(--sun)">この日の上限に達しています。</p><div class="acts"><button class="btn" data-act="vidBack">戻る</button></div>';openS('vid');return;}
   const acts=(S.acts[date]||[]).filter(a=>a.st==='実施'),pref=acts.find(a=>a.kind==='WJ')||acts.find(a=>a.kind==='雪上')||acts[0]||{},v=view(DAYS[DIDX[date]]);
   const k0=kind||pref.kind||(v.items[0]||{}).kind||'',s0=slot||pref.slot||'';
-  h+='<label class="lab">動画を選ぶ（最大'+left+'本）<input type="file" id="v-file" accept="video/*" multiple></label><p class="note" id="v-sel"></p>'+
+  h+='<div class="vtip"><b>画質を落とさないために</b>：写真を選ぶ画面の上の「<b>オプション</b>」で、<b>位置情報：オフ</b>／サイズ：フルサイズ／<b>フォーマット：現在のフォーマット</b>（「自動」だと画質が落ちます）</div>'+
+    '<label class="lab">動画を選ぶ（最大'+left+'本）<input type="file" id="v-file" accept="video/*" multiple></label><p class="note" id="v-sel"></p>'+
     '<div class="lab">活動</div>'+pick('v-kind',S.opt.kinds.filter(k=>k!=='OFF'),k0)+
     '<div class="lab">時間帯</div>'+pick('v-slot',SLOTS,s0)+
     '<label class="lab">題名（空なら「'+esc((k0||'動画')+' '+md(date))+' ①」のように自動）<input type="text" id="v-title" maxlength="50"></label>'+
     '<label class="lab">メモ（コーチに見てほしい点など・全部の動画に付きます）<input type="text" id="v-memo" maxlength="300"></label>'+
+    '<label class="chk"><input type="checkbox" id="v-want"> コーチに見てほしい（コーチのホームに新着として出ます）</label>'+
     '<details class="past"><summary>ファイルではなくリンクで登録する</summary><input type="text" id="v-url" placeholder="https://…（YouTubeの限定公開など）"></details>'+
-    '<div class="prog" id="v-prog" hidden><div id="v-bar"></div></div><p class="note" id="v-st"></p>'+
+    '<div id="v-rows"></div><p class="note" id="v-st"></p>'+
     '<div class="acts"><button class="btn" data-act="vidBack">戻る</button><button class="btn pri" data-act="vidGo">登録</button></div>';
   SH.innerHTML=h;openS('vid');
   const fi=document.getElementById('v-file');fi.onchange=()=>{const n=fi.files.length,mb=[...fi.files].reduce((t,f)=>t+f.size,0)/1048576;document.getElementById('v-sel').textContent=n?n+'本を選びました（計 '+mb.toFixed(0)+'MB）'+(n>left?'。この日はあと'+left+'本なので、最初の'+left+'本だけ登録します':''):'';};}
 function b64of(blob){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]||'');r.onerror=()=>rej(new Error('ファイルを読み込めませんでした'));r.readAsDataURL(blob);});}
 const CIRC='①②③④⑤⑥⑦⑧⑨⑩';
+/** 1本を送る：まず直接ドライブへ（XHR）、だめなら中継（Apps Script）で */
+function putDirect(loc,f,onp){return new Promise((res,rej)=>{const x=new XMLHttpRequest();x.open('PUT',loc,true);x.timeout=30*60*1000;
+  x.upload.onprogress=e=>{if(e.lengthComputable)onp(e.loaded/e.total);};
+  x.onload=()=>{if(x.status===200||x.status===201){try{const j=JSON.parse(x.responseText||'{}');if(j.id)return res(j.id);}catch(e){}}rej(new Error('direct '+x.status));};
+  x.onerror=()=>rej(new Error('direct network'));x.ontimeout=()=>rej(new Error('direct timeout'));x.send(f);});}
+async function putRelay(f,date,title,onp,st){const s0=await call('videoStart',{who,key,date,size:f.size,mime:f.type,name:date+'_'+title+(f.name.match(/\.[^.]+$/)||['.mp4'])[0]});
+  const CH=5*1024*1024;let pos=0,res=null;
+  while(pos<f.size){const end=Math.min(pos+CH,f.size);const b64=await b64of(f.slice(pos,end));
+    let tries=0;for(;;){try{res=await call('videoChunk',{uid:s0.uid,start:pos,total:f.size,b64});break;}catch(e){if(++tries>=3)throw e;st('通信をやり直しています…');}}
+    pos=end;onp(pos/f.size);}
+  if(!res||!res.done)throw new Error('アップロードが完了しませんでした');return res.fileId;}
 async function uploadVid(){if(upBusy)return;if(!who){askWho();return;}
-  const date=sheetCtx.date,left=vidLeft(date),files=[...(document.getElementById('v-file').files||[])].slice(0,left),url=val('v-url'),kind=val('v-kind'),slot=val('v-slot'),memo=val('v-memo');
+  const date=sheetCtx.date,left=vidLeft(date),files=[...(document.getElementById('v-file').files||[])].slice(0,left),url=val('v-url'),kind=val('v-kind'),slot=val('v-slot'),memo=val('v-memo'),want=!!(document.getElementById('v-want')||{}).checked;
   const base=val('v-title')||((kind||'動画')+' '+md(date)+(slot?' '+slot:''));
   if(!files.length&&!url){toast('動画を選ぶか、リンクを入れてください');return;}
   const big=files.find(f=>f.size>S.videoMaxMB*1024*1024);if(big){toast('「'+big.name+'」が大きすぎます（上限 '+S.videoMaxMB+'MB）');return;}
-  const st=document.getElementById('v-st'),pg=document.getElementById('v-prog'),bar=document.getElementById('v-bar');
-  upBusy=true;SH.querySelectorAll('button,input').forEach(b=>b.disabled=true);let ok=0,last=null;
+  const st=document.getElementById('v-st'),box=document.getElementById('v-rows'),t0=Date.now();
+  upBusy=true;SH.querySelectorAll('button,input').forEach(b=>b.disabled=true);
   try{
-    if(!files.length){st.textContent='登録中…';last=await call('videoRegister',{who,key,date,title:base,kind,slot,memo,fileId:'',url});ok=1;}
-    for(let n=0;n<files.length;n++){const f=files[n],title=files.length>1?base+' '+CIRC[n]:base,tag=(files.length>1?(n+1)+'/'+files.length+'本目 ':'');
-      pg.hidden=false;bar.style.width='0%';st.textContent=tag+'送信の準備中…（画面を閉じずにお待ちください）';
-      const s0=await call('videoStart',{who,key,date,size:f.size,mime:f.type,name:date+'_'+title+(f.name.match(/\.[^.]+$/)||['.mp4'])[0]});
-      const CH=5*1024*1024;let pos=0,res=null;
-      while(pos<f.size){const end=Math.min(pos+CH,f.size);const b64=await b64of(f.slice(pos,end));
-        let tries=0;for(;;){try{res=await call('videoChunk',{uid:s0.uid,start:pos,total:f.size,b64});break;}catch(e){if(++tries>=3)throw e;st.textContent=tag+'通信をやり直しています…';}}
-        pos=end;const pc=Math.round(pos/f.size*100);bar.style.width=pc+'%';st.textContent=tag+'送信中… '+pc+'%（'+(pos/1048576).toFixed(1)+' / '+(f.size/1048576).toFixed(1)+'MB）';}
-      if(!res||!res.done)throw new Error('アップロードが完了しませんでした');
-      st.textContent=tag+'登録中…';last=await call('videoRegister',{who,key,date,title,kind,slot,memo,fileId:res.fileId,url:'',size:f.size});ok++;}
-    if(last)applyPart(last);upBusy=false;closeSheet();render();openDaySheet(date);toast(ok>1?ok+'本の動画を登録しました':'動画を登録しました');
-  }catch(e){upBusy=false;if(last)applyPart(last);SH.querySelectorAll('button,input').forEach(b=>b.disabled=false);const m=errMsg(e);
-    st.textContent=ok?ok+'本は登録できました。残りは登録できませんでした。':'';
+    if(!files.length){st.textContent='登録中…';const d=await call('videoRegister',{who,key,date,title:base,kind,slot,memo,fileId:'',url});applyPart(d);if(want){const v=(S.videos||[]).filter(x=>x.d===date).slice(-1)[0];if(v)await call('videoUpdate',{who,key,id:v.id,want:true}).then(applyPart);}
+      upBusy=false;closeSheet();render();openDaySheet(date);toast('動画を登録しました');return;}
+    const titles=files.map((f,n)=>files.length>1?base+' '+CIRC[n]:base);
+    box.innerHTML=files.map((f,n)=>'<div class="vrow"><span>'+esc(titles[n])+'（'+(f.size/1048576).toFixed(1)+'MB）</span><div class="prog"><div id="vb'+n+'"></div></div><small id="vs'+n+'">待機中</small></div>').join('');
+    const bar=(n,r)=>{const e=document.getElementById('vb'+n);if(e)e.style.width=Math.round(r*100)+'%';},msg=(n,t)=>{const e=document.getElementById('vs'+n);if(e)e.textContent=t;};
+    st.textContent='送信の準備中…（画面を閉じずにお待ちください）';
+    const prep=await call('videoStartMany',{who,key,date,origin:location.origin,files:files.map((f,n)=>({size:f.size,mime:f.type,name:date+'_'+titles[n]+(f.name.match(/\.[^.]+$/)||['.mp4'])[0]}))});
+    st.textContent='送信中…';const ids=new Array(files.length).fill('');let relay=false,done=0;
+    const one=async n=>{const f=files[n];msg(n,'送信中');
+      try{ids[n]=await putDirect(prep.sessions[n].loc,f,r=>{bar(n,r);msg(n,'送信中 '+Math.round(r*100)+'%');});}
+      catch(e){relay=true;msg(n,'別の方法で送信中');bar(n,0);ids[n]=await putRelay(f,date,titles[n],r=>{bar(n,r);msg(n,'別の方法で送信中 '+Math.round(r*100)+'%');},t=>msg(n,t));}
+      bar(n,1);msg(n,'✓ 送信済み');done++;st.textContent='送信中… '+done+'/'+files.length+'本';};
+    let next=0;const worker=async()=>{while(next<files.length){const n=next++;await one(n);}};
+    await Promise.all([worker(),worker()]);   // 2本ずつ同時
+    st.textContent='登録中…';
+    const d=await call('videoRegisterMany',{who,key,date,kind,slot,memo,want,items:files.map((f,n)=>({fileId:ids[n],title:titles[n],size:f.size}))});
+    applyPart(d);upBusy=false;closeSheet();render();openDaySheet(date);
+    const secs=Math.round((Date.now()-t0)/1000);toast(files.length+'本の動画を登録しました（'+secs+'秒）');
+    reportErr('動画送信',files.length+'本・'+(files.reduce((t,f)=>t+f.size,0)/1048576).toFixed(1)+'MB・'+secs+'秒・'+(relay?'中継あり':'直接'),'info');
+  }catch(e){upBusy=false;SH.querySelectorAll('button,input').forEach(b=>b.disabled=false);const m=errMsg(e);st.textContent='';
     if(m.indexOf('KEY')>=0){key='';LS.set('key','');askKey(false);toast('合言葉が違います');return;}
     toast(/[^\x00-\x7F]/.test(m)?m.replace(/^(Exception|Error):\s*/,''):'送信できませんでした。電波のよい場所でもう一度お試しください。');}}
 /** 同じ活動の動画を、日付の新しい順に並べて見比べる */
@@ -1254,6 +1300,37 @@ function openVcmp(kind){const L=(S.videos||[]).filter(v=>v.kind===kind).sort((a,
   let h='<div class="grab"></div><h3 id="sh-title">'+esc(kind)+' の動画（'+L.length+'本）</h3><p class="note">新しい順。☆はベストの1本。同じ技の前と今を見比べられます。</p>';
   let m='';L.forEach(v=>{const mm=v.d.slice(0,7);if(mm!==m){m=mm;h+='<div class="lab">'+(+mm.slice(5))+'月</div>';}h+=vidItem(v);});
   h+='<div class="acts"><button class="btn" data-act="close">閉じる</button></div>';SH.innerHTML=h;openS('vcmp');}
+
+/* ---------- アプリの中の動画プレーヤー（原本をそのまま再生） ---------- */
+const vSrc=v=>v.fileId&&S.vkey?'https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(v.fileId)+'?alt=media&key='+encodeURIComponent(S.vkey):'';
+const vComs=id=>(S.vcoms||[]).filter(c=>c.vid===id).sort((a,b)=>a.at<b.at?-1:1);
+let vplay=null;
+function openPlayer(id,list){const v=(S.videos||[]).find(x=>x.id===id);if(!v)return;
+  list=list&&list.length?list:(S.videos||[]).filter(x=>x.d===v.d&&x.kind===v.kind).sort((a,b)=>a.title<b.title?-1:1).map(x=>x.id);
+  vplay={id,list};drawPlayer();}
+function drawPlayer(){const c=vplay,v=(S.videos||[]).find(x=>x.id===c.id);if(!v){closePlayer();return;}const i=c.list.indexOf(v.id),src=vSrc(v);
+  let pv=document.getElementById('vplayer');if(!pv){pv=document.createElement('div');pv.id='vplayer';pv.setAttribute('role','dialog');pv.setAttribute('aria-modal','true');document.body.appendChild(pv);}
+  document.body.classList.add('noscroll');
+  let h='<div class="vp-top"><button class="vp-close" data-act="vpClose" aria-label="閉じる">✕ 閉じる</button><span class="vp-cnt">'+(c.list.length>1?(i+1)+'／'+c.list.length:'')+'</span></div>';
+  h+='<div class="vp-stage">'+(src?'<video id="vp-video" controls playsinline autoplay preload="auto" src="'+esc(src)+'"></video>':'<iframe src="https://drive.google.com/file/d/'+esc(v.fileId)+'/preview" allow="autoplay"></iframe>')+(v.fileId?'':'<p class="note"><a href="'+esc(v.url)+'" target="_blank" rel="noopener">▶ リンク先で見る</a></p>')+'</div>';
+  h+='<div class="vp-info"><b>'+(v.best?'☆ ':'')+esc(v.title)+'</b><span>'+esc([mdw(v.d),v.slot,v.kind,v.memo].filter(Boolean).join('｜'))+'</span></div>';
+  h+='<div class="vp-nav"><button class="btn" data-act="vpPrev"'+(i>0?'':' disabled')+'>◀ 前</button><button class="btn" data-act="vpNext"'+(i<c.list.length-1?'':' disabled')+'>次 ▶</button></div>';
+  if(canEdit())h+='<div class="vp-acts"><button class="btn sm2'+(v.best?' on':'')+'" data-vstar="'+esc(v.id)+'">'+(v.best?'☆ ベスト（外す）':'☆ ベストにする')+'</button><button class="btn sm2'+(v.want?' on':'')+'" data-vwant="'+esc(v.id)+'">'+(v.want?'✓ コーチに見てほしい（外す）':'コーチに見てほしい')+'</button></div>';
+  const cs=vComs(v.id);
+  h+='<div class="vp-com"><div class="lab">ひとこと'+(cs.length?'（'+cs.length+'）':'')+'</div>'+cs.map(x=>'<div class="vc'+((S.coaches||[]).indexOf(x.by)>=0?' coach':'')+'"><b>'+esc(x.by)+'</b><span>'+esc(x.text)+'</span><small>'+esc(String(x.at).slice(5,16))+'</small></div>').join('')+
+    '<div class="qrow"><input type="text" id="vp-text" maxlength="500" placeholder="'+((S.coaches||[]).indexOf(who)>=0?'気づいたことを一言':'ひとこと')+'"><button class="btn pri sm2" data-act="vpSend">送る</button></div></div>';
+  pv.innerHTML=h;pv.hidden=false;
+  const ve=document.getElementById('vp-video');if(ve){ve.addEventListener('error',()=>{const st=pv.querySelector('.vp-stage');if(st)st.innerHTML='<iframe src="https://drive.google.com/file/d/'+esc(v.fileId)+'/preview" allow="autoplay"></iframe><p class="note">この端末では原本を直接再生できないため、ドライブの再生画面で表示しています。</p>';reportErr('動画再生','原本を再生できません（コード '+(ve.error?ve.error.code:'?')+'）','info');},{once:true});}
+  // 見た印（コーチのひとことの新着を消すため）
+  if(who){const seen=JSON.parse(LS.get('vseen:'+who)||'{}');seen[v.id]=cs.length;LS.set('vseen:'+who,JSON.stringify(seen));}}
+function closePlayer(){const pv=document.getElementById('vplayer');if(pv){const ve=pv.querySelector('video');if(ve){try{ve.pause();}catch(e){}}pv.innerHTML='';pv.hidden=true;}document.body.classList.remove('noscroll');vplay=null;render();}
+/** ホームの新着：コーチ＝「見てほしい」でまだコーチのひとことがない動画。本人・家族＝まだ見ていないコーチのひとこと */
+function videoNews(){if(!who||!S.videos)return '';const isCoach=(S.coaches||[]).indexOf(who)>=0;
+  if(isCoach){const L=(S.videos||[]).filter(v=>v.want&&v.d>=addD(TODAY,-30)&&!vComs(v.id).some(c=>(S.coaches||[]).indexOf(c.by)>=0)).sort((a,b)=>a.d<b.d?1:-1);
+    if(!L.length)return '';return '<h2>見てほしい動画（'+L.length+'本）</h2><div class="exl">'+L.slice(0,10).map(v=>'<button class="vnew" data-vplay="'+esc(v.id)+'" data-vlist="'+esc(L.map(x=>x.id).join(','))+'">▶ '+esc(v.title)+'<small>'+esc(mdw(v.d)+(v.memo?'｜'+v.memo:''))+'</small></button>').join('')+'</div>';}
+  const seen=JSON.parse(LS.get('vseen:'+who)||'{}');
+  const L=(S.videos||[]).filter(v=>{const cc=vComs(v.id).filter(c=>(S.coaches||[]).indexOf(c.by)>=0);return cc.length&&vComs(v.id).length>(seen[v.id]||0)&&cc.some(c=>String(c.at)>=addD(TODAY,-14).replace(/-/g,'/'));});
+  if(!L.length)return '';return '<h2>コーチのひとこと（新着'+L.length+'）</h2><div class="exl">'+L.map(v=>{const c=vComs(v.id).filter(x=>(S.coaches||[]).indexOf(x.by)>=0).slice(-1)[0];return '<button class="vnew" data-vplay="'+esc(v.id)+'">💬 '+esc(c.text)+'<small>'+esc(v.title)+'</small></button>';}).join('')+'</div>';}
 // ---------- 今日の1問（本人だけ）：場面の判定と問いの選択 ----------
 const QCLOSE=/^(なかった|ない|どっちもない|わからない|話してない|見てない|思い出せない|まだない|してない|考えてない)$/;
 const termOf=d=>{const y=+d.slice(0,4),m=+d.slice(5,7);return m>=4&&m<=9?y+'前期':(m>=10?y:y-1)+'後期';};
@@ -1504,7 +1581,7 @@ function renderHelp(){
   '<h3>月次チェック（月末の締め）</h3><p>スプレッドシートのメニュー「行動予定アプリ」→「月次チェック」で、その月の点検表（1日1行）ができます。予定・実績・体調・問題（未記録／予定外／時間帯ちがい／区分ちがい／標準より少ない／明細なし）が並び、「どうする」の列に<b>おすすめが入っています</b>。違う日だけ▼で「そのまま／記録が正しい／予定が正しい／この日は休み／本人に聞く」から選び、メニュー「月次チェックの修正を反映」を押すだけです。</p><p>「本人に聞く」にした日は、本人のアプリのホームに知らせが出て、「まとめて記録」の先頭に「父から確認」として並びます。まとめて記録では、ROMベーシックの行に予定の区分（フル／ハーフ）が出て、✓にすると区分の切替と「内容を直して記録」（セット数を減らしたときなど）が使えます。セット数を個別に直すときは「月次チェック_○○_種目」シートに数を書きます。</p>'+
   '<h3>標準値（メニュー）をアプリで変える</h3><p>活動名を押して「今日のメニュー」→「標準値（回数・セット数）を変える」で、フル／ハーフそれぞれの回数・セット数を−／＋で直せます。記録画面でセット数を直したあと「この内容を標準値にする」を押しても同じです。変えた値は目安と初回の初期値になり、すでに記録した内容は変わりません。コーチは変えられません。</p>'+
   '<h3>学校・スポンサーへの報告PDF</h3><p>「実績」画面の一番下の「活動報告PDFを作る」。宛先（学校／スポンサー）と期間を選ぶだけです。PDFは「誰か（プロフィール）→今季の目標→ハイライト（ベスト成績・大会数・評定平均・部活）→文武両道→大会→遠征・合宿→日々のトレーニング→今後の予定→支援のお願い・連絡先」の順で、応援したくなる構成にしています。「設定」シートの「選手名」「所属」「学年・カテゴリー」「プロフィール」「今季の目標」「支援のお願い」「連絡先」を書いておくと載ります（setupで行が増えます）。学校向けは出欠の一覧と備考欄つき、支援のお願いは載りません。</p><h3>予定変更画面の見方</h3><p>ROMベーシックを選ぶと、その下に「└ ROMベーシックの区分：フル／ハーフ／当日決める」の段が出ます。どれかを選ぶまで保存できません（週の型・複数日も同じ）。「この日にパーソナルを受ける」で、未来の日にパーソナルを予定できます。</p>'+
-  '<h3>動画（まとめて登録・☆・見比べ）</h3><p>日の画面の「＋ 動画を登録」で、一度に何本でも選べます（1日10本まで）。活動と時間帯を選ぶと、題名は「WJ 9/12 昼 ①」のように自動で付きます。活動の行に🎬の数が出て、押すと同じ活動の動画を新しい順に見比べられます。いちばん良い1本には「☆ベストにする」。☆の動画は実績画面に一覧で出ます。容量は実績画面の下に表示（ドライブ全体の使用量）。</p><h3>WJの本数</h3><p>記録画面に合計、カレンダーに「WJ42」、ホームに今週と今年度の本数、実績に期間の合計と今年度の累計が出ます。</p>'+
+  '<h3>動画（まとめて登録・☆・見比べ）</h3><p>動画の題名を押すと、アプリの中で撮影したままの画質で再生されます（左上の「✕ 閉じる」で戻る、「◀ 前｜次 ▶」で切り替え）。コーチに見てほしい動画は「コーチに見てほしい」を押すと、コーチのホームに新着として出ます。動画の下の「ひとこと」はコーチ・本人・家族の全員が書けて、コーチのひとことは本人のホームに新着として出ます。登録のときは、写真を選ぶ画面の「オプション」で、位置情報オフ・フォーマット「現在のフォーマット」にしてください。日の画面の「＋ 動画を登録」で、一度に何本でも選べます（1日10本まで）。活動と時間帯を選ぶと、題名は「WJ 9/12 昼 ①」のように自動で付きます。活動の行に🎬の数が出て、押すと同じ活動の動画を新しい順に見比べられます。いちばん良い1本には「☆ベストにする」。☆の動画は実績画面に一覧で出ます。容量は実績画面の下に表示（ドライブ全体の使用量）。</p><h3>WJの本数</h3><p>記録画面に合計、カレンダーに「WJ42」、ホームに今週と今年度の本数、実績に期間の合計と今年度の累計が出ます。</p>'+
   '<h3>今日のひとこと（本人だけ）</h3><p>記録を押したあと、ホームに1問だけ出ます。かけらを押すか、ひとこと入れて「これでOK」。大会・パーソナル・合宿・学校行事・部活の公演・探究の日は2〜4問続きます。答えは「ことばのかけら」シートに貯まります。学期の問いが一通り終わると、ホームに「まとまったよ」と出て、自分の言葉でまとめた文章を読んで直せます（学校・スポンサーへの報告の先頭に載ります）。家族が「問い」シートで文面を直せます。</p>'+
   '<h3>部活（演劇部）と学業</h3><p><b>部活の入れ方</b>：予定は「予定を変更」（または週の型）で時間帯の「部活」ボタンを押す。参加の記録は、その日の行の［やった］か、日の画面の「部活（演劇部）に参加した」ボタン（1タップ・内容は練習）。公演・大会・合宿は［記録］で内容を選ぶ。カレンダーは「部」。コーチにも見えます。学業（学期・評定平均・順位・通知表の写真）は「実績」画面の一番下で父・母だけが登録・閲覧でき、本人・コーチには見えません。学校・スポンサー向けPDFには、全期間を通じた評定平均と学期ごとの評定平均が載ります。科目ごとの評定や試験ごとの学年順位は「学業明細」シートに貼り付けると、学期ごとの表と「学年順位の推移」で見られます。</p>'+
   '<h3>続ける・共有する（v4.22）</h3><ul class="hl"><li>ホームに「今週の達成率」「連続記録」が出ます。連続記録は、記録した日と記録の要らない日（予定なし・休養日）をつなぎ、予定があって未記録の日で途切れます</li><li>家族が予定を変えると、ホームの「最近の予定変更」に3日間出ます</li><li>「設定」シートの「未記録の通知メール」に宛先を書くと、毎晩21時に、その日の未記録があればメールが届きます</li><li>活動名を押すと今日のメニュー（目安）が見られます。記録は［記録］か、その画面の「記録する」から</li><li>文字が小さいときは、この画面の「文字を大きくする」</li></ul>'+
@@ -1832,8 +1909,15 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.act==='actRepGo'){if(saving)return;makeActRep();return;}
   if(ds.act==='vidAdd'){openVid(openDay.d);return;}
   if(ds.vcmp){openVcmp(ds.vcmp);return;}
-  if(ds.vstar){const v=(S.videos||[]).find(x=>x.id===ds.vstar);if(!v)return;const nb=!v.best;v.best=nb;render();if(SH&&SH.querySelector('[data-vstar="'+v.id+'"]')){const bt=SH.querySelector('[data-vstar="'+v.id+'"]');bt.textContent=nb?'☆を外す':'☆ベストにする';bt.setAttribute('aria-pressed',nb);}
-    call('videoUpdate',{who,key,id:v.id,best:nb}).then(d=>{applyPart(d);render();toast(nb?'☆ベストの1本にしました':'☆を外しました');}).catch(e=>{v.best=!nb;render();toast('変更できませんでした：'+errMsg(e));});return;}
+  if(ds.vplay){openPlayer(ds.vplay,ds.vlist?ds.vlist.split(','):null);return;}
+  if(ds.act==='vpClose'){closePlayer();return;}
+  if(ds.act==='vpPrev'||ds.act==='vpNext'){const i=vplay.list.indexOf(vplay.id)+(ds.act==='vpNext'?1:-1);if(i>=0&&i<vplay.list.length){vplay.id=vplay.list[i];drawPlayer();}return;}
+  if(ds.act==='vpSend'){const t=(document.getElementById('vp-text')||{value:''}).value.trim();if(!t)return;const id=vplay.id;b.disabled=true;
+    call('videoComment',{who,key,vid:id,text:t}).then(d=>{applyPart(d);if(vplay)drawPlayer();toast('ひとことを送りました');}).catch(e=>{b.disabled=false;toast('送れませんでした：'+errMsg(e));});return;}
+  if(ds.vwant){const v=(S.videos||[]).find(x=>x.id===ds.vwant);if(!v)return;const nw=!v.want;v.want=nw;if(vplay)drawPlayer();else render();
+    call('videoUpdate',{who,key,id:v.id,want:nw}).then(d=>{applyPart(d);if(vplay)drawPlayer();else render();toast(nw?'コーチに見てほしい動画にしました':'外しました');}).catch(e=>{v.want=!nw;if(vplay)drawPlayer();toast('変更できませんでした：'+errMsg(e));});return;}
+  if(ds.vstar){const v=(S.videos||[]).find(x=>x.id===ds.vstar);if(!v)return;const nb=!v.best;v.best=nb;if(vplay)drawPlayer();render();if(SH&&SH.querySelector('[data-vstar="'+v.id+'"]')){const bt=SH.querySelector('[data-vstar="'+v.id+'"]');bt.textContent=nb?'☆を外す':'☆ベストにする';bt.setAttribute('aria-pressed',nb);}
+    call('videoUpdate',{who,key,id:v.id,best:nb}).then(d=>{applyPart(d);if(vplay)drawPlayer();render();toast(nb?'☆ベストの1本にしました':'☆を外しました');}).catch(e=>{v.best=!nb;render();toast('変更できませんでした：'+errMsg(e));});return;}
   if(ds.act==='vidGo'){uploadVid();return;}
   if(ds.act==='vidBack'){if(upBusy)return;const x=sheetCtx&&sheetCtx.date;closeSheet();if(x)openDaySheet(x);return;}
   if(ds.vdel){if(!confirm('この動画を削除しますか？（ドライブのごみ箱に移ります）'))return;const vid=ds.vdel;
