@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.45.0 -->
+<!-- スキー行動予定アプリ 画面側 v4.45.2 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -560,7 +560,7 @@ body.extmode nav.tabs,body.extmode header{display:none}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.45.0';
+const CLIENT_VERSION='4.45.2';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -598,6 +598,7 @@ let selMode=false, SEL={}, selRange=false, selAnchor='', pressT=null, noClick=fa
 const canEdit=()=>!!(S&&who&&(S.coaches||[]).indexOf(who)<0);
 
 function ingest(d){
+  if(d&&d._upgrade){checkVersion();return;}   // サーバーからの「空の返事」（古い画面向け）は取り込まない
   if(d&&S&&d!==S&&d.me===undefined){['me','xreqs','xcoms'].forEach(k=>{if(S[k]!==undefined)d[k]=S[k];});}
   if(d&&d.me&&d.me.auth&&d.me.name&&who!==d.me.name){who=d.me.name;LS.set('who',who);}
   if(d&&d.videos&&!d.videos._split){d.vArch=d.videos.filter(v=>v.arch);d.videos=d.videos.filter(v=>!v.arch);d.videos._split=true;}
@@ -686,7 +687,7 @@ function load(quiet){
     const e=document.getElementById('sync');if(e&&inflight>0){e.className='sync on';e.textContent='最新を確認中… '+sec+'秒';}
     if(sec>=30){clearInterval(tick);inflight=Math.max(0,inflight-1);syncShow();toast('最新のデータを取れませんでした（30秒）。表示は前回のものです。上の「更新」で再読み込みできます');}},1000);}
   call('getAll',{who:who||''}).then(d=>{done=true;checkVersion();if(hadCache){inflight=Math.max(0,inflight-1);}ingest(d);FRESH_AT=Date.now();cacheSave(d);if(!hadCache)qReplay();else Q.forEach(e=>{try{const list=e.fn==='saveActivities'?e.p.list:e.fn==='deleteActivity'?[]:[e.p];if(list.length)optimistic(list,false);}catch(x){}});const first=!FRESH;FRESH=true;showLoading(false);render();syncShow();if(!who)askWho();setTimeout(qFlush,300);if(first&&!quiet){TM.fresh=Math.round((Date.now()-T0)/100)/10;TM.srv=d.srvMs!=null?Math.round(d.srvMs/100)/10:null;TM.srvT=d.srvT||'';bootReport();}})
-   .catch(e=>{done=true;showLoading(false);try{reportErr('読み込み',errMsg(e));}catch(x){}
+   .catch(e=>{done=true;showLoading(false);try{checkVersion();}catch(x){}try{reportErr('読み込み',errMsg(e));}catch(x){}
      if(/VKEY/.test(errMsg(e))){showLoading(false);askVKey(vkey?'合言葉が違います':'');return;}
       if(/UKEY/.test(errMsg(e))){showLoading(false);askUKey(LS.get('ukey')?'合言葉が違います':'');return;}
       if(/LOCKED/.test(errMsg(e))){showLoading(false);V.innerHTML='<main><h2>しばらく入れません</h2><p>合言葉の間違いが続いたため、安全のために10分間止めています。10分たってから、もう一度開いてください。</p></main>';return;}
