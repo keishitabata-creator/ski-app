@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.45.5 -->
+<!-- スキー行動予定アプリ 画面側 v4.46.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -553,6 +553,17 @@ body.noscroll{overflow:hidden}
 .vnew.ext{border-left-color:#5B4BC4}
 body.extmode nav.tabs,body.extmode header{display:none}
 .alog{max-height:60vh;overflow-y:auto;border:1px solid var(--line);border-radius:10px}.alog div{padding:6px 10px;border-bottom:1px solid var(--line);font-size:13px}.alog small{display:block;color:var(--sub);font-size:11.5px;word-break:break-all}.alog .ng{background:rgba(196,43,94,.08)}.alog .ext{background:rgba(91,75,196,.08)}
+/* v4.46：動画・写真タブ（使う人ごと） */
+.vtop{display:grid;grid-template-columns:2fr 1fr;gap:8px;margin:6px 0 10px}.vtop .btn{min-height:52px;font-weight:800}.vtop .big{font-size:16px}
+.seg{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:8px 0}.seg button{flex:1;min-height:42px;background:var(--card);border:0;font:inherit;font-weight:700;color:var(--sub)}.seg button[aria-pressed="true"]{background:#16324F;color:#fff}
+.vfold{margin:8px 0;border:1px solid var(--line);border-radius:12px;padding:6px 10px;background:var(--card)}.vfold summary{font-weight:700;cursor:pointer;min-height:36px;display:flex;align-items:center}
+.vmgr{display:grid;gap:6px;margin:6px 0}.vmgr .btn{min-height:44px}
+.bigpick{display:flex!important;align-items:center;justify-content:center;min-height:56px;font-size:17px;margin:8px 0}
+.adday{margin:10px 0 4px;font-weight:800;font-size:14px;border-bottom:2px solid #E87A30;padding-bottom:2px}
+.adit{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}.adit span{flex:1 1 100%;font-size:13px;word-break:break-all}.adit small{display:block;color:var(--sub);font-size:11.5px}.adit input[type=date]{font-size:15px;min-height:36px}.adit.off{opacity:.45}.adit .btn.on{background:#E87A30;color:#fff;border-color:#E87A30}
+#uppill{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:80;background:#E87A30;color:#fff;font-weight:800;font-size:13px;padding:6px 14px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+nav.tabs button{position:relative}nav.tabs button[data-badge]::after{content:attr(data-badge);position:absolute;top:2px;right:calc(50% - 22px);background:#C42B5E;color:#fff;font-size:10px;font-weight:800;border-radius:999px;padding:0 5px;min-width:16px;line-height:16px;text-align:center}
+.vth .vcat{position:absolute;right:4px;bottom:4px;background:rgba(22,50,79,.85);color:#fff;font-size:10px;border-radius:4px;padding:0 4px}
 </style>
 </head>
 <body>
@@ -560,7 +571,7 @@ body.extmode nav.tabs,body.extmode header{display:none}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.45.5';
+const CLIENT_VERSION='4.46.0';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -1017,7 +1028,7 @@ function render(){if(!S)return;
   document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===tab?'page':'false'));
   renderHead();({home:renderHome,plan:renderPlan,videos:renderVideos,race:renderRace,stats:renderStats,help:renderHelp})[tab]();
   if(tab!=='race')document.getElementById('savebar').classList.remove('show');
-  updSavebar();}
+  updSavebar();try{vidBadge();}catch(e){}}
 function askWho(){openDay=null;
   SH.innerHTML='<div class="grab"></div><h3 id="sh-title">記録する人を選んでください</h3><p class="note">記録や変更に名前が残ります。この端末で一度選べば、次からは自動で使われます。</p><div class="wrap">'+
    S.opt.names.map(n=>'<button class="opt" data-who="'+esc(n)+'" aria-pressed="'+(who===n)+'">'+esc(n)+'</button>').join('')+'</div>'+
@@ -1841,7 +1852,9 @@ function xClick(ds,b){
 let XF=null;
 function openReqForm(vids){XF={vids,name:'',text:'',show:true};SH.innerHTML='<div class="grab"></div><h3 id="sh-title">外部に評価を依頼</h3>'+
   '<p class="note">'+vids.length+'件の動画・写真について、この依頼だけの専用リンクを作ります（7日間）。相手には、選んだ動画と依頼文しか見えません。いただいた評価は本人と家族だけが見られ、内部のコーチには見えません。</p>'+
-  '<label class="lab">相手の名前（相手の画面に「〇〇 様」と出ます）<input type="text" id="xf-name" maxlength="40" placeholder="例：〇〇コーチ"></label>'+
+  '<label class="lab">相手の名前（相手の画面に「〇〇 様」と出ます）<input type="text" id="xf-name" maxlength="40" placeholder="例：〇〇コーチ" list="xf-names"></label><datalist id="xf-names">'+[...new Set((S.xreqs||[]).map(q=>q.name))].map(n=>'<option value="'+esc(n)+'">').join('')+'</datalist>'+
+  ([...new Set((S.xreqs||[]).map(q=>q.name))].length?'<div class="wrap">'+[...new Set((S.xreqs||[]).map(q=>q.name))].slice(0,6).map(n=>'<button class="opt sm" data-xfname="'+esc(n)+'">'+esc(n)+'</button>').join('')+'</div>':'')+
+  '<div class="lab">頼みたいこと（押すと入ります）</div><div class="wrap">'+['第1エアの踏み切り','第2エアの踏み切り','空中姿勢','ランディング','ターンの吸収','スピードとライン','全体の印象'].map(t=>'<button class="opt sm" data-xftpl="'+esc(t)+'">'+esc(t)+'</button>').join('')+'</div>'+
   '<label class="lab">依頼文<textarea id="xf-text" rows="3" maxlength="500" style="width:100%;box-sizing:border-box;font-size:15px;border:1px solid var(--line);border-radius:10px;padding:8px">お世話になっております。第2エアの踏み切りについて、ご意見をいただけますと幸いです。</textarea></label>'+
   (who==='本人'?'':'<label class="chk"><input type="checkbox" id="xf-show" checked> 本人にも見せる（見せないときだけ外す）</label>')+
   '<div class="acts"><button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="xfGo">リンクを作る</button></div>';openS('xreq');}
@@ -1856,6 +1869,130 @@ function reqListHtml(){if(!canEdit()||!(S.xreqs||[]).length)return '';const C=S.
 /** ホームの新着（家族・本人）：まだ見ていない外部の評価 */
 function extNews(){if(!S.xcoms||!S.xcoms.length)return '';const seen=JSON.parse(LS.get('xseen:'+who)||'{}'),L=[...new Set(S.xcoms.filter(c=>!seen[c.id]).map(c=>c.vid))].map(id=>(S.videos||[]).find(v=>v.id===id)).filter(Boolean);
   if(!L.length)return '';return '<h2>外部の評価（新着'+L.length+'）</h2><div class="exl">'+L.map(v=>{const c=S.xcoms.filter(x=>x.vid===v.id).slice(-1)[0];return '<button class="vnew ext" data-vplay="'+esc(v.id)+'">📝 '+esc(c.by)+'：'+esc(c.text)+'<small>'+esc(v.title)+'</small></button>';}).join('')+'</div>';}
+// ---------- v4.46：使う人の目線で「動画・写真」を作り直し（撮影日から自動振り分け・過去の動画・写真・これまでの大会） ----------
+const SUBS=['表彰・賞状','取材・掲載','遠征・生活','表彰台・集合写真','その他'],CATS=['練習','大会','合宿','学校行事','過去'];
+const isCoachMe=()=>(S.coaches||[]).indexOf(who)>=0;
+/** 撮影日を読む（iPhoneの動画は作成日時、写真はEXIF）。読めなければファイルの日付 */
+const ab=bl=>bl.arrayBuffer?bl.arrayBuffer():new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsArrayBuffer(bl);});
+async function shotOf(f){const rd=async(a,b)=>{const buf=await ab(f.slice(a,b)),u=new Uint8Array(buf);let s='';for(let i=0;i<u.length;i++)s+=String.fromCharCode(u[i]);return s;};
+  try{const n=f.size,K=262144,txt=(await rd(0,Math.min(n,K)))+(n>K?await rd(Math.max(K,n-K),n):'');
+    let m=txt.match(/(20\d\d|19\d\d)-(\d\d)-(\d\d)T(\d\d):(\d\d):\d\d[+-]\d{4}/);if(m)return {date:m[1]+'-'+m[2]+'-'+m[3],at:m[4]+':'+m[5],src:'撮影日'};
+    m=txt.match(/(20\d\d|19\d\d):(\d\d):(\d\d) (\d\d):(\d\d):\d\d/);if(m)return {date:m[1]+'-'+m[2]+'-'+m[3],at:m[4]+':'+m[5],src:'撮影日'};}catch(e){}
+  const d=new Date(f.lastModified||Date.now()),p=x=>String(x).padStart(2,'0');return {date:d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()),at:p(d.getHours())+':'+p(d.getMinutes()),src:'ファイルの日付'};}
+/** その日の予定から大項目を決める（大会・合宿・学校行事・練習）。予定表にない日は、これまでの大会→なければ「過去」 */
+function autoCat(date){const i=DIDX[date];
+  if(i!==undefined){const d=DAYS[i],v=view(d);if(v.race&&isRace(v))return {cat:'大会',race:v.race.id,label:v.race.short||v.race.name};
+    if(v.kb&&has(v.kb,'合宿'))return {cat:'合宿',race:'',label:v.nm||'合宿'};const st=schState(d,v);if(st&&/行事/.test(st.l))return {cat:'学校行事',race:'',label:String(v.sy||'').split(/[・、]/)[0]};return {cat:'練習',race:'',label:''};}
+  const pr=(S.praces||[]).find(p=>Math.abs(pdate(p.d)-pdate(date))<=864e5);return pr?{cat:'大会',race:pr.id,label:pr.name}:{cat:'過去',race:'',label:''};}
+const raceName=id=>{const r=RACES.find(x=>x.id===id);if(r)return r.short||r.name;const p=(S.praces||[]).find(x=>x.id===id);return p?p.name:'';};
+const actOf=date=>{const a=(S.acts[date]||[]).filter(x=>x.st==='実施');return a.find(x=>x.kind==='WJ')||a.find(x=>x.kind==='雪上')||a[0]||{};};
+/* 入れる画面 */
+let AD=null;
+function openMediaAdd(opt){opt=opt||{};AD={fix:opt.fix||'',past:!!opt.past,items:[],sub:'',pub:false,busy:false};
+  let h='<div class="grab"></div><h3 id="sh-title">'+(AD.past?'過去の動画・写真を入れる':AD.fix?mdw(AD.fix)+' に動画・写真を入れる':'動画・写真を入れる')+'</h3>'+
+    '<p class="note">'+(AD.fix?'この日の動画・写真として入れます。':'撮影した日を読み取って、日ごとに自動で振り分けます。大会・合宿・学校行事の日は自動でその分類に入ります。')+(AD.past?'2026年3月以前の大会は、先に「これまでの大会」に登録しておくと、撮影日から自動でひも付きます。':'')+'</p>'+
+    '<div class="vtip">写真を選ぶ画面の上の「<b>オプション</b>」で、<b>位置情報：オフ</b>／<b>フォーマット：現在のフォーマット</b>（画質を落とさないため）</div>'+
+    '<label class="btn pri bigpick">📷🎬 動画・写真を選ぶ<input type="file" id="ad-file" accept="video/*,image/*" multiple hidden></label><div id="ad-list"></div>'+
+    '<details class="past"><summary>写真のサブ項目・外に出してよい（必要なときだけ）</summary><div class="lab">サブ項目（全部の写真に付きます）</div><div class="wrap">'+SUBS.map(x=>'<button class="opt sm" data-adsub="'+esc(x)+'" aria-pressed="false">'+esc(x)+'</button>').join('')+'</div>'+
+    (who!=='本人'?'<label class="chk"><input type="checkbox" id="ad-pub"> 外に出してよい（報告書・紹介ページに使える）</label>':'')+'</details>'+
+    '<p class="note" id="ad-st"></p><div class="acts"><button class="btn" data-act="close">やめる</button><button class="btn pri" data-act="adGo">入れる</button></div>';
+  SH.innerHTML=h;openS('add');const fi=document.getElementById('ad-file');fi.onchange=async()=>{const fs=[...fi.files].slice(0,30);document.getElementById('ad-list').innerHTML='<p class="note">撮影日を読み取っています…</p>';
+    AD.items=[];for(const f of fs){const ph=/^image\//.test(f.type)||/\.(heic|heif|jpe?g|png)$/i.test(f.name),sh=await shotOf(f),date=AD.fix||sh.date;
+      const dup=(S.videos||[]).concat(S.vArch||[]).some(v=>v.d===date&&v.mb&&Math.abs(v.mb-f.size/1048576)<0.05);
+      AD.items.push({f,ph,date,shot:sh.date+' '+sh.at,src:sh.src,want:false,skip:dup,dup});}
+    AD.items.sort((a,b)=>a.date<b.date?-1:1);drawAdd();};}
+function drawAdd(){const e=document.getElementById('ad-list');if(!e||!AD)return;if(!AD.items.length){e.innerHTML='';return;}let m='',h='';
+  AD.items.forEach((it,i)=>{if(it.date!==m){m=it.date;const c=autoCat(m);h+='<div class="adday"><b>'+esc(mdw(m))+'</b>　'+esc(c.cat)+(c.label?'：'+esc(c.label):'')+'</div>';}
+    h+='<div class="adit'+(it.skip?' off':'')+'"><span>'+(it.ph?'📷':'🎬')+' '+esc(it.f.name)+'<small>'+esc(it.src+' '+it.shot)+(it.dup?'　⚠ 同じ日に同じ大きさのものがあります':'')+'</small></span>'+
+      '<input type="date" data-addate="'+i+'" value="'+esc(it.date)+'"'+(AD.fix?' disabled':'')+'>'+
+      (!it.ph&&!isCoachMe()?'<button class="btn sm2'+(it.want?' on':'')+'" data-adwant="'+i+'">'+(it.want?'✓見てほしい':'見てほしい')+'</button>':'')+
+      '<button class="btn sm2" data-adskip="'+i+'">'+(it.skip?'入れる':'入れない')+'</button></div>';});
+  const n=AD.items.filter(x=>!x.skip).length;e.innerHTML='<p class="note">'+n+'件を入れます（'+AD.items.length+'件中）</p>'+h;
+  e.querySelectorAll('[data-addate]').forEach(inp=>inp.onchange=()=>{const i=+inp.dataset.addate;if(inp.value){AD.items[i].date=inp.value;AD.items.sort((a,b)=>a.date<b.date?-1:1);drawAdd();}});}
+function upPill(t){let p=document.getElementById('uppill');if(!t){if(p)p.remove();return;}if(!p){p=document.createElement('div');p.id='uppill';document.body.appendChild(p);}p.textContent=t;}
+async function adGo(){if(!AD||AD.busy)return;const items=AD.items.filter(x=>!x.skip);if(!items.length){toast('動画・写真を選んでください');return;}
+  const big=items.find(x=>!x.ph&&x.f.size>S.videoMaxMB*1048576);if(big){toast('「'+big.f.name+'」が大きすぎます（上限 '+S.videoMaxMB+'MB）');return;}
+  const st=document.getElementById('ad-st'),pub=!!(document.getElementById('ad-pub')||{}).checked,t0=Date.now();AD.busy=true;upBusy=true;SH.querySelectorAll('button,input').forEach(b=>b.disabled=true);
+  try{for(const it of items)if(it.ph&&!it.jpg){st.textContent='写真を変換中…（撮影場所などの情報を外しています）';it.jpg=await toJpeg(it.f);}
+    const cnt={};items.forEach(it=>{const c=autoCat(it.date),a=it.ph?{}:actOf(it.date),k=it.date+(it.ph?'P':'V');cnt[k]=(cnt[k]||0)+1;
+      it.cat=c.cat;it.race=c.race;it.kind=it.ph?'写真':(a.kind||(c.cat==='大会'?'大会':''));it.slot=it.ph?'':(a.slot||'');
+      it.title=(c.cat==='大会'&&c.label?c.label:c.cat==='合宿'||c.cat==='学校行事'?(c.label||c.cat):it.ph?'写真':(it.kind||'動画'))+' '+md(it.date)+(it.slot?' '+it.slot:'');});
+    const seq={};items.forEach(it=>{const k=it.date+(it.ph?'P':'V');if(cnt[k]>1){seq[k]=(seq[k]||0)+1;it.title+=' '+(CIRC[seq[k]-1]||'('+seq[k]+')');}});
+    const files=items.map(it=>it.ph?it.jpg:it.f);st.textContent='送信の準備中…';upPill('送信の準備中…');
+    const prep=await call('videoStartMany',{who,key,date:TODAY,origin:location.origin,files:items.map((it,n)=>({size:files[n].size,mime:files[n].type||(it.ph?'image/jpeg':'video/mp4'),name:it.date+'_'+it.title+(it.ph?'.jpg':(it.f.name.match(/\.[^.]+$/)||['.mp4'])[0]),date:it.date,type:it.ph?'写真':'動画'}))});
+    const ids=new Array(items.length).fill('');let done=0,relay=false;
+    const one=async n=>{try{ids[n]=await putDirect(prep.sessions[n].loc,files[n],r=>{st.textContent='送信中 '+(done+1)+'/'+items.length+'（'+Math.round(r*100)+'%）';upPill('送信中 '+(done+1)+'/'+items.length);});}
+      catch(e){relay=true;ids[n]=await putRelay(files[n],items[n].date,items[n].title,r=>{st.textContent='送信中 '+(done+1)+'/'+items.length+'（'+Math.round(r*100)+'%）';},t=>{});}done++;upPill('送信中 '+done+'/'+items.length);};
+    let next=0;const worker=async()=>{while(next<items.length){const n=next++;await one(n);}};await Promise.all([worker(),worker()]);
+    st.textContent='登録中…';upPill('登録中…');
+    const d=await call('videoRegisterMany',{who,key,date:TODAY,memo:'',pub,sub:AD.sub,items:items.map((it,n)=>({fileId:ids[n],title:it.title,size:files[n].size,want:it.want,date:it.date,type:it.ph?'写真':'動画',cat:it.cat,race:it.race,kind:it.kind,slot:it.slot,sub:it.ph?AD.sub:'',shot:it.shot}))});
+    applyPart(d);upBusy=false;upPill('');const secs=Math.round((Date.now()-t0)/1000),n=items.length;AD=null;closeSheet();render();toast(n+'件を入れました（'+secs+'秒）');
+    reportErr('動画・写真送信',n+'件・'+(files.reduce((t,f)=>t+f.size,0)/1048576).toFixed(1)+'MB・'+secs+'秒・'+(relay?'中継あり':'直接'));
+    thumbsLater(ids.map((id,i)=>[(S.videos||[]).find(v=>v.fileId===id),files[i]]));}
+  catch(e){upBusy=false;upPill('');if(AD){AD.busy=false;}SH.querySelectorAll('button,input').forEach(b=>b.disabled=false);st.textContent='';toast(errMsg(e).replace(/^(Exception|Error):\s*/,''));}}
+/* これまでの大会 */
+function openPastRaces(edit){const L=(S.praces||[]).slice().sort((a,b)=>a.d<b.d?1:-1),x=edit?L.find(p=>p.id===edit)||{}:{};
+  SH.innerHTML='<div class="grab"></div><h3 id="sh-title">これまでの大会</h3><p class="note">予定表にない大会（2026年3月以前など）を登録します。登録すると、その日に撮った動画・写真が自動でこの大会にひも付き、戦績の証拠になります。</p>'+
+    (L.length?'<div class="list">'+L.map(p=>{const n=(S.videos||[]).filter(v=>v.race===p.id).length;return '<div><b>'+esc(p.d.replace(/-/g,'/')+' '+p.name)+'</b><small class="s">'+esc([p.place,p.ev,p.res].filter(Boolean).join('｜'))+(n?'｜📷🎬'+n:'')+'</small><br><button class="btn sm2" data-predit="'+esc(p.id)+'">直す</button>'+(n?'<button class="btn sm2" data-vplay="'+esc((S.videos||[]).find(v=>v.race===p.id).id)+'" data-vlist="'+esc((S.videos||[]).filter(v=>v.race===p.id).map(v=>v.id).join(','))+'">見る</button>':'')+'</div>';}).join('')+'</div>':'')+
+    '<h3>'+(edit?'大会を直す':'大会を足す')+'</h3><label class="lab">日付<input type="date" id="pr-d" value="'+esc(x.d||'')+'"></label><label class="lab">大会名<input type="text" id="pr-name" maxlength="60" value="'+esc(x.name||'')+'" placeholder="例：JOCジュニアオリンピックカップ 2026"></label>'+
+    '<label class="lab">場所<input type="text" id="pr-place" maxlength="60" value="'+esc(x.place||'')+'"></label><label class="lab">種目<input type="text" id="pr-ev" maxlength="30" value="'+esc(x.ev||'')+'" placeholder="例：MO"></label>'+
+    '<label class="lab">結果<input type="text" id="pr-res" maxlength="60" value="'+esc(x.res||'')+'" placeholder="例：9位／36人"></label><label class="lab">メモ<input type="text" id="pr-memo" maxlength="300" value="'+esc(x.memo||'')+'"></label>'+
+    '<div class="acts">'+(edit?'<button class="btn danger" data-prdel="'+esc(edit)+'">消す</button>':'')+'<button class="btn" data-act="close">閉じる</button><button class="btn pri" data-prsave="'+esc(edit||'')+'">'+(edit?'直す':'登録')+'</button></div>';openS('prace');}
+/* 再生画面の「…」：日付・大項目・サブ項目・大会も直せる */
+function vpMenu(){const c=vplay,v=(S.videos||[]).find(x=>x.id===c.id);if(!v)return;c.panel='menu';const p=document.getElementById('vp-panel');
+  const races=RACES.map(r=>({id:r.id,d:r.d,n:r.short||r.name})).concat((S.praces||[]).map(r=>({id:r.id,d:r.d,n:r.name}))).sort((a,b)=>Math.abs(pdate(a.d)-pdate(v.d))-Math.abs(pdate(b.d)-pdate(v.d))).slice(0,30);
+  p.innerHTML='<div class="vp-ph"><b>この'+(isPh(v)?'写真':'動画')+'</b><button class="vp-ic" data-act="vpComClose">✕</button></div><div class="vp-menu">'+
+    '<button class="btn" data-vstar="'+esc(v.id)+'">'+(v.best?'☆ ベストを外す':'☆ ベストにする')+'</button>'+
+    (isPh(v)?'':'<button class="btn" data-vwant="'+esc(v.id)+'">'+(v.want?'✓ コーチに見てほしい（外す）':'コーチに見てほしい')+'</button>')+
+    '<button class="btn" data-xreq1="'+esc(v.id)+'">外部の人に見てもらう（専用リンク）</button>'+
+    (who!=='本人'?'<button class="btn" data-vpub="'+esc(v.id)+'">'+(v.pub?'✓ 外に出してよい（外す）':'外に出してよい（報告書・紹介ページに使える）')+'</button>':'')+
+    '<details class="past"><summary>日付・分類・大会を直す</summary>'+
+    '<label class="vp-lab">日付<input type="date" id="vp-date" value="'+esc(v.d)+'"></label>'+
+    '<div class="vp-lab">大項目</div><div class="wrap">'+CATS.map(k=>'<button class="opt sm" data-vcat="'+esc(k)+'" aria-pressed="'+((v.cat||'練習')===k)+'">'+esc(k)+'</button>').join('')+'</div>'+
+    '<div class="vp-lab">サブ項目</div><div class="wrap">'+['なし'].concat(SUBS).map(k=>'<button class="opt sm" data-vsub="'+esc(k)+'" aria-pressed="'+((v.sub||'なし')===k)+'">'+esc(k)+'</button>').join('')+'</div>'+
+    '<label class="vp-lab">大会<select id="vp-race"><option value="">なし</option>'+races.map(r=>'<option value="'+esc(r.id)+'"'+(r.id===v.race?' selected':'')+'>'+esc(r.d.replace(/-/g,'/')+' '+r.n)+'</option>').join('')+'</select></label></details>'+
+    (v.fileId&&who!=='本人'?'<a class="btn" href="https://drive.google.com/file/d/'+esc(v.fileId)+'/view" target="_blank" rel="noopener">ドライブで開く</a>':'')+
+    '<button class="btn danger" data-vdel="'+esc(v.id)+'">削除（アーカイブに残します）</button></div>';p.hidden=false;vpShowUI();
+  const sv=(arg,msg)=>call('videoUpdate',Object.assign({who,key,id:v.id},arg)).then(d=>{applyPart(d);toast(msg);}).catch(e=>toast(errMsg(e)));
+  const rs=document.getElementById('vp-race');if(rs)rs.onchange=()=>{v.race=rs.value;sv({race:rs.value},rs.value?'大会にひも付けました':'ひも付けを外しました');};
+  const dt=document.getElementById('vp-date');if(dt)dt.onchange=()=>{if(!dt.value)return;v.d=dt.value;const c2=autoCat(dt.value),arg={date:dt.value};if(!v.race&&c2.race){arg.race=c2.race;arg.cat=c2.cat;v.race=c2.race;v.cat=c2.cat;}sv(arg,mdw(dt.value)+'に移しました'+(arg.race?'（'+raceName(arg.race)+'にひも付け）':''));};}
+/* 「動画・写真」タブ：使う人ごとに */
+function renderVideos(){const all=S.videos||[],coach=isCoachMe(),fam=canEdit()&&!coach,L=vFilter(),parts=[...new Set((S.vcoms||[]).map(c=>c.part).concat(...all.map(v=>v.tags||[])).filter(Boolean))],kinds=[...new Set(all.filter(v=>!isPh(v)&&!v.ref).map(v=>v.kind).filter(Boolean))];
+  let h='<main>';
+  if(VF.arch){h+='<h2>アーカイブ（削除した動画・写真）</h2><p class="note">押すと戻せます。</p>';}
+  else if(VSEL){h+='<h2>'+(VSEL._req?'見てもらう動画・写真を選んでください':'整理する（選んでまとめて）')+'</h2>';}
+  else{if(fam)h+='<div class="vtop"><button class="btn pri big" data-act="addOpen">＋ 動画・写真を入れる</button><button class="btn" data-act="reqMode">外部の人に見てもらう</button></div>';
+    if(coach){const W=all.filter(v=>v.want&&!vComs(v.id).some(c=>(S.coaches||[]).indexOf(c.by)>=0)).sort((a,b)=>a.d<b.d?1:-1);
+      h+='<h2>👀 見てほしい動画（'+W.length+'）</h2>'+(W.length?'<div class="vgrid">'+W.map(v=>vcard(v,W.map(x=>x.id).join(','))).join('')+'</div>':'<p class="note">今はありません。</p>');}
+    h+='<div class="seg"><button data-vfref="0" aria-pressed="'+!VF.ref+'">自分の動画・写真</button><button data-vfref="1" aria-pressed="'+VF.ref+'">参考動画</button></div>';
+    if(VF.ref)h+='<button class="btn" data-act="refOpen" style="width:100%;margin-bottom:8px">＋ 参考動画を入れる（手本の選手など）</button>';
+    else if(!coach)h+=videoNewsLite();}
+  if(!VF.arch&&!VSEL)h+='<details class="vfold"'+(vfActive()&&!VF.ref?' open':'')+'><summary>🔍 探す・絞り込む'+(vfActive()?'（絞り込み中）':'')+'</summary><div class="vfil"><input type="search" id="vf-q" placeholder="題名・大会・ひとことで探す" value="'+esc(VF.q)+'">'+
+    '<div class="wrap">'+[['','すべて'],['動画','🎬 動画'],['写真','📷 写真']].map(([k,l])=>'<button class="opt sm" data-vftype="'+k+'" aria-pressed="'+(VF.type===k)+'">'+l+'</button>').join('')+'</div>'+
+    '<div class="wrap">'+[['all','全期間'],['month','今月'],['prev','先月'],['fy','今年度']].map(([k,l])=>'<button class="opt sm" data-vfper="'+k+'" aria-pressed="'+(VF.per===k)+'">'+l+'</button>').join('')+'</div>'+
+    '<div class="wrap"><button class="opt sm" data-vfcat="" aria-pressed="'+(!VF.cat)+'">全部の分類</button>'+CATS.map(k=>'<button class="opt sm" data-vfcat="'+esc(k)+'" aria-pressed="'+(VF.cat===k)+'">'+esc(k)+'</button>').join('')+'</div>'+
+    (kinds.length>1?'<div class="wrap"><button class="opt sm" data-vfkind="" aria-pressed="'+(!VF.kind)+'">全部の活動</button>'+kinds.map(k=>'<button class="opt sm" data-vfkind="'+esc(k)+'" aria-pressed="'+(VF.kind===k)+'">'+esc(k)+'</button>').join('')+'</div>':'')+
+    '<div class="wrap"><button class="opt sm" data-vfflag="best" aria-pressed="'+VF.best+'">☆ベスト</button>'+(fam?'<button class="opt sm" data-vfflag="pub" aria-pressed="'+VF.pub+'">外に出してよい</button>':'')+'<button class="opt sm" data-vfflag="want" aria-pressed="'+VF.want+'">見てほしい</button><button class="opt sm" data-vfflag="com" aria-pressed="'+VF.com+'">💬あり</button><button class="opt sm" data-vfsort="1">'+(VF.sort==='new'?'新しい順':'古い順')+'</button></div>'+
+    (parts.length?'<div class="wrap"><span class="note" style="margin-right:4px">指摘：</span><button class="opt sm" data-vfpart="" aria-pressed="'+(!VF.part)+'">指定なし</button>'+parts.map(p=>'<button class="opt sm" data-vfpart="'+esc(p)+'" aria-pressed="'+(VF.part===p)+'">'+esc(p)+'</button>').join('')+'</div>':'')+
+    (vfActive()?'<button class="btn vfclr" data-act="vfClear">✕ 条件をクリア</button>':'')+'</div></details>';
+  h+=(L.length?'':'<p class="note">'+(VF.arch?'アーカイブはありません。':'まだありません。')+'</p>');
+  if(L.length){const ids=L.map(v=>v.id).join(',');let m='';h+='<div class="vgrid">';L.forEach(v=>{const mm=v.d.slice(0,7);if(mm!==m){m=mm;h+='<div class="vgm">'+(+mm.slice(0,4))+'年'+(+mm.slice(5))+'月</div>';}h+=vcard(v,ids);});h+='</div>';}
+  if(VSEL){const n=Object.keys(VSEL).filter(k=>k!=='_req').length;h+='<div class="vselbar"><b>'+n+'件を選択</b>'+(VSEL._req?'<button class="btn sm2" data-act="vselMode">やめる</button><button class="btn pri sm2" data-act="vselReq"'+(n?'':' disabled')+'>次へ（相手と頼みたいこと）</button>':
+    '<button class="btn sm2" data-act="vselAll">全部選ぶ</button><button class="btn sm2" data-act="vselMode">やめる</button><div class="vselacts">'+[['want','見てほしい'],['best','☆ベスト']].concat(who==='本人'?[]:[['pub','外に出してよい']]).map(([k,l])=>'<button class="btn sm2" data-vbulk="'+k+'|1"'+(n?'':' disabled')+'>'+l+'</button><button class="btn sm2" data-vbulk="'+k+'|0"'+(n?'':' disabled')+'>外す</button>').join('')+'<button class="btn sm2 danger" data-vbulk="delete|1"'+(n?'':' disabled')+'>削除（アーカイブへ）</button></div>')+'</div>';}
+  if(fam&&!VSEL&&!VF.ref)h+='<details class="vfold" style="margin-top:14px"><summary>… 整理・管理</summary><div class="vmgr">'+(VF.arch?'<button class="btn" data-act="varch">← 動画・写真に戻る</button>':
+    '<button class="btn" data-act="vselMode">☑ 整理する（☆・見てほしい・外に出してよい・削除をまとめて）</button><button class="btn" data-act="addPast">＋ 過去の動画・写真を入れる</button><button class="btn" data-act="pastRaces">これまでの大会（'+(S.praces||[]).length+'）</button><button class="btn" data-act="varch">アーカイブ（'+(S.vArch||[]).length+'）</button>')+'</div>'+(VF.arch?'':reqListHtml())+'</details>';
+  V.innerHTML=h+'</main>';const qi=document.getElementById('vf-q');if(qi)qi.oninput=()=>{VF.q=qi.value;clearTimeout(qi._t);qi._t=setTimeout(()=>{const p=qi.selectionStart;renderVideos();const n=document.getElementById('vf-q');if(n){n.focus();n.setSelectionRange(p,p);}},350);};}
+function vcard(v,ids){const n=vComs(v.id).length,tu=thumbUrl(v),sel=VSEL&&VSEL[v.id],c=v.cat&&v.cat!=='練習'?v.cat:'';
+  return '<button class="vcard'+(sel?' sel':'')+'" '+(VF.arch?'data-vrestore="'+esc(v.id)+'"':VSEL?'data-vsel="'+esc(v.id)+'"':'data-vplay="'+esc(v.id)+'" data-vlist="'+esc(ids)+'"')+'><span class="vth">'+(tu?'<img loading="lazy" alt="" src="'+esc(tu)+'" onerror="this.remove()">':'')+(isPh(v)?'':'<i>▶</i>')+(v.best?'<b class="vb">☆</b>':'')+(VSEL?'<b class="vck">'+(sel?'✓':'')+'</b>':'')+(c?'<b class="vcat">'+esc(c)+'</b>':'')+'</span>'+
+    '<span class="vt">'+(isPh(v)?'📷 ':'')+esc(v.title)+'</span><small>'+esc(v.ref?'参考'+((v.tags||[]).length?'：'+v.tags.join('・'):''):(v.race?raceName(v.race)+' ':'')+(v.sub?v.sub+' ':'')+mdw(v.d))+(n?' 💬'+n:'')+(v.want?' 見てほしい':'')+'</small></button>';}
+/** タブの中の新着（本人・家族）：コーチのひとこと・外部の評価・届いた比較 */
+function videoNewsLite(){const seen=JSON.parse(LS.get('vseen:'+who)||'{}'),L=(S.videos||[]).filter(v=>{const cc=vComs(v.id).filter(c=>(S.coaches||[]).indexOf(c.by)>=0);return cc.length&&vComs(v.id).length>(seen[v.id]||0);});
+  return (L.length?'<h2>💬 コーチのひとこと（新着'+L.length+'）</h2><div class="exl">'+L.slice(0,5).map(v=>{const c=vComs(v.id).filter(x=>(S.coaches||[]).indexOf(x.by)>=0).slice(-1)[0];return '<button class="vnew" data-vplay="'+esc(v.id)+'">'+esc(c.by)+'：'+esc(c.text)+'<small>'+esc(v.title)+'</small></button>';}).join('')+'</div>':'')+extNews();}
+/** 下の「動画」タブに新着の数 */
+function vidBadge(){const b=document.querySelector('nav.tabs [data-tab="videos"]');if(!b||!S)return;let n=0;
+  if(isCoachMe())n=(S.videos||[]).filter(v=>v.want&&!vComs(v.id).some(c=>(S.coaches||[]).indexOf(c.by)>=0)).length;
+  else{const seen=JSON.parse(LS.get('vseen:'+who)||'{}'),xs=JSON.parse(LS.get('xseen:'+who)||'{}');n=(S.videos||[]).filter(v=>vComs(v.id).filter(c=>(S.coaches||[]).indexOf(c.by)>=0).length&&vComs(v.id).length>(seen[v.id]||0)).length+(S.xcoms||[]).filter(c=>!xs[c.id]).length;}
+  if(n)b.setAttribute('data-badge',n>9?'9+':String(n));else b.removeAttribute('data-badge');}
 // ---------- 今日の1問（本人だけ）：場面の判定と問いの選択 ----------
 const QCLOSE=/^(なかった|ない|どっちもない|わからない|話してない|見てない|思い出せない|まだない|してない|考えてない)$/;
 const termOf=d=>{const y=+d.slice(0,4),m=+d.slice(5,7);return m>=4&&m<=9?y+'前期':(m>=10?y:y-1)+'後期';};
@@ -2442,7 +2579,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.arepaud){arep.aud=ds.arepaud;drawActRep();return;}
   if(ds.areppre){if(arep.pre==='custom'){arep.a=val('ar-a')||arep.a;arep.b=val('ar-b')||arep.b;}arep.pre=ds.areppre;drawActRep();return;}
   if(ds.act==='actRepGo'){if(saving)return;makeActRep();return;}
-  if(ds.act==='vidAdd'){openVid(openDay.d);return;}
+  if(ds.act==='vidAdd'){openMediaAdd({fix:openDay.d});return;}
   if(ds.vcmp){openVcmp(ds.vcmp);return;}
   if(ds.vplay){openPlayer(ds.vplay,ds.vlist?ds.vlist.split(','):null);return;}
   if(ds.act==='vpClose'){closePlayer();return;}
@@ -2454,34 +2591,50 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.act==='vpComClose'){vplay.panel='';const p=document.getElementById('vp-panel');if(p){p.hidden=true;p.innerHTML='';}vpAutoHide();return;}
   if(ds.act==='vpMenu'){vpMenu();return;}
   if(ds.act==='vpCmp'){openCompare(vplay.id);return;}
+  if(ds.act==='addOpen'){openMediaAdd({});return;}
+  if(ds.act==='addPast'){openMediaAdd({past:true});return;}
+  if(ds.adwant!==undefined){const it=AD.items[+ds.adwant];it.want=!it.want;drawAdd();return;}
+  if(ds.adskip!==undefined){const it=AD.items[+ds.adskip];it.skip=!it.skip;drawAdd();return;}
+  if(ds.adsub!==undefined){AD.sub=AD.sub===ds.adsub?'':ds.adsub;document.querySelectorAll('[data-adsub]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.adsub===AD.sub));return;}
+  if(ds.act==='adGo'){adGo();return;}
+  if(ds.vfref!==undefined){VF.ref=ds.vfref==='1';render();return;}
+  if(ds.act==='pastRaces'){openPastRaces('');return;}
+  if(ds.predit){openPastRaces(ds.predit);return;}
+  if(ds.prsave!==undefined){const arg={who,key,d:val('pr-d'),name:val('pr-name'),place:val('pr-place'),ev:val('pr-ev'),res:val('pr-res'),memo:val('pr-memo')};if(ds.prsave)arg.id=ds.prsave;b.disabled=true;
+    call('savePastRace',arg).then(r=>{S.praces=r.praces;openPastRaces('');toast(ds.prsave?'直しました':'登録しました');}).catch(e=>{b.disabled=false;toast(errMsg(e));});return;}
+  if(ds.prdel){if(!confirm('この大会を消しますか？（動画・写真は消えません）'))return;call('savePastRace',{who,key,id:ds.prdel,remove:true}).then(r=>{S.praces=r.praces;openPastRaces('');}).catch(e=>toast(errMsg(e)));return;}
+  if(ds.vsub!==undefined){const v=(S.videos||[]).find(x=>x.id===vplay.id);if(!v)return;const sb=ds.vsub==='なし'?'':ds.vsub;v.sub=sb;document.querySelectorAll('[data-vsub]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.vsub===(sb||'なし')));call('videoUpdate',{who,key,id:v.id,sub:sb}).then(d=>{applyPart(d);}).catch(e=>toast(errMsg(e)));return;}
   if(ds.act==='tdevLoad'||ds.tdevSet!==undefined){(ds.tdevSet!==undefined?call('setTestDevice',{who,on:ds.tdevSet==='1'}):call('isTestDevice',{who})).then(r=>{const e=document.getElementById('tdev');if(e)e.innerHTML='<p><b>'+(r.test?'この端末は警告の対象外（テスト用）です':'この端末は警告の対象です')+'</b></p><button class="btn" data-tdev-set="'+(r.test?'0':'1')+'">'+(r.test?'警告の対象に戻す':'この端末を警告の対象外にする（テスト用）')+'</button>';if(ds.tdevSet!==undefined)toast(r.test?'この端末を警告の対象外にしました':'警告の対象に戻しました');}).catch(e=>toast(errMsg(e)));return;}
   if(ds.act==='alogLoad'){const e=document.getElementById('alog');if(e)e.innerHTML='<p class="note">読み込み中…</p>';call('getAccessLog',{who}).then(r=>{const L=r.log||[];const el=document.getElementById('alog');if(!el)return;
     el.innerHTML='<p class="note">新しい順に'+L.length+'件。「失敗」「外部」「いつもと違う時間帯」に注意。端末番号は端末ごとに違います（この端末：'+esc(DEVID)+'）。</p><div class="alog">'+L.map(x=>'<div class="'+(x.res==='失敗'?'ng':x.role==='外部'?'ext':'')+'"><b>'+esc(String(x.at).slice(5,16))+'</b> '+esc(x.who||'（不明）')+'<small>'+esc([x.fn,x.res,x.tz,x.dev,x.note].filter(Boolean).join('｜'))+'</small></div>').join('')+'</div>';}).catch(e=>{const el=document.getElementById('alog');if(el)el.textContent=errMsg(e);});return;}
   if(ds.act==='ukGo'){const v=(document.getElementById('uk-in')||{value:''}).value.trim();if(!v)return;LS.set('ukey',v);load(false);return;}
   if(ds.act==='ukReset'){if(!confirm('この端末の利用者を変えます。あなたの合言葉をもう一度入れてください。'))return;LS.set('ukey','');LS.set('who','');who='';S=null;try{localStorage.removeItem('cacheV1');}catch(e){}askUKey('');return;}   // 前の人のデータを端末に残さない
   if(ds.xreq1){openReqForm([ds.xreq1]);return;}
-  if(ds.act==='vselReq'){const ids=Object.keys(VSEL||{});if(!ids.length)return;openReqForm(ids);return;}
+  if(ds.xfname){const e=document.getElementById('xf-name');if(e)e.value=ds.xfname;return;}
+  if(ds.xftpl){const e=document.getElementById('xf-text');if(e)e.value='お世話になっております。'+ds.xftpl+'について、ご意見をいただけますと幸いです。';return;}
+  if(ds.act==='vselReq'){const ids=Object.keys(VSEL||{}).filter(k=>k!=='_req');if(!ids.length)return;openReqForm(ids);return;}
   if(ds.act==='xfGo'){const name=val('xf-name'),text=(document.getElementById('xf-text')||{value:''}).value.trim(),show=who==='本人'?true:!!(document.getElementById('xf-show')||{}).checked;if(!name){toast('相手の名前を書いてください');return;}b.disabled=true;
     call('createReq',{who,key,vids:XF.vids,name,text,show}).then(r=>{S.xreqs=r.xreqs;VSEL=null;const q=r.xreqs.find(x=>x.id===r.id);showReqLink(q);render();}).catch(e=>{b.disabled=false;toast(errMsg(e));});return;}
   if(ds.xcopy){try{navigator.clipboard.writeText(ds.xcopy).then(()=>toast('コピーしました'));}catch(e){toast('コピーできませんでした');}return;}
   if(ds.xresend){const q=(S.xreqs||[]).find(x=>x.id===ds.xresend);if(q)showReqLink(q);return;}
   if(ds.xclose||ds.xreopen||ds.xshow){const id=ds.xclose||ds.xreopen||ds.xshow,q=(S.xreqs||[]).find(x=>x.id===id);const arg={who,key,id};if(ds.xclose)arg.close=true;if(ds.xreopen)arg.reopen=true;if(ds.xshow)arg.show=!(q&&q.show);
     call('updateReq',arg).then(r=>{S.xreqs=r.xreqs;render();}).catch(e=>toast(errMsg(e)));return;}
-  if(ds.act==='phAdd'){openVid(openDay.d,'','', 'photo');return;}
+  if(ds.act==='phAdd'){openMediaAdd({fix:openDay.d});return;}
   if(ds.act==='phAddV'){openVid(TODAY,'','','photo');return;}
   if(ds.upwant!==undefined){const i=+ds.upwant;UP.want[i]=!UP.want[i];drawPick();return;}
   if(ds.upall){const all=UP.want.every(Boolean);UP.want=UP.want.map(()=>!all);drawPick();return;}
   if(ds.act==='vselMode'){VSEL=VSEL?null:{};render();return;}
   if(ds.vsel){if(VSEL[ds.vsel])delete VSEL[ds.vsel];else VSEL[ds.vsel]=1;render();return;}
   if(ds.act==='vselAll'){vFilter().forEach(v=>VSEL[v.id]=1);render();return;}
-  if(ds.vbulk){const [act,on]=ds.vbulk.split('|'),ids=Object.keys(VSEL||{});if(!ids.length)return;if(act==='delete'&&!confirm(ids.length+'件を削除しますか？\n（アプリからは消えますが、アーカイブとして残り、あとで戻せます）'))return;
+  if(ds.act==='reqMode'){VSEL={_req:true};render();return;}
+  if(ds.vbulk){const [act,on]=ds.vbulk.split('|'),ids=Object.keys(VSEL||{}).filter(k=>k!=='_req');if(!ids.length)return;if(act==='delete'&&!confirm(ids.length+'件を削除しますか？\n（アプリからは消えますが、アーカイブとして残り、あとで戻せます）'))return;
     call('videoBulk',{who,key,ids,act,on:on==='1'}).then(d=>{applyPart(d);VSEL=null;render();toast(act==='delete'?'削除しました（アーカイブに残っています）':'まとめて変更しました');}).catch(e=>toast(errMsg(e)));return;}
   if(ds.vrestore){if(!confirm('この動画・写真をアーカイブから戻しますか？'))return;call('videoDelete',{who,key,id:ds.vrestore,restore:true}).then(d=>{applyPart(d);render();toast('戻しました');}).catch(e=>toast(errMsg(e)));return;}
   if(ds.act==='varch'){VF.arch=!VF.arch;VSEL=null;render();return;}
   if(ds.vftype!==undefined){VF.type=ds.vftype;VF.cat='';render();return;}
   if(ds.vfcat!==undefined){VF.cat=ds.vfcat;render();return;}
   if(ds.vpub){const v=(S.videos||[]).find(x=>x.id===ds.vpub);if(!v)return;const nb=!v.pub;v.pub=nb;if(vplay)vpMenu();call('videoUpdate',{who,key,id:v.id,pub:nb}).then(d=>{applyPart(d);if(vplay)vpMenu();toast(nb?'外に出してよい印を付けました':'外しました');}).catch(e=>{v.pub=!nb;toast(errMsg(e));});return;}
-  if(ds.vcat){const v=(S.videos||[]).find(x=>x.id===vplay.id);if(!v)return;v.cat=ds.vcat;vpMenu();call('videoUpdate',{who,key,id:v.id,cat:ds.vcat}).then(d=>{applyPart(d);}).catch(e=>toast(errMsg(e)));return;}
+  if(ds.vcat){const v=(S.videos||[]).find(x=>x.id===vplay.id);if(!v)return;v.cat=ds.vcat;document.querySelectorAll('[data-vcat]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.vcat===v.cat));call('videoUpdate',{who,key,id:v.id,cat:ds.vcat}).then(d=>{applyPart(d);}).catch(e=>toast(errMsg(e)));return;}
   if(ds.act==='vpDraw'&&document.getElementById('vp-img')){const im=document.getElementById('vp-img');let base;try{base=document.createElement('canvas');base.width=im.naturalWidth;base.height=im.naturalHeight;base.getContext('2d').drawImage(im,0,0);base.getContext('2d').getImageData(0,0,1,1);}catch(e){toast('読み込みが終わってから押してください');return;}openDraw(base,b64=>{vplay.t=null;vplay.img=b64;vplay.panel='com';drawPanel();vpShowUI();});return;}
   if(ds.act==='vpDraw'){const ve=document.getElementById('vp-video');if(!ve||!ve.videoWidth){toast('動画の読み込みが終わってから押してください');return;}ve.pause();const t=Math.round(ve.currentTime*10)/10;let base;try{base=grabFrame(ve);base.getContext('2d').getImageData(0,0,1,1);}catch(e){toast('この動画は図示できません（先読みできなかったため）');return;}
     openDraw(base,b64=>{vplay.t=t;vplay.img=b64;vplay.panel='com';drawPanel();vpShowUI();});return;}
