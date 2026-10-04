@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.49.1 -->
+<!-- スキー行動予定アプリ 画面側 v4.51.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -462,6 +462,7 @@ body.noscroll{overflow:hidden}
 .vp-stage video{width:100%;height:100%;object-fit:contain;background:#000}
 .vp-stage iframe{width:100%;height:100%;border:0}
 .vp-load{color:#CFE0EF;font-size:15px;font-weight:700}
+.vp-tap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:inherit;font-size:18px;font-weight:700;color:#fff;background:rgba(232,122,48,.92);border:0;border-radius:28px;padding:14px 26px;z-index:3}
 .vp-prog{position:absolute;left:50%;transform:translateX(-50%);top:calc(64px + env(safe-area-inset-top,0px));background:rgba(0,0,0,.6);color:#CFE0EF;font-size:12px;font-weight:700;padding:4px 10px;border-radius:12px;pointer-events:none;white-space:nowrap}
 .vp-alt{position:absolute;left:10px;right:10px;top:calc(64px + env(safe-area-inset-top,0px));font-size:12px;color:#CFE0EF;text-align:center;background:rgba(0,0,0,.6);padding:6px 8px;border-radius:8px;pointer-events:auto}.vp-alt .vp-b{margin:6px auto 0;display:block}
 .vp-note{position:absolute;left:10px;right:10px;bottom:calc(150px + env(safe-area-inset-bottom,0px));font-size:12px;color:#CFE0EF;text-align:center;pointer-events:none}
@@ -591,7 +592,7 @@ body.locked nav.tabs,body.locked #whoin,body.locked #hdrsub,body.locked .hdrx{di
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.49.1';
+const CLIENT_VERSION='4.51.0';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -631,9 +632,10 @@ const canEdit=()=>!!(S&&who&&(S.coaches||[]).indexOf(who)<0);
 
 function ingest(d){
   if(d&&d._upgrade){checkVersion();return;}   // サーバーからの「空の返事」（古い画面向け）は取り込まない
-  if(d&&S&&d!==S&&d.me===undefined){['me','xreqs','xcoms'].forEach(k=>{if(S[k]!==undefined)d[k]=S[k];});}
+  if(d&&S&&d!==S&&d.me===undefined){['me','xreqs','xcoms','gurls','_gat','gurlTtl'].forEach(k=>{if(S[k]!==undefined)d[k]=S[k];});}
   if(d&&d.me&&d.me.auth){LS.set('authMode','1');try{document.body.classList.remove('locked');}catch(e){}}
   if(d&&d.me&&d.me.auth&&d.me.name&&who!==d.me.name){who=d.me.name;LS.set('who',who);}
+  if(d&&d.gurls&&d.gurlAt){d._gat={};Object.keys(d.gurls).forEach(k=>d._gat[k]=d.gurlAt);}   // 置き場のアドレスを受け取った時刻（動画ごと。期限が近ければ取り直す）
   if(d&&d.videos&&!d.videos._split){d.vArch=d.videos.filter(v=>v.arch);d.videos=d.videos.filter(v=>!v.arch);d.videos._split=true;}
   if(d&&d.today&&/^\d{4}-\d{2}-\d{2}$/.test(d.today))TODAY=d.today;
   S=d; TRIPS=d.trips; RACES=d.races; TD=d.tdays; TRIPN={}; RACEN={}; DIDX={}; CZ={}; MENUK={};
@@ -1499,7 +1501,8 @@ async function relayFetch(v,fn,arg,onp,ac){if(vCache[v.fileId])return vCache[v.f
 /** この端末で、ドライブを直接読む道が通らなかったか（通らなければ7日間は最初から中継を使う） */
 const directNg=()=>{const t=+LS.get('vdirectNg')||0;return t&&Date.now()-t<7*864e5;};
 /** これまでどおり（保存・比較・写真で使う）：原本のURL。直接だめなら中継、それもだめなら直接のURL */
-async function vBlob(v,onp,ac){const src=vSrc(v);
+async function vBlob(v,onp,ac){const src=vSrc(v),gu=S&&S.gurls&&S.gurls[v.id];
+  if(gu&&!vCache[v.fileId]){try{const r=await fetch(gu,ac?{signal:ac.signal}:{});if(r.ok){const b=await r.blob();const o={blob:b,type:b.type||'video/mp4',bytes:b.size,urls:{}};vCache[v.fileId]=o;return vUrlOf(o,vTypes(o)[0]);}}catch(e){if(e&&e.name==='AbortError')throw e;}}
   if(src&&!directNg()){try{const o=await vFetch(v,onp?(r,g)=>onp(r,g):null,ac);return vUrlOf(o,vTypes(o)[0]);}catch(e){if(e&&e.name==='AbortError')throw e;if(e&&e.net)LS.set('vdirectNg',String(Date.now()));}}
   if(who){try{const o=await relayFetch(v,'videoPart',{who,key,vid:v.id},onp?(r,g)=>onp(r,g):null,ac);return vUrlOf(o,vTypes(o)[0]);}catch(e){if(e&&e.name==='AbortError')throw e;}}
   return src;}
@@ -1513,71 +1516,68 @@ const thumbUrl=v=>v.thumb&&S.vkey?'https://www.googleapis.com/drive/v3/files/'+e
 /** 動画の失敗の理由（MediaError） */
 const MERR={1:'中断',2:'通信',3:'解読できない',4:'形式か場所に未対応'};
 const mErr=ve=>{const e=ve&&ve.error;return e?'コード'+e.code+'（'+(MERR[e.code]||'?')+(e.message?'：'+String(e.message).slice(0,60):'')+'）':'コード?';};
-/** v4.49.1：動画の再生。
- *  ①ドライブの原本を直接（読みながらすぐ再生＋裏で全部読み込み→止まらない再生に切り替え）
- *  ②直接の道が通らなければ、サーバーの中継で原本を受け取って再生（％表示）。通らなかった端末は7日間、最初から中継
- *  ③どちらもだめなときだけドライブの画面。うまくいかなかった方法と理由は「エラー」シートに1行で残す
- *  o：{c 状態, src 直接のURL, thumb 同じ鍵のサムネイルURL（診断用）, alive 開いているか, relay 中継, onOk 再生できたら, ext リンクのページ, tag 記録の頭} */
-async function loadVideo(v,o){o=o||{};const c=o.c||vplay,stage=document.getElementById('vp-stage'),src=o.src!==undefined?o.src:vSrc(v);
+/** v4.50：動画の再生（iPhone の実機試験の結果にもとづく順番）
+ *  ①置き場（Cloud Storage）の期限つきアドレス：読みながらすぐ再生（コーチに送った動画）
+ *  ②ドライブの原本を直接読む（小さい動画は数秒。裏で全部読み込む通信は同時に走らせない）
+ *  ③サーバーの中継（遅いが確実）　④最後の手段：ドライブの画面。うまくいかなかった方法と理由は「エラー」シートに1行で残す
+ *  o：{c 状態, gurl 置き場のアドレス, src ドライブのアドレス, alive 開いているか, relay 中継, onOk 再生できたら, ext リンクのページ, tag 記録の頭} */
+async function loadVideo(v,o){o=o||{};const c=o.c||vplay,stage=document.getElementById('vp-stage');
+  let gurl=o.gurl!==undefined?o.gurl:((S&&S.gurls&&S.gurls[v.id])||'');const dsrc=o.src!==undefined?o.src:vSrc(v);
+  // 置き場のアドレス：期限まで15分を切っていれば、その場で取り直す（開いたまま時間がたったとき・アプリを長く開いていたとき）
+  const refresh=o.refresh||(o.ext||!who?null:async()=>{const r=await call('videoUrls',{who,key,vids:[v.id]});S.gurls=Object.assign(S.gurls||{},r.urls);S._gat=S._gat||{};Object.keys(r.urls).forEach(k=>S._gat[k]=r.gurlAt);return r.urls[v.id]||'';});
+  const fresh=o.gurlFresh!==undefined?o.gurlFresh:!!(S&&S._gat&&S._gat[v.id]&&Date.now()-S._gat[v.id]<((S.gurlTtl||43200)-900)*1000);
+  const mayHave=o.mayHave!==undefined?o.mayHave:!!(S&&(S.xreqs||[]).some(q=>q.st==='受付中'&&(!q.exp||q.exp>=TODAY)&&q.vids.indexOf(v.id)>=0));   // 受付中の相談の動画なら、写し終わっているかもしれない
+  let refreshed=false;
+  if(refresh&&((gurl&&!fresh)||(!gurl&&mayHave))){try{gurl=(await refresh())||'';refreshed=true;}catch(e){}}
+  if(o.stopped&&o.stopped())return;   // 受付が終わっていた（リンクのページ）
   const relay=o.relay||(o.ext||!who?null:(onp=>relayFetch(v,'videoPart',{who,key,vid:v.id},onp,c.ac)));
-  if(o.thumb===undefined&&!o.ext&&v.thumb&&S&&S.vkey)o.thumb=apiImg(v.thumb);
-  if(!v.fileId&&!relay){stage.innerHTML='<div class="vp-load"><a href="'+esc(v.url)+'" target="_blank" rel="noopener">▶ リンク先で見る</a></div>';return;}
-  const log=[];let reported=false,diag='';
+  if(!v.fileId&&!relay&&!gurl){stage.innerHTML='<div class="vp-load"><a href="'+esc(v.url)+'" target="_blank" rel="noopener">▶ リンク先で見る</a></div>';return;}
+  const log=[];let reported=false;
   const alive=()=>(o.alive?o.alive():(vplay===c&&c.id===v.id))&&document.getElementById('vp-stage')===stage;
-  const report=res=>{if(reported||!log.length)return;reported=true;const m=vMeta[v.fileId]||{};
-    reportErr('動画再生',(o.tag?o.tag+'｜':'')+log.join('／')+(diag?'／'+diag:'')+' → '+res+'｜'+[m.type||'種類?',m.status?'HTTP '+m.status:'',(m.mb!=null?m.mb:v.mb||'?')+'MB',inAppBrowser()?'アプリ内ブラウザ':''].filter(Boolean).join('・')+'｜'+v.id);};
+  const report=res=>{if(reported||!log.length)return;reported=true;
+    reportErr('動画再生',(o.tag?o.tag+'｜':'')+log.join('／')+' → '+res+'｜'+[(v.mb||'?')+'MB',inAppBrowser()?'アプリ内ブラウザ':''].filter(Boolean).join('・')+'｜'+v.id);};
   const prog=t=>{const p=document.getElementById('vp-prog'),l=document.getElementById('vp-load');if(p){p.hidden=!t;p.textContent=t||'';}else if(l&&t)l.textContent=t;};
   const ok=res=>{prog('');report(res);if(o.onOk)o.onOk();};
   const toDrive=why=>{if(!alive())return;c.live=false;log.length||log.push(why||'原本が使えない');report('ドライブの画面');
     stage.innerHTML=(v.fileId?'<iframe src="https://drive.google.com/file/d/'+esc(v.fileId)+'/preview" allow="autoplay"></iframe>':'')+'<div class="vp-alt">'+(v.fileId?'原本を再生できなかったため、ドライブの画面で表示しています（画質が下がることがあります）':'動画を再生できませんでした')+'<button class="vp-b sm" data-act="vpRetry">もう一度試す</button></div>';};
-  /** 画面の部品（作るのは1回だけ。切り替えても同じ部品を使う） */
+  /** 画面の部品（試すたびに作り直す。前の試しの遅れたエラーは受けない） */
   const ui=ve=>{ve.playbackRate=c.rate||1;ve.defaultPlaybackRate=c.rate||1;
     const seek=document.getElementById('vp-seek'),tm=document.getElementById('vp-time'),pp=document.getElementById('vp-pp');
     ve.addEventListener('timeupdate',()=>{if(ve.duration&&seek){seek.value=Math.round(ve.currentTime/ve.duration*1000);tm.textContent=ve.currentTime.toFixed(1)+'秒';}});
     ve.addEventListener('play',()=>{if(pp)pp.textContent='❚❚';vpAutoHide();});ve.addEventListener('pause',()=>{if(pp)pp.textContent='▶';vpShowUI();});
     if(seek)seek.oninput=()=>{if(ve.duration){ve.pause();ve.currentTime=seek.value/1000*ve.duration;tm.textContent=ve.currentTime.toFixed(1)+'秒';}};
-    // 再生できている動画が途中で止まったときだけ反応する（失敗した試しの遅れたエラーでは動かない）
-    ve.addEventListener('error',()=>{if(ve!==document.getElementById('vp-video')||!c.live||c.pending||!alive())return;c.live=false;log.push('再生中：'+mErr(ve));toDrive();});
+    // 再生できている動画が途中で止まったときだけ反応する
+    ve.addEventListener('error',()=>{if(ve!==document.getElementById('vp-video')||!c.live||!alive())return;c.live=false;log.push('再生中：'+mErr(ve));toDrive();});
     // 音は最初は消音（自動再生のため）。一度画面を触ったら音あり
     stage.addEventListener('touchend',()=>{ve.muted=false;},{once:true});};
-  /** このURLで再生してみる。keep＝位置と再生中かどうかを引き継ぐ（切り替え）。c.cancelTry で途中でやめられる */
-  const tryUrl=(url,keep,limit)=>new Promise((res,rej)=>{if(!alive())return rej(new Error('閉じた'));
-    let ve=document.getElementById('vp-video');
-    if(ve&&!keep){try{ve.removeAttribute('src');ve.load();}catch(e){}ve=null;}   // 新しく試すときは部品を作り直す（前の試しの遅れたエラーを受けない）
-    if(!ve){stage.innerHTML='<video id="vp-video" playsinline loop muted autoplay preload="auto"></video><div class="vp-prog" id="vp-prog" hidden></div>';ve=document.getElementById('vp-video');ui(ve);}
-    const t0=keep?ve.currentTime:0,go=keep?!ve.paused:true;c.live=false;
-    const fin=(okk,why)=>{clearTimeout(to);ve.removeEventListener('loadedmetadata',okF);ve.removeEventListener('error',ngF);c.cancelTry=null;
-      if(okk){c.live=true;res(ve);}else{try{ve.removeAttribute('src');ve.load();}catch(e){}rej(new Error(why));}};
-    const okF=()=>{if(t0){try{ve.currentTime=t0;}catch(e){}}ve.playbackRate=c.rate||1;if(go){const p=ve.play();if(p&&p.catch)p.catch(()=>{});}fin(true);};
+  /** このアドレスで再生してみる。cors＝置き場（図示のため、このアプリからの読み込みとして開く） */
+  const tryUrl=(url,cors,limit)=>new Promise((res,rej)=>{if(!alive())return rej(new Error('閉じた'));
+    const old=document.getElementById('vp-video');if(old){try{old.removeAttribute('src');old.load();}catch(e){}}
+    stage.innerHTML='<video id="vp-video" playsinline loop muted autoplay preload="auto"'+(cors?' crossorigin="anonymous"':'')+'></video><div class="vp-prog" id="vp-prog" hidden></div>';
+    const ve=document.getElementById('vp-video');ui(ve);c.live=false;
+    let to=0,done=false;const fin=(okk,why)=>{if(done)return;done=true;clearTimeout(to);ve.removeEventListener('loadedmetadata',okF);ve.removeEventListener('error',ngF);c.cancelTry=null;const tp=document.getElementById('vp-tap');if(tp&&okk&&!ve.paused)tp.remove();
+      if(okk){c.live=true;res(ve);}else{try{ve.removeAttribute('src');ve.load();}catch(e){}if(tp)tp.remove();rej(new Error(why));}};
+    /** 省電力モードなどで自動再生が止められた：押せば再生できるので、待つのをやめて「押して再生」を出す（遅い方法へは回らない） */
+    const tap=()=>{if(document.getElementById('vp-tap')||!alive())return;clearTimeout(to);const b=document.createElement('button');b.id='vp-tap';b.className='vp-tap';b.textContent='▶ 押して再生';
+      b.onclick=e=>{e.stopPropagation();ve.muted=false;const p=ve.play();b.remove();if(p&&p.catch)p.catch(()=>{});if(!done)to=setTimeout(()=>fin(false,Math.round(limit/1000)+'秒たっても始まらない（押したあと）'),limit);};stage.appendChild(b);};
+    const play=()=>{const p=ve.play();if(p&&p.catch)p.catch(er=>{if(er&&er.name==='NotAllowedError')tap();});};
+    const okF=()=>{ve.playbackRate=c.rate||1;play();fin(true);};
     const ngF=()=>fin(false,mErr(ve));
-    const to=setTimeout(()=>fin(false,Math.round((limit||15000)/1000)+'秒たっても始まらない'),limit||15000);
+    to=setTimeout(()=>fin(false,Math.round(limit/1000)+'秒たっても始まらない'),limit);
     c.cancelTry=why=>fin(false,why);
-    ve.addEventListener('loadedmetadata',okF);ve.addEventListener('error',ngF);ve.src=url;ve.load();});
-  /** 直接の道が通らなかった理由を見分ける：同じ鍵でサムネイル画像は読めるか */
-  const probe=()=>{if(!o.thumb)return;const im=new Image(),t=setTimeout(()=>{diag=diag||'サムネイル（同じ鍵）：応答なし';},5000);
-    im.onload=()=>{clearTimeout(t);diag='サムネイル（同じ鍵）：読めた';};im.onerror=()=>{clearTimeout(t);diag='サムネイル（同じ鍵）：読めない';};im.src=o.thumb;};
-  c.ac&&c.ac.abort();c.ac=new AbortController();c.live=false;c.pending=false;
-  if(src&&!directNg()){let streaming=false;c.pending=true;
-    // 裏で全部読み込み（％を出す）。通信そのものが通らなければ、待っている「読みながら」もすぐやめる
-    const full=vFetch(v,(r,got,tot)=>prog('全部読み込み中 '+Math.min(99,Math.round(r*100))+'%（'+(got/1048576).toFixed(1)+'／'+(tot/1048576).toFixed(1)+'MB）'),c.ac,src)
-      .then(x=>({ob:x}),e=>{if(e&&e.net){LS.set('vdirectNg',String(Date.now()));probe();if(c.cancelTry)c.cancelTry('同じ原本を読めない（直接の道が通らない）');}return {e};});
-    // 読みながらすぐ再生
-    if(!vCache[v.fileId]){try{await tryUrl(src,false);streaming=true;if(o.onOk)o.onOk();}catch(e){if(!alive())return;log.push('読みながら：'+e.message);prog('読み込み中…');}}
-    // 全部読み込めたら切り替え
-    const {ob,e}=await full;if(!alive()||(e&&e.name==='AbortError'))return;
-    if(e)log.push('全部読み込み：'+(e.why||errMsg(e)));
-    if(ob){for(const ty of vTypes(ob)){try{await tryUrl(vUrlOf(ob,ty),streaming);c.pending=false;ok('全部読み込み（'+ty+'）で再生');
-          if(!o.ext&&!v.thumb&&canEdit()&&!/^image\//.test(ty)){makeThumb(vUrlOf(ob,ty)).then(b=>{if(!b)return;call('videoThumb',{who,key,id:v.id,thumb:b}).then(r=>{if(r&&r.thumb)v.thumb=r.thumb;}).catch(()=>{});});}
-          return;}
-        catch(er){if(!alive())return;log.push('全部読み込み（'+ty+'）：'+er.message);}}}
-    c.pending=false;
-    // 切り替えに失敗したが、読みながらの再生はできていた → そのまま続ける
-    if(streaming){try{await tryUrl(src,true);const n=document.createElement('div');n.className='vp-note';n.textContent='読みながら再生しています（コマ送りが粗いことがあります）';stage.appendChild(n);ok('読みながらで再生');return;}catch(er){if(!alive())return;log.push('読みながら（戻す）：'+er.message);}}
-  } else if(!src) log.push('再生用のキーがない');   // 直接の道が通らない端末（前回の記録）は、何も記録せず中継へ
+    ve.addEventListener('loadedmetadata',okF);ve.addEventListener('error',ngF);ve.src=url;ve.load();play();});
+  c.ac&&c.ac.abort();c.ac=new AbortController();c.live=false;if(!alive())return;
+  const ways=[];if(gurl)ways.push(['置き場',gurl,true,10000]);if(dsrc&&v.fileId)ways.push(['ドライブ直接',dsrc,false,12000]);else if(!dsrc)log.push('再生用のキーがない');
+  let fmt=false;
+  for(const [nm,url,cors,lim] of ways){try{await tryUrl(url,cors,lim);ok(nm+'で再生');return;}catch(er){if(!alive())return;log.push(nm+'：'+er.message);if(/^コード3/.test(er.message))fmt=true;}
+    // 置き場で失敗：まだ取り直していなければ、新しいアドレスでもう一度だけ
+    if(nm==='置き場'&&refresh&&!refreshed){refreshed=true;let g2='';try{g2=(await refresh())||'';}catch(e){}if(!alive()||(o.stopped&&o.stopped()))return;
+      if(g2&&g2!==url){try{await tryUrl(g2,true,10000);ok('置き場（取り直したアドレス）で再生');return;}catch(er){if(!alive())return;log.push('置き場（取り直し）：'+er.message);}}}}
+  if(fmt){log.push('この端末では原本の形式を再生できないため、中継は使わない');toDrive();return;}
   // サーバーの中継（原本のまま。全部受け取ってから再生）
   if(relay){try{prog('原本を受け取っています…');const ob=await relay((r,got,tot)=>prog('原本を受け取っています '+Math.min(99,Math.round(r*100))+'%'+(tot?'（'+(got/1048576).toFixed(1)+'／'+(tot/1048576).toFixed(1)+'MB）':'')));
-      if(!alive())return;let last='';
-      for(const ty of vTypes(ob)){try{await tryUrl(vUrlOf(ob,ty),false);ok('中継（'+ty+'）で再生');return;}catch(er){if(!alive())return;last=er.message;log.push('中継（'+ty+'）：'+er.message);}}}
+      if(!alive())return;
+      for(const ty of vTypes(ob)){try{await tryUrl(vUrlOf(ob,ty),false,15000);ok('中継（'+ty+'）で再生');return;}catch(er){if(!alive())return;log.push('中継（'+ty+'）：'+er.message);}}}
     catch(er){if(!alive()||(er&&er.name==='AbortError'))return;log.push('中継：'+(er.message||errMsg(er)));}}
   // 最後の手段
   toDrive();}
@@ -1903,9 +1903,23 @@ function renderVideos(){const all=S.videos||[],kinds=[...new Set(all.filter(v=>!
 const XLINK=k=>location.origin+location.pathname.replace(/index\.html$/,'')+'?openExternalBrowser=1#r='+k;
 /* ===== 外部の人の画面：この依頼の動画だけ。ほかは何も見えない ===== */
 let XR=null;
-function extMain(key){XR={key,data:null,vid:null,url:{},t:null,part:'',ev:'',img:''};document.body.classList.add('extmode');
+function extMain(key){XR={key,data:null,vid:null,url:{},t:null,part:'',ev:'',img:'',gat:{}};document.body.classList.add('extmode');
   V.innerHTML='<main><p class="note">読み込み中…</p></main>';
-  call('reqOpen',{key}).then(d=>{XR.data=d;extList();}).catch(e=>{V.innerHTML='<main><div class="xmsg">'+esc(errMsg(e).replace(/^(Exception|Error):\s*/,''))+'</div></main>';});}
+  call('reqOpen',{key}).then(d=>{xSet(d);extList();}).catch(e=>{V.innerHTML='<main><div class="xmsg">'+esc(errMsg(e).replace(/^(Exception|Error):\s*/,''))+'</div></main>';});
+  // 戻ってきたとき（30分以上たっていれば）：返事・見た・置き場のアドレスを裏で取り直す。動画を開いている間はしない
+  const back=()=>{if(!XR||!XR.data||XR.ended||Date.now()-XR.loadedAt<1800000)return;const pv=document.getElementById('vplayer');if(pv&&!pv.hidden)return;
+    call('reqOpen',{key:XR.key}).then(d=>{const pv2=document.getElementById('vplayer');if(pv2&&!pv2.hidden)return;xSet(d);extList();}).catch(e=>{const m=errMsg(e).replace(/^(Exception|Error):\s*/,'');if(/受付を終え|使えなくなって/.test(m))xEnded(m);});};
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)back();});
+  window.addEventListener('pageshow',e=>{if(e.persisted)back();});}   // 「戻る」でページがそのまま復元されたときも
+/** 受付が終わっていたとき：動画を閉じて、そう表示し、書きかけを片付ける */
+function xEnded(m){XR.ended=true;XR.id=null;if(XR.ac)XR.ac.abort();const pv=document.getElementById('vplayer');if(pv){const ve=pv.querySelector('video');if(ve){try{ve.pause();ve.removeAttribute('src');ve.load();}catch(e){}}pv.innerHTML='';pv.hidden=true;}
+  document.body.classList.remove('noscroll');try{localStorage.removeItem(xDraftKey());}catch(e){}V.innerHTML='<main><div class="xmsg">'+esc(m)+'</div></main>';}
+/** 受け取った内容を入れる（置き場のアドレスを受け取った時刻も） */
+function xSet(d){XR.data=d;XR.loadedAt=Date.now();XR.gat={};(d.videos||[]).forEach(v=>{if(v.gurl)XR.gat[v.id]=d.gurlAt||Date.now();});}
+/** 書きかけ（返事と、動画ごとのひとこと）を、送るまでこの端末に残す */
+const xDraftKey=()=>'xdraft:'+XR.key;
+function xDraft(){try{return JSON.parse(LS.get(xDraftKey())||'{}');}catch(e){return {};}}
+function xDraftSet(f){const d=xDraft();f(d);d.c=d.c||{};Object.keys(d.c).forEach(k=>{if(!d.c[k])delete d.c[k];});if(!d.r&&!Object.keys(d.c).length){try{localStorage.removeItem(xDraftKey());}catch(e){}}else LS.set(xDraftKey(),JSON.stringify(d));}
 /** リンクのページ：誰から・相談の文・動画（☆が先頭）・見た本数・返事（言葉だけで可） */
 const xThumb=v=>v.thumb&&XR.data.vkey?'https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(v.thumb)+'?alt=media&key='+encodeURIComponent(XR.data.vkey):'';
 const xSrc=v=>v.fileId&&XR.data.vkey?'https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(v.fileId)+'?alt=media&key='+encodeURIComponent(XR.data.vkey):'';
@@ -1916,10 +1930,10 @@ function extList(){const d=XR.data,f=d.from||{},seen=d.seen||[],vs=d.videos.slic
     '<h2>返事</h2>'+(all.length?'<div class="xthr">'+all.map(c=>'<div class="xc"><small>'+esc(String(c.at||'').slice(5,16))+'</small><div>'+esc(c.text).replace(/\n/g,'<br>')+'</div>'+(c.reply?'<div class="grr">'+esc(c.rby||'')+'より：'+esc(c.reply)+'</div>':'')+'</div>').join('')+'</div>':'')+
     (d.done?'<p class="note">「こちらからは以上です」をいただきました。ありがとうございました。追加があれば、下から書けます。</p>':'')+
     '<p class="note">言葉だけの返事で十分です。途中まで見たところで送っても大丈夫です。動画ごとに、止めた場面へのひとことや図も残せます（任意）。いただいた内容は、本人と家族で大切に読ませていただきます。</p>'+
-    '<textarea id="xr-text" rows="4" maxlength="1000" class="ta2" placeholder="例：☆の2本では、②の方が踏み切りのタイミングが合っています。">'+esc(XR.rtxt||'')+'</textarea><p class="note mic">🎤 キーボードのマイクで、話して入力できます</p>'+
+    '<textarea id="xr-text" rows="4" maxlength="1000" class="ta2" placeholder="例：☆の2本では、②の方が踏み切りのタイミングが合っています。">'+esc(XR.rtxt!=null?XR.rtxt:(xDraft().r||''))+'</textarea><p class="note mic">🎤 キーボードのマイクで、話して入力できます。書きかけは、送るまでこの端末に残ります。</p>'+
     '<div class="acts" style="flex-wrap:wrap"><button class="btn pri" data-act="xReply">返事を送る</button>'+(d.done?'':'<button class="btn" data-act="xDone">こちらからは以上です</button>')+'</div></main>';
-  const ta=document.getElementById('xr-text');if(ta)ta.oninput=()=>{XR.rtxt=ta.value;};}
-async function extOpen(id){const d=XR.data,v=d.videos.find(x=>x.id===id);if(!v)return;XR.vid=v;XR.id=id;XR.t=null;XR.part='';XR.ev='';XR.img='';XR.rate=1;
+  const ta=document.getElementById('xr-text');if(ta){XR.rtxt=ta.value;ta.oninput=()=>{XR.rtxt=ta.value;xDraftSet(d=>{d.r=ta.value;});};}}
+async function extOpen(id){const d=XR.data,v=d.videos.find(x=>x.id===id);if(!v||XR.ended)return;XR.vid=v;XR.id=id;XR.t=null;XR.part='';XR.ev='';XR.img='';XR.rate=1;XR.txt=(xDraft().c||{})[id]||'';
   const pv=vpEl();document.body.classList.add('noscroll');pv.hidden=false;
   pv.innerHTML='<div class="vp-stage" id="vp-stage"><div class="vp-load" id="vp-load">読み込み中…</div></div><div class="vp-ui" id="vp-ui"><div class="vp-top"><button class="vp-close" data-act="xClose">✕ 閉じる</button><span class="vp-ttl">'+(v.star?'☆ ':'')+esc(v.title)+'</span></div>'+
     (v.photo?'':'<div class="vp-bot"><input type="range" id="vp-seek" min="0" max="1000" value="0"><span class="vp-time" id="vp-time">0.0秒</span>'+
@@ -1934,8 +1948,11 @@ async function extOpen(id){const d=XR.data,v=d.videos.find(x=>x.id===id);if(!v)r
   const src=xSrc(v);
   if(v.photo){const show=(u,cors)=>{if(alive()){st.innerHTML='<img id="vp-img" alt=""'+(cors?' crossorigin="anonymous"':'')+' src="'+esc(u)+'">';seen();}};
     const viaRelay=()=>{XR.ac=new AbortController();relay(r=>{const ld=document.getElementById('vp-load');if(ld)ld.textContent='読み込み中 '+Math.min(99,Math.round(r*100))+'%';}).then(ob=>show(vUrlOf(ob,ob.type))).catch(e=>{if(e&&e.name==='AbortError')return;const ld=document.getElementById('vp-load');if(ld)ld.textContent='写真を読み込めませんでした：'+errMsg(e).replace(/^(Exception|Error):\s*/,'');});};
-    if(!src||directNg()){viaRelay();return;}const im=new Image();im.crossOrigin='anonymous';im.onload=()=>show(src,true);im.onerror=viaRelay;im.src=src;return;}
-  await loadVideo(vv,{c:XR,src,thumb:xThumb(v)||undefined,ext:true,tag:'リンク：'+d.name,alive,relay,onOk:seen});}
+    const isrc=v.gurl||src;if(!isrc){viaRelay();return;}const im=new Image();im.crossOrigin='anonymous';im.onload=()=>show(isrc,true);im.onerror=viaRelay;im.src=isrc;return;}
+  const refresh=async()=>{let r;try{r=await call('reqUrls',{key:XR.key});}catch(e){const m=errMsg(e).replace(/^(Exception|Error):\s*/,'');if(/受付を終え|使えなくなって/.test(m))xEnded(m);throw e;}
+    (XR.data.videos||[]).forEach(x=>{if(r.urls[x.id]){x.gurl=r.urls[x.id];XR.gat[x.id]=r.gurlAt;}});return r.urls[id]||'';};
+  const fresh=!!(XR.gat[id]&&Date.now()-XR.gat[id]<((d.gurlTtl||21600)-900)*1000),mayHave=!v.gurl&&Date.now()-XR.loadedAt>60000;   // 開いてから1分以上たっていれば、あとから写し終わっているかもしれない
+  await loadVideo(vv,{c:XR,gurl:v.gurl||'',gurlFresh:fresh,mayHave,refresh,stopped:()=>!!XR.ended,src,ext:true,tag:'リンク：'+d.name,alive,relay,onOk:seen});}
 function xWords(g){return (XR.data.words||[]).filter(x=>x.g===g).map(x=>x.w);}
 function xPanel(){const v=XR.vid,p=document.getElementById('vp-panel');if(!p)return;const gs=vGroups(v.kind),cs=XR.data.coms.filter(c=>c.vid===v.id);XR.g=XR.g&&gs.indexOf(XR.g)>=0?XR.g:gs[0]||'';
   let h='<div class="vp-ph"><b>ひとこと・アドバイス</b><button class="vp-ic" data-act="xComClose">✕</button></div>'+(cs.length?'<div class="vp-cl">'+cs.map(c=>'<div class="vc"><b>'+(c.t!=null?fmtT(c.t):'')+'</b><span>'+esc(c.text)+(c.img?'（図あり）':'')+'</span>'+(c.reply?'<div class="grr">'+esc(c.rby||'')+'より：'+esc(c.reply)+'</div>':'')+'</div>').join('')+'</div>':'');
@@ -1945,11 +1962,11 @@ function xPanel(){const v=XR.vid,p=document.getElementById('vp-panel');if(!p)ret
   if(XR.g)h+='<div class="vp-lab">どこ</div><div class="wrap">'+xWords(XR.g).map(w=>'<button class="opt sm" data-xpart="'+esc(w)+'" aria-pressed="'+(XR.part===w)+'">'+esc(w)+'</button>').join('')+'</div>';
   h+='<div class="vp-lab">どう</div><div class="wrap">'+xWords('評価').map(w=>'<button class="opt sm" data-xev="'+esc(w)+'" aria-pressed="'+(XR.ev===w)+'">'+esc(w)+'</button>').join('')+'</div>'+
     '<div class="qrow"><input type="text" id="vp-text" maxlength="500" placeholder="書き足す（任意）" value="'+esc(XR.txt||'')+'"><button class="btn pri sm2" data-act="xSend">送る</button></div><p class="note mic">🎤 キーボードのマイクで、話して入力できます</p></div>';
-  p.innerHTML=h;p.hidden=false;const ti=document.getElementById('vp-text');if(ti)ti.oninput=()=>{XR.txt=ti.value;};}
+  p.innerHTML=h;p.hidden=false;const ti=document.getElementById('vp-text');if(ti)ti.oninput=()=>{XR.txt=ti.value;const id=XR.vid&&XR.vid.id;if(id)xDraftSet(d=>{d.c=d.c||{};d.c[id]=ti.value;});};}
 function xClick(ds,b){
   if(ds.xopen){extOpen(ds.xopen);return true;}
   if(ds.act==='xReply'||ds.act==='xDone'){const t=(document.getElementById('xr-text')||{value:''}).value.trim(),done=ds.act==='xDone';if(!t&&!done){toast('返事を書いてください');return true;}
-    const back=busy(b);call('reqComment',{key:XR.key,vid:'',text:t,done}).then(r=>{XR.data.coms=r.coms;XR.data.done=!!r.done;XR.rtxt='';extList();toast(done?'ありがとうございました':'送りました。ありがとうございます');}).catch(e=>{back();toast(errMsg(e).replace(/^(Exception|Error):\s*/,''));});return true;}
+    const back=busy(b);call('reqComment',{key:XR.key,vid:'',text:t,done}).then(r=>{XR.data.coms=r.coms;XR.data.done=!!r.done;XR.rtxt='';xDraftSet(d=>{d.r='';});extList();toast(done?'ありがとうございました':'送りました。ありがとうございます');}).catch(e=>{back();toast(errMsg(e).replace(/^(Exception|Error):\s*/,''));});return true;}
   if(ds.act==='vpRetry'){const v=XR.vid;if(v){const o=vCache[v.fileId];if(o){Object.keys(o.urls).forEach(t=>{try{URL.revokeObjectURL(o.urls[t]);}catch(e){}});delete vCache[v.fileId];}extOpen(v.id);}return true;}
   if(ds.act==='xClose'){XR.id=null;if(XR.ac)XR.ac.abort();const pv=document.getElementById('vplayer');if(pv){pv.innerHTML='';pv.hidden=true;}document.body.classList.remove('noscroll');extList();return true;}
   if(ds.act==='vpPlay'){const ve=document.getElementById('vp-video');if(ve){if(ve.paused){ve.muted=false;ve.play();}else ve.pause();}return true;}
@@ -1965,7 +1982,7 @@ function xClick(ds,b){
     openDraw(base,b64=>{XR.img=b64;xPanel();});return true;}
   if(ds.act==='xSend'){const extra=(document.getElementById('vp-text')||{value:''}).value.trim(),body=[XR.part,XR.ev].filter(Boolean).join('・')+(extra?([XR.part,XR.ev].some(Boolean)?'：':'')+extra:'');
     if(!body&&!XR.img){toast('言葉を選ぶか、書いてください');return true;}const back=busy(b);
-    call('reqComment',{key:XR.key,vid:XR.vid.id,text:(XR.t!=null?fmtT(XR.t)+'：':'')+body,t:XR.t,part:XR.part,ev:XR.ev,img:XR.img}).then(r=>{XR.data.coms=r.coms;XR.part='';XR.ev='';XR.txt='';XR.img='';xPanel();toast('送りました');}).catch(e=>{back();toast(errMsg(e).replace(/^(Exception|Error):\s*/,''));});return true;}
+    call('reqComment',{key:XR.key,vid:XR.vid.id,text:(XR.t!=null?fmtT(XR.t)+'：':'')+body,t:XR.t,part:XR.part,ev:XR.ev,img:XR.img}).then(r=>{XR.data.coms=r.coms;const sid=XR.vid&&XR.vid.id;XR.part='';XR.ev='';XR.txt='';XR.img='';if(sid)xDraftSet(d=>{d.c=d.c||{};delete d.c[sid];});xPanel();toast('送りました');}).catch(e=>{back();toast(errMsg(e).replace(/^(Exception|Error):\s*/,''));});return true;}
   if(ds.act==='drwClose'||ds.act==='drwSave'||ds.drwtool||ds.drwcol||ds.act==='drwUndo'||ds.act==='drwClear')return false;   // 図示は共通の処理へ
   return true;}
 /* ===== 家族：依頼を作る・一覧 ===== */
