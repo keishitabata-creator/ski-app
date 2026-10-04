@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.45.4 -->
+<!-- スキー行動予定アプリ 画面側 v4.45.5 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -560,7 +560,7 @@ body.extmode nav.tabs,body.extmode header{display:none}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.45.4';
+const CLIENT_VERSION='4.45.5';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -568,9 +568,10 @@ let verChecked=0;
 function checkVersion(){if(INSIDE_GAS||!API_URL)return;const now=Date.now();if(now-verChecked<10*60*1000)return;verChecked=now;
   fetch('version.json?t='+now,{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.version)return;
     if(!verNewer(j.version,CLIENT_VERSION))return;
-    const tried=LS.get('reloadedFor')||'';
-    if(tried===j.version){toast('新しい画面（v'+j.version+'）があります。しばらくしてから開き直してください');return;}
-    LS.set('reloadedFor',j.version);toast('新しい画面（v'+j.version+'）に切り替えます…');
+    const tried=LS.get('reloadedFor')||'',at=+(LS.get('reloadedAt')||0);
+    // 同じ版への切り替えは、10分たてば再挑戦する（GitHubが古い画面を配っていた場合に止まらないように）
+    if(tried===j.version&&now-at<10*60*1000){toast('新しい画面（v'+j.version+'）があります。しばらくしてから開き直してください');return;}
+    LS.set('reloadedFor',j.version);LS.set('reloadedAt',String(now));toast('新しい画面（v'+j.version+'）に切り替えます…');
     setTimeout(()=>{try{location.replace(location.pathname.replace(/[^/]*$/,'')+'index.html?v='+encodeURIComponent(j.version));}catch(e){location.reload();}},800);}).catch(()=>{});}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkVersion();});
 const W='日月火水木金土', WK=['月','火','水','木','金','土','日'], SLOTS=['朝','昼','夜'];
@@ -645,12 +646,19 @@ const READ_FNS={getAll:1,sessRange:1,listReports:1};   // 読むだけの処理�
 /** 端末番号（この端末に一度だけ作る）と、端末の時間帯（見張りに使う） */
 const DEVID=(()=>{let d=LS.get('dev');if(!d){d='D'+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);LS.set('dev',d);}return d;})();
 const DEVTZ=(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'';}catch(e){return '';}})();
+/** サーバーが「この版より古い画面は必ず更新」と言ったら、切り替えの記録を無視して取りに行く（毎回違うアドレス、1時間に3回まで） */
+let forcing=false;
+function forceUpdate(minV){if(INSIDE_GAS||forcing||!minV||!verNewer(minV,CLIENT_VERSION))return;forcing=true;
+  // GitHub に新しい画面がもう置かれているかを先に確かめる（まだなら空振りの再読み込みをしない）
+  fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{forcing=false;if(!j||!j.version||!verNewer(j.version,CLIENT_VERSION))return;
+    const now=Date.now(),h=JSON.parse(LS.get('forceHist')||'[]').filter(t=>now-t<3600000);if(h.length>=3)return;h.push(now);LS.set('forceHist',JSON.stringify(h));
+    toast('新しい画面（v'+j.version+'）に切り替えます…');setTimeout(()=>{location.replace(location.pathname.replace(/[^/]*$/,'')+'index.html?v='+encodeURIComponent(j.version)+'&t='+now);},600);}).catch(()=>{forcing=false;});}
 function call(fn,arg,tryNo){
   if(INSIDE_GAS)return new Promise((res,rej)=>{google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](arg);});
   if(!API_URL)return Promise.reject(new Error('通信先（API_URL）が設定されていません'));
-  const once=()=>fetch(API_URL,{method:'POST',body:JSON.stringify({fn,arg:arg||{},vkey,ukey:LS.get('ukey')||'',dev:DEVID,tz:DEVTZ}),headers:{'Content-Type':'text/plain;charset=utf-8'},redirect:'follow'})
+  const once=()=>fetch(API_URL,{method:'POST',body:JSON.stringify({fn,arg:arg||{},vkey,ukey:LS.get('ukey')||'',dev:DEVID,tz:DEVTZ,cv:CLIENT_VERSION}),headers:{'Content-Type':'text/plain;charset=utf-8'},redirect:'follow'})
     .then(r=>{if(!r.ok)throw new Error('通信エラー（'+r.status+'）');return r.json();})
-    .then(j=>{if(!j||j.ok!==true)throw new Error((j&&j.error)||'通信エラー');return j.data;});
+    .then(j=>{if(j&&j.minClient)forceUpdate(j.minClient);if(j&&j.data&&j.data.minClient)forceUpdate(j.data.minClient);if(!j||j.ok!==true)throw new Error((j&&j.error)||'通信エラー');return j.data;});
   return once().catch(e=>{const n=tryNo||0;const m=errMsg(e);
     if(READ_FNS[fn]&&n<2&&!/VKEY|KEY|EKEY|UKEY|LOCKED|呼べません/.test(m))return new Promise(r=>setTimeout(r,1500*(n+1))).then(()=>call(fn,arg,n+1));
     throw e;});}
@@ -1304,6 +1312,7 @@ function openPlanMenu(){const e=canEdit();
     (e?item('fillRec','記録どおりに予定を埋める','記録があるのに予定が空だった過去の日に、記録した活動を予定として入れます（実績の予定・実施率を事実に合わせる）'):'')+
     item('goToday','今日の月へ','カレンダーを今日の月に戻します')+
     item('reloadNow','最新の状態に更新','スプレッドシートで直した予定など、最新のデータを取り直します')+
+    item('hardReload','画面を最新にする','アプリの画面そのものを、必ず最新の版に入れ替えます（いま：画面'+CLIENT_VERSION+'）')+
     '</div><div class="acts"><button class="btn" data-act="close">閉じる</button></div>';openS('planmenu');}
 function openTripAct(kind,id){const t=TRIPN[id];if(!t)return;sheetCtx={id,kind};let h='<div class="grab"></div>';
   if(kind==='shift'){const lim=' min="'+DAYS[0].d+'" max="'+DAYS[DAYS.length-1].d+'"';
@@ -2234,6 +2243,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
     if(!confirm(L.length+'日（'+md(L[0])+'〜'+md(L[L.length-1])+'）に、記録した活動を予定として入れます。よろしいですか？'))return;
     closeSheet();sendPlan('fillFromRecords',{},L.length+'日の予定を記録どおりにしました',()=>planLocal(L,(d2,cur,off)=>{const items=[];(S.acts[d2.d]||[]).forEach(a=>{if(isSys(a.kind)||items.some(y=>y.slot===a.slot&&y.kind===a.kind))return;items.push({slot:a.slot,kind:a.kind,fh:a.kind==='ROMベーシック'?((S.sess[a.id]||{}).fh||''):''});});return {items,off};},'記録から'));return;}
   if(ds.act==='reloadNow'){closeSheet();load(true);toast('最新のデータを取り直しています…');return;}
+  if(ds.act==='hardReload'){closeSheet();toast('画面を最新に入れ替えます…');LS.set('reloadedFor','');setTimeout(()=>{location.replace(location.pathname.replace(/[^/]*$/,'')+'index.html?t='+Date.now());},400);return;}
   if(ds.act==='goToday'){const t2=DIDX[TODAY]!==undefined?TODAY:DAYS[0].d;year=fy(t2);month=t2.slice(0,7);closeSheet();render();window.scrollTo(0,0);setTimeout(()=>{const c=document.querySelector('.cell.today,.day.today');if(c)c.scrollIntoView({block:'center'});},60);return;}
   if(ds.month){month=ds.month;render();window.scrollTo(0,0);return;}
   if(ds.filt){filt=ds.filt;render();return;}
