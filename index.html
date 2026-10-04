@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.41.0 -->
+<!-- スキー行動予定アプリ 画面側 v4.45.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -517,6 +517,42 @@ body.noscroll{overflow:hidden}
 .cp-bot{padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px))}
 #vcmp .btn{background:#1E2A36;color:#F2F6FA;border-color:#3A4A5A}
 #vcmp .vp-panel .vcard{background:#16212B;border-color:#2E3B47;color:#F2F6FA}
+.vfclr{width:100%;margin:0 0 8px;min-height:44px;font-weight:700}
+/* v4.42：太いつまみ・課題・練習前・図示・参考 */
+#vp-seek,.cp-seek{-webkit-appearance:none;appearance:none;height:28px;background:transparent}
+#vp-seek::-webkit-slider-runnable-track,.cp-seek::-webkit-slider-runnable-track{height:10px;border-radius:5px;background:rgba(255,255,255,.35)}
+#vp-seek::-webkit-slider-thumb,.cp-seek::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#E87A30;margin-top:-9px;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+#vp-seek::-moz-range-track,.cp-seek::-moz-range-track{height:10px;border-radius:5px;background:rgba(255,255,255,.35)}
+#vp-seek::-moz-range-thumb,.cp-seek::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#E87A30;border:3px solid #fff}
+.vfref{width:100%;margin:0 0 8px;min-height:44px}
+.task{background:var(--card);border:1px solid var(--line);border-left:4px solid #E87A30;border-radius:10px;padding:8px 10px;margin:6px 0}.task.done{border-left-color:#2E8B57}
+.task b{display:block}.task small{display:block;color:var(--sub);font-size:12px;margin:2px 0 4px}.task-b{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.task .btn.on{background:#E87A30;color:#fff;border-color:#E87A30}
+.brief{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 12px 10px;margin:10px 0}
+.brief-g{display:grid;grid-template-columns:1fr 1fr;gap:8px}.brief-g div{background:rgba(127,127,127,.08);border-radius:10px;padding:6px 8px}.brief-g span{display:block;font-size:12px;color:var(--sub)}.brief-g b{font-size:14px}.brief-g small{display:block;font-size:12px;color:var(--sub)}
+.vp-img{position:relative;margin:6px 0}.vp-img img{max-width:100%;max-height:220px;border-radius:8px;display:block}
+.vc-img{display:block;max-width:100%;max-height:160px;border-radius:6px;margin-top:4px}
+.vp-imgfull{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px}.vp-imgfull img{max-width:100%;max-height:88vh}.vp-imgfull span{color:#CFE0EF;font-size:13px;margin-top:6px}
+.note.mic{font-size:12px;color:#AFC0CF;margin:4px 0 0}
+#vdraw{position:fixed;inset:0;z-index:65;background:#000;color:#F2F6FA;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}#vdraw[hidden]{display:none}
+.vd-top{display:flex;align-items:center;gap:8px;padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px}
+.vd-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:4px}
+#vd-c{max-width:100%;max-height:100%;touch-action:none;background:#111}
+.vd-tools{display:flex;gap:6px;padding:4px 8px;flex-wrap:wrap;justify-content:center}.vd-tools .vp-b{flex:0 1 auto;padding:0 12px}
+.vd-col i{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:4px;vertical-align:-2px;border:1px solid #888}
+#vdraw .btn.pri{background:#E87A30;border-color:#E87A30;color:#fff}
+/* v4.43–4.44：写真・選んでまとめて・外部依頼 */
+.vbtns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.vbtns .btn{flex:1;min-height:44px}.vbtns .btn.on{background:#E87A30;color:#fff;border-color:#E87A30}
+.vcard.sel{outline:3px solid #E87A30}.vck{position:absolute;left:6px;top:4px;width:24px;height:24px;border-radius:50%;background:#fff;color:#E87A30;font-size:16px;text-align:center;line-height:24px;border:2px solid #E87A30}
+.vpubm{position:absolute;left:6px;bottom:4px;background:#2E8B57;color:#fff;font-size:10px;border-radius:4px;padding:0 4px}
+.vselbar{position:sticky;bottom:calc(64px + env(safe-area-inset-bottom,0px));background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px;margin-top:10px;box-shadow:0 -4px 14px rgba(0,0,0,.15);display:flex;flex-wrap:wrap;gap:6px;align-items:center}.vselacts{display:flex;flex-wrap:wrap;gap:4px;width:100%}
+.vpick{border:1px solid var(--line);border-radius:10px;padding:6px;margin:6px 0}.vpick-h{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:13px;margin-bottom:4px}.vpick-h .btn.on{background:#E87A30;color:#fff}
+.vpk{display:flex;justify-content:space-between;width:100%;background:none;border:0;border-top:1px solid var(--line);padding:8px 4px;font:inherit;color:var(--ink);text-align:left}.vpk span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px}.vpk b{color:var(--sub);white-space:nowrap}.vpk.on b{color:#E87A30}
+.vp-stage.ph{overflow:auto}.vp-stage.ph img{max-width:100%;max-height:100%;object-fit:contain}.vp-stage.ph.zoom{align-items:flex-start;justify-content:flex-start}.vp-stage.ph.zoom img{max-width:none;max-height:none;width:200%}
+.xreq-text{background:var(--card);border:1px solid var(--line);border-left:4px solid #E87A30;border-radius:10px;padding:10px 12px;margin:8px 0}
+.xlink{word-break:break-all;background:rgba(127,127,127,.1);border-radius:8px;padding:8px;font-size:13px;margin:6px 0}
+.vnew.ext{border-left-color:#5B4BC4}
+body.extmode nav.tabs,body.extmode header{display:none}
+.alog{max-height:60vh;overflow-y:auto;border:1px solid var(--line);border-radius:10px}.alog div{padding:6px 10px;border-bottom:1px solid var(--line);font-size:13px}.alog small{display:block;color:var(--sub);font-size:11.5px;word-break:break-all}.alog .ng{background:rgba(196,43,94,.08)}.alog .ext{background:rgba(91,75,196,.08)}
 </style>
 </head>
 <body>
@@ -524,7 +560,7 @@ body.noscroll{overflow:hidden}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.41.0';
+const CLIENT_VERSION='4.45.0';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -562,6 +598,9 @@ let selMode=false, SEL={}, selRange=false, selAnchor='', pressT=null, noClick=fa
 const canEdit=()=>!!(S&&who&&(S.coaches||[]).indexOf(who)<0);
 
 function ingest(d){
+  if(d&&S&&d!==S&&d.me===undefined){['me','xreqs','xcoms'].forEach(k=>{if(S[k]!==undefined)d[k]=S[k];});}
+  if(d&&d.me&&d.me.auth&&d.me.name&&who!==d.me.name){who=d.me.name;LS.set('who',who);}
+  if(d&&d.videos&&!d.videos._split){d.vArch=d.videos.filter(v=>v.arch);d.videos=d.videos.filter(v=>!v.arch);d.videos._split=true;}
   if(d&&d.today&&/^\d{4}-\d{2}-\d{2}$/.test(d.today))TODAY=d.today;
   S=d; TRIPS=d.trips; RACES=d.races; TD=d.tdays; TRIPN={}; RACEN={}; DIDX={}; CZ={}; MENUK={};
   expandSess(S.sess);
@@ -586,7 +625,7 @@ function applyPart(d){if(!d||!d.partial){ingest(d);return;}
   if(d.trips){S.trips=d.trips;S.races=d.races;S.tdays=d.tdays;if(d.days)S.days=d.days;ingest(S);return;}
   if(d.results){S.results=d.results;ingest(S);return;}
   if(d.coachings){S.coachings=d.coachings;ingest(S);return;}
-  if(d.videos){S.videos=d.videos;if(d.vcoms)S.vcoms=d.vcoms;if(d.vwords)S.vwords=d.vwords;ingest(S);return;}
+  if(d.videos){S.videos=d.videos;if(d.vcoms)S.vcoms=d.vcoms;if(d.cmps)S.cmps=d.cmps;if(d.tasks)S.tasks=d.tasks;if(d.vwords)S.vwords=d.vwords;ingest(S);return;}
   if(d.sess&&!d.dates&&!d.acts){expandSess(d.sess);Object.keys(d.sess).forEach(k=>S.sess[k]=d.sess[k]);if(d.sessFrom&&d.sessFrom<S.sessFrom)S.sessFrom=d.sessFrom;ingest(S);return;}
   if(d.planDays){const m={};d.planDays.forEach(r=>m[r[0]]=r);S.days=S.days.map(r=>m[r[0]]||r);if(d.patterns)S.patterns=d.patterns;if(!d.dates){ingest(S);return;}}
   expandSess(d.sess);
@@ -602,14 +641,17 @@ const API_URL=(window.APP_CONFIG&&window.APP_CONFIG.apiUrl)||'';
 const INSIDE_GAS=!!(window.google&&google.script&&google.script.run);
 let vkey=LS.get('vkey')||'';
 const READ_FNS={getAll:1,sessRange:1,listReports:1};   // 読むだけの処理は、失敗したら自動でやり直す（2回まで）
+/** 端末番号（この端末に一度だけ作る）と、端末の時間帯（見張りに使う） */
+const DEVID=(()=>{let d=LS.get('dev');if(!d){d='D'+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);LS.set('dev',d);}return d;})();
+const DEVTZ=(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'';}catch(e){return '';}})();
 function call(fn,arg,tryNo){
   if(INSIDE_GAS)return new Promise((res,rej)=>{google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](arg);});
   if(!API_URL)return Promise.reject(new Error('通信先（API_URL）が設定されていません'));
-  const once=()=>fetch(API_URL,{method:'POST',body:JSON.stringify({fn,arg:arg||{},vkey}),headers:{'Content-Type':'text/plain;charset=utf-8'},redirect:'follow'})
+  const once=()=>fetch(API_URL,{method:'POST',body:JSON.stringify({fn,arg:arg||{},vkey,ukey:LS.get('ukey')||'',dev:DEVID,tz:DEVTZ}),headers:{'Content-Type':'text/plain;charset=utf-8'},redirect:'follow'})
     .then(r=>{if(!r.ok)throw new Error('通信エラー（'+r.status+'）');return r.json();})
     .then(j=>{if(!j||j.ok!==true)throw new Error((j&&j.error)||'通信エラー');return j.data;});
   return once().catch(e=>{const n=tryNo||0;const m=errMsg(e);
-    if(READ_FNS[fn]&&n<2&&!/VKEY|KEY|EKEY|呼べません/.test(m))return new Promise(r=>setTimeout(r,1500*(n+1))).then(()=>call(fn,arg,n+1));
+    if(READ_FNS[fn]&&n<2&&!/VKEY|KEY|EKEY|UKEY|LOCKED|呼べません/.test(m))return new Promise(r=>setTimeout(r,1500*(n+1))).then(()=>call(fn,arg,n+1));
     throw e;});}
 const errMsg=e=>String((e&&e.message)||e||'');
 let FRESH=false;   // 最新のデータを受け取ったか（受け取るまで保存はしない）
@@ -628,6 +670,7 @@ const T0=Date.now();   // 画面のプログラムが動き始めた時刻
 let TM={html:null,cache:null,fresh:null,srv:null,srvT:''};
 try{const pt=performance.timing;if(pt&&pt.navigationStart)TM.html=Math.round((pt.responseEnd-pt.navigationStart)/100)/10;}catch(e){}
 /** 閲覧の合言葉（外に置いた画面から開くときだけ） */
+function askUKey(note){V.innerHTML='<main><h2>あなたの合言葉を入れてください</h2>'+(note?'<p class="note" style="color:#a0321e">'+esc(note)+'</p>':'')+'<input type="password" id="uk-in" placeholder="あなたの合言葉" autocomplete="current-password" style="width:100%;font-size:18px;padding:12px;border:1.5px solid var(--line);border-radius:12px;margin:8px 0"><button class="btn pri" data-act="ukGo" style="width:100%;min-height:52px">開く</button><p class="note">合言葉は一人ずつ違います（家族から聞いてください）。一度入れると、この端末では次から聞かれません。</p></main>';}
 function askVKey(note){V.innerHTML='<main><h2>このアプリを開くには合言葉が必要です</h2>'+(note?'<p class="note" style="color:#a0321e">'+esc(note)+'</p>':'')+'<input type="password" id="vk-in" placeholder="合言葉" style="width:100%;font-size:18px;padding:12px;border:1.5px solid var(--line);border-radius:12px;margin:8px 0"><button class="btn pri" data-act="vkGo" style="width:100%;min-height:52px">開く</button><p class="note">管理者に確認してください。一度入れると、この端末では次から聞かれません。</p></main>';}
 function bootReport(){try{const t=TM;const f=x=>x==null?'?':x;const msg='HTML受信 '+f(t.html)+'秒／前回データ表示 '+(t.cache!=null?t.cache+'秒':'なし')+'／最新データ '+f(t.fresh)+'秒（うちサーバー処理 '+f(t.srv)+'秒：'+(t.srvT||'')+'）／通信 '+(INSIDE_GAS?'Apps Script内':'外部');
   const last=LS.get('bootLogged')||'';if(last===TODAY)return;LS.set('bootLogged',TODAY);
@@ -642,9 +685,11 @@ function load(quiet){
   if(hadCache){const tick=setInterval(()=>{if(done||FRESH){clearInterval(tick);return;}const sec=Math.round((Date.now()-started)/1000);
     const e=document.getElementById('sync');if(e&&inflight>0){e.className='sync on';e.textContent='最新を確認中… '+sec+'秒';}
     if(sec>=30){clearInterval(tick);inflight=Math.max(0,inflight-1);syncShow();toast('最新のデータを取れませんでした（30秒）。表示は前回のものです。上の「更新」で再読み込みできます');}},1000);}
-  call('getAll').then(d=>{done=true;checkVersion();if(hadCache){inflight=Math.max(0,inflight-1);}ingest(d);FRESH_AT=Date.now();cacheSave(d);if(!hadCache)qReplay();else Q.forEach(e=>{try{const list=e.fn==='saveActivities'?e.p.list:e.fn==='deleteActivity'?[]:[e.p];if(list.length)optimistic(list,false);}catch(x){}});const first=!FRESH;FRESH=true;showLoading(false);render();syncShow();if(!who)askWho();setTimeout(qFlush,300);if(first&&!quiet){TM.fresh=Math.round((Date.now()-T0)/100)/10;TM.srv=d.srvMs!=null?Math.round(d.srvMs/100)/10:null;TM.srvT=d.srvT||'';bootReport();}})
+  call('getAll',{who:who||''}).then(d=>{done=true;checkVersion();if(hadCache){inflight=Math.max(0,inflight-1);}ingest(d);FRESH_AT=Date.now();cacheSave(d);if(!hadCache)qReplay();else Q.forEach(e=>{try{const list=e.fn==='saveActivities'?e.p.list:e.fn==='deleteActivity'?[]:[e.p];if(list.length)optimistic(list,false);}catch(x){}});const first=!FRESH;FRESH=true;showLoading(false);render();syncShow();if(!who)askWho();setTimeout(qFlush,300);if(first&&!quiet){TM.fresh=Math.round((Date.now()-T0)/100)/10;TM.srv=d.srvMs!=null?Math.round(d.srvMs/100)/10:null;TM.srvT=d.srvT||'';bootReport();}})
    .catch(e=>{done=true;showLoading(false);try{reportErr('読み込み',errMsg(e));}catch(x){}
      if(/VKEY/.test(errMsg(e))){showLoading(false);askVKey(vkey?'合言葉が違います':'');return;}
+      if(/UKEY/.test(errMsg(e))){showLoading(false);askUKey(LS.get('ukey')?'合言葉が違います':'');return;}
+      if(/LOCKED/.test(errMsg(e))){showLoading(false);V.innerHTML='<main><h2>しばらく入れません</h2><p>合言葉の間違いが続いたため、安全のために10分間止めています。10分たってから、もう一度開いてください。</p></main>';return;}
      if(S&&!FRESH){inflight=Math.max(0,inflight-1);syncShow();toast('最新のデータを取れませんでした。表示は前回のものです。');return;}
      V.innerHTML='<main><p class="empty">データを読み込めませんでした。<br>'+esc(errMsg(e))+'</p><button class="btn" data-act="reload" style="width:100%">もう一度読み込む</button></main>';}); }
 
@@ -840,8 +885,11 @@ function renderHome(){
   {const L=unrecDays(14);if(L.length)h+='<div class="nudge"><span>'+(L.length===1&&L[0].d===addD(TODAY,-1)?'昨日（'+mdw(L[0].d)+'）の記録が'+L[0].n+'件まだです':'記録していない日が'+L.length+'日あります（最近14日）')+'</span><button class="btn pri sm2" data-act="brecOpen">まとめて記録</button></div>';}
   if(!planEmpty&&canEdit()){const G=planGap();if(G.length>=5)h+='<div class="nudge plan"><span>'+md(G[0])+'から、予定が入っていない日が'+G.length+'日あります（これから2週間）。週の型を当てはめると埋まります。</span><button class="btn pri sm2" data-act="patOpen">週の型を当てはめる</button></div>';}
   h+='<section class="today"><div class="thead"><span class="tlabel">今日</span><b>'+mdw(TODAY)+'</b></div>'+dayBody(DAYS[DIDX[TODAY]])+'</section>';
+  h+=coachBrief();
   h+=questionCard();
+  if(who==='本人'||(S.coaches||[]).indexOf(who)<0&&who)h+=tasksHtml();
   h+=videoNews();
+  if(S.me&&S.me.role!=='コーチ'||(S.coaches||[]).indexOf(who)<0)h+=extNews();
   const tm=addD(TODAY,1);if(DIDX[tm]!==undefined)h+='<section class="today tmr"><div class="thead"><span class="tlabel">明日</span><b>'+mdw(tm)+'</b><button class="linkbtn2" data-day="'+tm+'" style="margin-left:auto">開く</button></div>'+dayBody(DAYS[DIDX[tm]],{compact:true})+'</section>';
   const a=monOf(TODAY),b=addD(a,6);let pl=0,dn=0;
   let ex=0;DAYS.forEach(d=>{if(d.d<a||d.d>b||d.d>TODAY)return;rowsOf(d).forEach(r=>{if(isSys(r.kind))return;if(r.planned)pl++;if(r.act&&r.act.st==='実施'){if(r.planned)dn++;else ex++;}});});
@@ -866,7 +914,7 @@ function grid(k,mini){const ds=DAYS.filter(d=>d.d.slice(0,7)===k);if(!ds.length)
     if(prev){let x=addD(prev,1);while(x<d.d){h+='<div class="cell pad miss" title="この日はデータがありません"></div>';x=addD(x,1);}}
     prev=d.d;
     const v=view(d),rows=rowsOf(d,v),dc=d.h?'sun':(d.sat?'sat':'');
-    h+='<button class="cell '+cellCls(v)+(d.d===TODAY?' today':'')+(selMode?(SEL[d.d]?' picked':' pickable'):'')+'" data-day="'+d.d+'" aria-label="'+esc(md(d.d)+' '+v.school+' '+(v.nm||'')+' '+rows.map(r=>r.slot+kindLabel(r.kind,fhOf(r.act,r.fh))).join(' '))+'"><span class="cn '+dc+'">'+(+d.d.slice(8))+(()=>{const st=schState(d,v);return st?'<span class="sch '+st.c+'">'+(mini?st.l.slice(0,1):st.l)+'</span>':'';})()+'</span>'+(()=>{if(mini)return '';const n=(S.videos||[]).filter(x=>x.d===d.d).length;return n?'<span class="cvid">🎬'+n+'</span>':'';})()+(CZ[d.d]?'<span class="czb'+(isAbs(v.school)?' two':'')+'">P</span>':'')+
+    h+='<button class="cell '+cellCls(v)+(d.d===TODAY?' today':'')+(selMode?(SEL[d.d]?' picked':' pickable'):'')+'" data-day="'+d.d+'" aria-label="'+esc(md(d.d)+' '+v.school+' '+(v.nm||'')+' '+rows.map(r=>r.slot+kindLabel(r.kind,fhOf(r.act,r.fh))).join(' '))+'"><span class="cn '+dc+'">'+(+d.d.slice(8))+(()=>{const st=schState(d,v);return st?'<span class="sch '+st.c+'">'+(mini?st.l.slice(0,1):st.l)+'</span>':'';})()+'</span>'+(()=>{if(mini)return '';const L=(S.videos||[]).filter(x=>x.d===d.d&&!x.ref),nv=L.filter(x=>x.type!=='写真').length,np=L.length-nv;return (nv?'<span class="cvid">🎬'+nv+'</span>':'')+(np?'<span class="cvid">📷'+np+'</span>':'');})()+(CZ[d.d]?'<span class="czb'+(isAbs(v.school)?' two':'')+'">P</span>':'')+
       (!mini&&!v.kb&&v.off?'<span class="cl off">OFF</span>':'')+(!mini&&v.kb?'<span class="cl">'+(v.skip?'<span class="skipb">'+v.skipTxt+'</span>':'')+esc(shortEv(v)+(v.off?'／OFF':''))+'</span>':'')+
       '<span class="cks">'+(()=>{const g=[];rows.forEach(r=>{let x=g.find(y=>y.kind===r.kind);if(!x){x={kind:r.kind,fh:r.fh||'',n:0,done:0,ng:0};g.push(x);}x.n++;
           if(r.act&&r.act.st==='実施'&&S.sess[r.act.id]&&S.sess[r.act.id].fh)x.fh=S.sess[r.act.id].fh;if(r.act&&r.act.st==='実施'){x.done++;x.wj=(x.wj||0)+wjN(r.act);}if(r.act&&r.act.st==='やらなかった')x.ng++;});
@@ -928,7 +976,7 @@ function retInfo(t){const rs=RACES.filter(r=>r.tr===t.id);if(!rs.length)return n
   const lt=TD[last];if(lt&&has(lt.etm,'帰宅'))return {txt:mdw(last)+'（大会当日）'};
   return {txt:'未登録',none:true};}
 function vidUrl(v){return v.fileId?'https://drive.google.com/file/d/'+encodeURIComponent(v.fileId)+'/view':v.url;}
-function vidItem(v){const nc=(S.vcoms||[]).filter(c=>c.vid===v.id).length;return '<div class="vid'+(v.best?' best':'')+'"><button class="vplay" data-vplay="'+esc(v.id)+'">'+(v.best?'☆ ':'▶ ')+esc(v.title)+(v.want?' <small class="vw">コーチに見てほしい</small>':'')+(nc?' <small class="vw">💬'+nc+'</small>':'')+'</button><span>'+esc([md(v.d),v.slot,v.kind,v.memo,'登録：'+v.by].filter(Boolean).join('｜'))+'</span>'+(canEdit()?'<button class="linkbtn2 star" data-vstar="'+esc(v.id)+'" aria-pressed="'+!!v.best+'">'+(v.best?'☆を外す':'☆ベストにする')+'</button><button class="linkbtn2 danger" data-vdel="'+esc(v.id)+'">削除</button>':'')+'</div>';}
+function vidItem(v){const nc=(S.vcoms||[]).filter(c=>c.vid===v.id).length;return '<div class="vid'+(v.best?' best':'')+'"><button class="vplay" data-vplay="'+esc(v.id)+'">'+(v.best?'☆ ':v.type==='写真'?'📷 ':'▶ ')+esc(v.title)+(v.want?' <small class="vw">コーチに見てほしい</small>':'')+(nc?' <small class="vw">💬'+nc+'</small>':'')+'</button><span>'+esc([md(v.d),v.slot,v.kind,v.memo,'登録：'+v.by].filter(Boolean).join('｜'))+'</span>'+(canEdit()?'<button class="linkbtn2 star" data-vstar="'+esc(v.id)+'" aria-pressed="'+!!v.best+'">'+(v.best?'☆を外す':'☆ベストにする')+'</button><button class="linkbtn2 danger" data-vdel="'+esc(v.id)+'">削除</button>':'')+'</div>';}
 function renderRace(){
   const up=TRIPS.filter(t=>!t.b||t.b>=TODAY).sort((a,b)=>a.a<b.a?-1:1), past=TRIPS.filter(t=>t.b&&t.b<TODAY).sort((a,b)=>a.a<b.a?1:-1);
   let h='<main>';
@@ -940,7 +988,7 @@ function renderRace(){
     let x='<div class="trip"><div class="trow"><div class="tt"><b>'+esc(t.name)+'</b><span>'+esc(per(t))+(t.a?'（'+t.a.slice(0,4)+'年）':'')+'</span>'+(ret?'<span class="resl'+(ret.none?' warn':'')+'">帰宅：'+esc(ret.txt)+'</span>':'')+'</div>'+sw('data-trip',t.id,on,'参加','不参加',false)+'</div>';
     if(rs.length){x+='<div class="races">';rs.forEach(r=>{const ro=raceState(r.id),res=S.results[r.id];
       x+='<div class="trow"><div class="tt"><b>'+esc(mdw(r.d)+' '+r.name)+'</b><span>'+esc([r.short,r.rank,r.ev].filter(Boolean).join('｜'))+'</span>'+(res?'<span class="resl">結果：'+esc(resTxt(res))+'</span>':'')+
-        (on&&ro&&r.d<=TODAY?'<button class="linkbtn2" data-res="'+esc(r.id)+'">'+(res?'結果を直す':'🏁 結果を記録')+'</button>':'')+'</div>'+sw('data-race',r.id,on&&ro,'出場','不出場',!on)+'</div>';});x+='</div>';}
+        (on&&ro&&r.d<=TODAY?'<button class="linkbtn2" data-res="'+esc(r.id)+'">'+(res?'結果を直す':'🏁 結果を記録')+'</button>':'')+(()=>{const L=(S.videos||[]).filter(v=>v.race===r.id);return L.length?'<button class="linkbtn2" data-vplay="'+esc(L[0].id)+'" data-vlist="'+esc(L.map(v=>v.id).join(','))+'">📷 写真・動画 '+L.length+'</button>':'';})()+'</div>'+sw('data-race',r.id,on&&ro,'出場','不出場',!on)+'</div>';});x+='</div>';}
     if(canEdit())x+='<div class="admrow">'+(ret?'<button class="linkbtn2'+(ret.none?' hl':'')+'" data-tact="ret" data-id="'+esc(t.id)+'">'+(ret.none?'帰宅日を登録':'帰宅日を変更')+'</button>':'')+'<button class="linkbtn2" data-tact="shift" data-id="'+esc(t.id)+'">日程を変える</button><button class="linkbtn2" data-tact="rename" data-id="'+esc(t.id)+'">名前を変える</button><button class="linkbtn2 danger" data-tact="delete" data-id="'+esc(t.id)+'">削除</button></div>';
     return x+'</div>';};
   h+='<h2>これからの遠征・合宿</h2>'+(up.length?up.map(card).join(''):'<p class="note">登録されていません。</p>');
@@ -976,8 +1024,8 @@ function drawDay(){const d=openDay,v=view(d);
   if(canEdit())h+='<button class="linkbtn2" data-act="editPlan" style="margin-top:6px">✎ 学校予定・メモ'+(v.td&&v.tripOn?'・遠征の内容':'')+'を変更</button>';
   const cz=CZ[d.d],future=d.d>TODAY;
   if(!future)h+='<div class="lab">パーソナル</div>'+(cz?'<div class="czl"><span>✓ この日に受けた'+(cz.memo?'：'+esc(cz.memo):'')+'</span><button class="linkbtn2" data-act="czDel">取り消す</button></div>':'<div class="qrow"><input type="text" id="cz-memo" placeholder="メモ（内容・コーチの指示など）" maxlength="300"><button class="btn" data-act="czAdd" style="flex:0 0 auto;padding:0 12px">受けた日として登録</button></div>');
-  const vs=S.videos.filter(x=>x.d===d.d);
-  if(!future||vs.length)h+='<div class="lab">動画</div>'+(vs.length?'<div class="exl">'+vs.map(vidItem).join('')+'</div>':'')+(!future&&canEdit()?'<button class="linkbtn2" data-act="vidAdd">＋ 動画を登録（この日あと '+vidLeft(d.d)+'本・まとめて選べます）</button>':(vs.length?'':'<p class="note">動画はありません。</p>'));
+  const vs=S.videos.filter(x=>x.d===d.d&&!x.ref);
+  if(!future||vs.length)h+='<div class="lab">動画</div>'+(vs.length?'<div class="exl">'+vs.map(vidItem).join('')+'</div>':'')+(!future&&canEdit()?'<button class="linkbtn2" data-act="vidAdd">＋ 動画を登録（この日あと '+vidLeft(d.d)+'本）</button><button class="linkbtn2" data-act="phAdd">＋ 写真を登録</button>':(vs.length?'':'<p class="note">動画はありません。</p>'));
   h+='<div class="acts"><button class="btn" data-act="close">閉じる</button></div>';
   SH.innerHTML=h;}
 
@@ -1272,7 +1320,7 @@ function openTripAct(kind,id){const t=TRIPN[id];if(!t)return;sheetCtx={id,kind};
   SH.innerHTML=h;openS('trip');}
 
 // ---------- ROM・フィジカル（メニュー方式） ----------// ---------- 動画（v4.38：まとめて登録・時間帯・☆・見比べ） ----------
-const vidLeft=date=>Math.max(0,Math.min((S.videoPerDay||10)-(S.videos||[]).filter(v=>v.d===date).length,(S.videoMax||5000)-(S.videos||[]).length));
+const vidLeft=date=>Math.max(0,Math.min((S.videoPerDay||10)-(S.videos||[]).filter(v=>v.d===date&&!v.ref).length,(S.videoMax||5000)-(S.videos||[]).length));
 function openVid(date,slot,kind){sheetCtx={date};const left=vidLeft(date),per=S.videoPerDay||10;
   let h='<div class="grab"></div><h3 id="sh-title">'+mdw(date)+' 動画を登録</h3><p class="note">この日はあと <b>'+left+'本</b>（1日'+per+'本まで、1本 '+S.videoMaxMB+'MBまで）。一度に何本でも選べます。登録した動画は、このアプリを使っている人なら誰でも見られます。</p>';
   if(!left){SH.innerHTML=h+'<p class="note" style="color:var(--sun)">この日の上限に達しています。</p><div class="acts"><button class="btn" data-act="vidBack">戻る</button></div>';openS('vid');return;}
@@ -1355,7 +1403,8 @@ function openPlayer(id,list){const v=(S.videos||[]).find(x=>x.id===id);if(!v)ret
   list=list&&list.length?list:(S.videos||[]).filter(x=>x.d===v.d&&x.kind===v.kind).sort((a,b)=>a.title<b.title?-1:1).map(x=>x.id);
   vplay={id,list,rate:1,ui:true,panel:'',g:vGroups(v.kind)[0]||'',part:'',ev:'',t:null};drawPlayer();}
 function vpEl(){let pv=document.getElementById('vplayer');if(!pv){pv=document.createElement('div');pv.id='vplayer';pv.setAttribute('role','dialog');pv.setAttribute('aria-modal','true');document.body.appendChild(pv);}return pv;}
-function drawPlayer(){const c=vplay,v=(S.videos||[]).find(x=>x.id===c.id);if(!v){closePlayer();return;}const i=c.list.indexOf(v.id),pv=vpEl(),cs=vComs(v.id);
+function drawPlayer(){const c=vplay,v=(S.videos||[]).find(x=>x.id===c.id);if(!v){closePlayer();return;}if(v.type==='写真'){drawPhoto(v);return;}
+  if(who&&S.xcoms){const xs=JSON.parse(LS.get('xseen:'+who)||'{}');S.xcoms.filter(x=>x.vid===v.id).forEach(x=>xs[x.id]=1);LS.set('xseen:'+who,JSON.stringify(xs));}const i=c.list.indexOf(v.id),pv=vpEl(),cs=vComs(v.id);
   document.body.classList.add('noscroll');pv.hidden=false;
   pv.innerHTML='<div class="vp-stage" id="vp-stage"><div class="vp-load" id="vp-load">読み込み中…</div></div>'+
     '<div class="vp-ui" id="vp-ui">'+
@@ -1364,7 +1413,7 @@ function drawPlayer(){const c=vplay,v=(S.videos||[]).find(x=>x.id===c.id);if(!v)
         '<input type="range" id="vp-seek" min="0" max="1000" value="0" aria-label="再生位置"><span class="vp-time" id="vp-time">0.0秒</span>'+
         '<div class="vp-row"><button class="vp-b" data-act="vpStepB" aria-label="1コマ戻る">◀1コマ</button><button class="vp-b big" data-act="vpPlay" id="vp-pp" aria-label="再生・一時停止">▶</button><button class="vp-b" data-act="vpStepF" aria-label="1コマ進む">1コマ▶</button></div>'+
         '<div class="vp-row">'+[1,0.5,0.25].map(r=>'<button class="vp-b sm'+(c.rate===r?' on':'')+'" data-vprate="'+r+'">'+(r===1?'1倍':r===0.5?'½':'¼')+'</button>').join('')+'<button class="vp-b sm" data-act="vpPrev"'+(i>0?'':' disabled')+'>◀ 前</button><button class="vp-b sm" data-act="vpNext"'+(i<c.list.length-1?'':' disabled')+'>次 ▶</button></div>'+
-        '<div class="vp-row"><button class="vp-b com" data-act="vpCom">💬 ひとこと'+(cs.length?'（'+cs.length+'）':'')+'</button><button class="vp-b" data-act="vpCmp">⇆ 比べる</button></div>'+
+        '<div class="vp-row"><button class="vp-b com" data-act="vpCom">💬 ひとこと'+(cs.length?'（'+cs.length+'）':'')+'</button><button class="vp-b" data-act="vpCmp">⇆ 比べる</button><button class="vp-b" data-act="vpDraw">✏️ 図示</button></div>'+
       '</div></div>'+
     '<div class="vp-panel" id="vp-panel" hidden></div>';
   loadVideo(v);if(c.panel)drawPanel();
@@ -1384,7 +1433,7 @@ async function vBlob(v,onp,ac){const src=vSrc(v);if(!src)return '';if(vCache[v.f
   catch(e){if(e&&e.name==='AbortError')throw e;return src;}}
 /** サムネイル（動画の1コマを小さなJPEGに）。失敗したら空 */
 function makeThumb(url){return new Promise(res=>{const ve=document.createElement('video');let done=false;const fin=x=>{if(done)return;done=true;try{ve.removeAttribute('src');ve.load();}catch(e){}res(x||'');};
-  setTimeout(()=>fin(''),8000);ve.muted=true;ve.playsInline=true;ve.preload='auto';ve.src=url;
+  setTimeout(()=>fin(''),4000);ve.muted=true;ve.playsInline=true;ve.preload='auto';ve.src=url;
   ve.addEventListener('loadeddata',()=>{try{ve.currentTime=Math.min(1,(ve.duration||2)/3);}catch(e){fin('');}},{once:true});
   ve.addEventListener('seeked',()=>{try{const w=240,h=Math.round(w*(ve.videoHeight||16)/(ve.videoWidth||9)),c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(ve,0,0,w,h);fin(c.toDataURL('image/jpeg',0.7).split(',')[1]);}catch(e){fin('');}},{once:true});
   ve.addEventListener('error',()=>fin(''),{once:true});});}
@@ -1414,15 +1463,17 @@ function vpToggleUI(){const u=document.getElementById('vp-ui');if(!u)return;if(u
 function vpGo(d){const c=vplay;if(!c)return;const i=c.list.indexOf(c.id)+d;if(i<0||i>=c.list.length)return;c.id=c.list[i];c.panel='';c.part='';c.ev='';drawPlayer();}
 function vpStep(d){const ve=document.getElementById('vp-video');if(!ve)return;ve.pause();ve.currentTime=Math.max(0,Math.min(ve.duration||0,ve.currentTime+d/60));}
 /** ひとことのパネル（時刻つき、局面＋評価の言葉） */
-function drawPanel(){const c=vplay,v=(S.videos||[]).find(x=>x.id===c.id),p=document.getElementById('vp-panel');if(!p||!v)return;const cs=vComs(v.id),gs=vGroups(v.kind);
+function drawPanel(){const c=vplay,v=(S.videos||[]).find(x=>x.id===c.id),p=document.getElementById('vp-panel');if(!p||!v)return;const gs=vGroups(v.kind),cs=vComs(v.id).concat((S.xcoms||[]).filter(x=>x.vid===v.id).map(x=>Object.assign({},x,{by:'外部：'+x.by}))).sort((a,b)=>(a.t==null?1e9:a.t)-(b.t==null?1e9:b.t)||(a.at<b.at?-1:1));
   let h='<div class="vp-ph"><b>ひとこと</b><button class="vp-ic" data-act="vpComClose" aria-label="閉じる">✕</button></div>';
-  h+='<div class="vp-cl">'+(cs.length?cs.map(x=>'<button class="vc'+((S.coaches||[]).indexOf(x.by)>=0?' coach':'')+'" data-vpseek="'+(x.t==null?'':x.t)+'"><b>'+esc(x.by)+(x.t!=null?'　'+fmtT(x.t):'')+'</b><span>'+esc(x.text)+'</span></button>').join(''):'<p class="note">まだありません。</p>')+'</div>';
+  h+='<div class="vp-cl">'+(cs.length?cs.map(x=>'<button class="vc'+((S.coaches||[]).indexOf(x.by)>=0?' coach':'')+'" data-vpseek="'+(x.t==null?'':x.t)+'"><b>'+esc(x.by)+(x.t!=null?'　'+fmtT(x.t):'')+'</b><span>'+esc(x.text)+'</span>'+(x.img?'<img class="vc-img" alt="図" src="'+esc(apiImg(x.img))+'" data-vpimg="'+esc(x.img)+'">':'')+'</button>').join(''):'<p class="note">まだありません。</p>')+'</div>';
   h+='<div class="vp-new"><div class="vp-at">'+(c.t!=null?'<b>'+fmtT(c.t)+'</b> の場面に':'この動画に')+'</div>';
   if(gs.length>1)h+='<div class="wrap">'+gs.map(g=>'<button class="opt sm" data-vpg="'+esc(g)+'" aria-pressed="'+(c.g===g)+'">'+esc(g)+'</button>').join('')+'</div>';
   if(c.g)h+='<div class="vp-lab">どこ</div><div class="wrap">'+vWords(c.g).map(w=>'<button class="opt sm" data-vppart="'+esc(w)+'" aria-pressed="'+(c.part===w)+'">'+esc(w)+'</button>').join('')+'</div>';
   h+='<div class="vp-lab">どう</div><div class="wrap">'+vWords('評価').map(w=>'<button class="opt sm" data-vpev="'+esc(w)+'" aria-pressed="'+(c.ev===w)+'">'+esc(w)+'</button>').join('')+'</div>';
-  h+='<div class="qrow"><input type="text" id="vp-text" maxlength="500" placeholder="書き足す（任意）" value="'+esc(c.txt||'')+'"><button class="btn pri sm2" data-act="vpSend">送る</button></div></div>';
-  p.innerHTML=h;p.hidden=false;const ti=document.getElementById('vp-text');if(ti)ti.oninput=()=>{c.txt=ti.value;};}
+  if(c.img)h+='<div class="vp-img"><img alt="図" src="data:image/jpeg;base64,'+c.img+'"><button class="linkbtn2" data-act="vpImgDel">図を外す</button></div>';
+  if(who!=='本人')h+='<label class="chk"><input type="checkbox" id="vp-task"'+(c.task?' checked':'')+'> 次の課題にする（本人のホームに出ます）</label>';
+  h+='<div class="qrow"><input type="text" id="vp-text" maxlength="500" placeholder="書き足す（任意）" value="'+esc(c.txt||'')+'"><button class="btn pri sm2" data-act="vpSend">送る</button></div><p class="note mic">🎤 キーボードのマイクで、話して入力できます</p></div>';
+  p.innerHTML=h;p.hidden=false;const ti=document.getElementById('vp-text');if(ti)ti.oninput=()=>{c.txt=ti.value;};const tk=document.getElementById('vp-task');if(tk)tk.onchange=()=>{c.task=tk.checked;};}
 function closePlayer(){const c=vplay;if(c&&c.ac)c.ac.abort();const pv=document.getElementById('vplayer');if(pv){const ve=pv.querySelector('video');if(ve){try{ve.pause();}catch(e){}}pv.innerHTML='';pv.hidden=true;}
   Object.keys(vCache).forEach(k=>{try{URL.revokeObjectURL(vCache[k]);}catch(e){}delete vCache[k];});document.body.classList.remove('noscroll');vplay=null;render();}
 function vpMenu(){const c=vplay,v=(S.videos||[]).find(x=>x.id===c.id);if(!v)return;c.panel='menu';const p=document.getElementById('vp-panel');
@@ -1437,50 +1488,54 @@ function videoNews(){if(!who||!S.videos)return '';const isCoach=(S.coaches||[]).
   let cand='';if(canEdit()){const C=(S.videos||[]).filter(v=>!v.best&&v.d>=addD(TODAY,-30)&&vComs(v.id).some(c=>c.ev==='◎良い'||/◎/.test(c.text||'')));if(C.length)cand='<h2>☆の候補（◎良いが付いた動画 '+C.length+'本）</h2><div class="exl">'+C.slice(0,6).map(v=>'<button class="vnew good" data-vplay="'+esc(v.id)+'">◎ '+esc(v.title)+'<small>'+esc(mdw(v.d))+'</small></button>').join('')+'</div>';}
   const seen=JSON.parse(LS.get('vseen:'+who)||'{}');
   const L=(S.videos||[]).filter(v=>{const cc=vComs(v.id).filter(c=>(S.coaches||[]).indexOf(c.by)>=0);return cc.length&&vComs(v.id).length>(seen[v.id]||0)&&cc.some(c=>String(c.at)>=addD(TODAY,-14).replace(/-/g,'/'));});
+  const CP=(S.cmps||[]).filter(x=>who==='本人'?!x.seen:String(x.at)>=addD(TODAY,-7).replace(/-/g,'/')).sort((a,b)=>a.at<b.at?1:-1);
+  cand+=(CP.length?'<h2>'+(who==='本人'?'比較が届きました（'+CP.length+'）':'最近の比較')+'</h2><div class="exl">'+CP.map(x=>'<button class="vnew" data-cmpopen="'+esc(x.id)+'">⇆ '+esc(x.text||'動画の比較')+'<small>'+esc(x.by+' '+String(x.at).slice(5,16))+(x.seen?'（本人が見ました）':'')+'</small></button>').join('')+'</div>':'');
   if(!L.length)return cand;return cand+'<h2>コーチのひとこと（新着'+L.length+'）</h2><div class="exl">'+L.map(v=>{const c=vComs(v.id).filter(x=>(S.coaches||[]).indexOf(x.by)>=0).slice(-1)[0];return '<button class="vnew" data-vplay="'+esc(v.id)+'">💬 '+esc(c.text)+'<small>'+esc(v.title)+'</small></button>';}).join('')+'</div>';}
 
 /* ---------- 動画タブ：一覧・検索 ---------- */
-const VF={per:'all',kind:'',best:false,want:false,com:false,part:'',q:'',sort:'new'};
+const VF={per:'all',kind:'',best:false,want:false,com:false,ref:false,part:'',q:'',sort:'new'};
+function vfReset(){Object.assign(VF,{per:'all',kind:'',best:false,want:false,com:false,ref:false,part:'',q:'',sort:'new'});}
+function vfActive(){return VF.per!=='all'||VF.kind||VF.best||VF.want||VF.com||VF.ref||VF.part||VF.q.trim()||VF.sort!=='new';}
 function vFilter(){const t=TODAY,y=fy(t),pr={all:['0000','9999'],month:[t.slice(0,7)+'-01','9999'],prev:[addD(t.slice(0,7)+'-01',-1).slice(0,7)+'-01',addD(t.slice(0,7)+'-01',-1)],fy:[y+'-04-01',(y+1)+'-03-31']}[VF.per];const q=VF.q.trim();
-  return (S.videos||[]).filter(v=>{if(v.d<pr[0]||v.d>pr[1])return false;if(VF.kind&&v.kind!==VF.kind)return false;if(VF.best&&!v.best)return false;if(VF.want&&!v.want)return false;
-    const cs=vComs(v.id);if(VF.com&&!cs.length)return false;if(VF.part&&!cs.some(c=>c.part===VF.part))return false;
-    if(q&&!(v.title+' '+(v.memo||'')+' '+cs.map(c=>c.text).join(' ')).includes(q))return false;return true;})
+  return (S.videos||[]).filter(v=>{if(VF.ref&&!v.ref)return false;if(v.d<pr[0]||v.d>pr[1])return false;if(VF.kind&&v.kind!==VF.kind)return false;if(VF.best&&!v.best)return false;if(VF.want&&!v.want)return false;
+    const cs=vComs(v.id);if(VF.com&&!cs.length)return false;if(VF.part&&!cs.some(c=>c.part===VF.part)&&(v.tags||[]).indexOf(VF.part)<0)return false;
+    if(q&&!(v.title+' '+(v.memo||'')+' '+(v.tags||[]).join(' ')+' '+cs.map(c=>c.text).join(' ')).includes(q))return false;return true;})
    .sort((a,b)=>(VF.sort==='new'?-1:1)*((a.d+a.at)<(b.d+b.at)?-1:(a.d+a.at)>(b.d+b.at)?1:0));}
-function renderVideos(){const all=S.videos||[],kinds=[...new Set(all.map(v=>v.kind).filter(Boolean))],parts=[...new Set((S.vcoms||[]).map(c=>c.part).filter(Boolean))],L=vFilter();
-  let h='<main><h2>動画（'+L.length+'／'+all.length+'本）</h2>';
+function renderVideos(){const all=S.videos||[],kinds=[...new Set(all.map(v=>v.kind).filter(Boolean))],parts=[...new Set((S.vcoms||[]).map(c=>c.part).concat(...all.map(v=>v.tags||[])).filter(Boolean))],L=vFilter();
+  let h='<main><h2>動画（'+L.length+'／'+all.length+'本）</h2>'+(vfActive()?'<button class="btn vfclr" data-act="vfClear">✕ 条件をクリア（全部の動画を表示）</button>':'')+'<button class="btn vfref" data-act="refOpen">＋ 参考動画を登録（手本の選手など）</button>';
   h+='<div class="vfil"><input type="search" id="vf-q" placeholder="題名・ひとことで探す" value="'+esc(VF.q)+'">'+
     '<div class="wrap">'+[['all','すべて'],['month','今月'],['prev','先月'],['fy','今年度']].map(([k,l])=>'<button class="opt sm" data-vfper="'+k+'" aria-pressed="'+(VF.per===k)+'">'+l+'</button>').join('')+'</div>'+
     (kinds.length>1?'<div class="wrap"><button class="opt sm" data-vfkind="" aria-pressed="'+(!VF.kind)+'">全部の活動</button>'+kinds.map(k=>'<button class="opt sm" data-vfkind="'+esc(k)+'" aria-pressed="'+(VF.kind===k)+'">'+esc(k)+'</button>').join('')+'</div>':'')+
-    '<div class="wrap"><button class="opt sm" data-vfflag="best" aria-pressed="'+VF.best+'">☆ベスト</button><button class="opt sm" data-vfflag="want" aria-pressed="'+VF.want+'">見てほしい</button><button class="opt sm" data-vfflag="com" aria-pressed="'+VF.com+'">💬ひとことあり</button><button class="opt sm" data-vfsort="1">'+(VF.sort==='new'?'新しい順':'古い順')+'</button></div>'+
+    '<div class="wrap"><button class="opt sm" data-vfflag="best" aria-pressed="'+VF.best+'">☆ベスト</button><button class="opt sm" data-vfflag="want" aria-pressed="'+VF.want+'">見てほしい</button><button class="opt sm" data-vfflag="com" aria-pressed="'+VF.com+'">💬ひとことあり</button><button class="opt sm" data-vfflag="ref" aria-pressed="'+VF.ref+'">参考</button><button class="opt sm" data-vfsort="1">'+(VF.sort==='new'?'新しい順':'古い順')+'</button></div>'+
     (parts.length?'<div class="wrap"><span class="note" style="margin-right:4px">指摘：</span><button class="opt sm" data-vfpart="" aria-pressed="'+(!VF.part)+'">指定なし</button>'+parts.map(p=>'<button class="opt sm" data-vfpart="'+esc(p)+'" aria-pressed="'+(VF.part===p)+'">'+esc(p)+'</button>').join('')+'</div>':'')+'</div>';
   if(!L.length)h+='<p class="note">条件に合う動画はありません。</p>';
   else{const ids=L.map(v=>v.id).join(',');let m='';h+='<div class="vgrid">';
     L.forEach(v=>{const mm=v.d.slice(0,7);if(mm!==m){m=mm;h+='<div class="vgm">'+(+mm.slice(0,4))+'年'+(+mm.slice(5))+'月</div>';}const n=vComs(v.id).length,tu=thumbUrl(v);
-      h+='<button class="vcard" data-vplay="'+esc(v.id)+'" data-vlist="'+esc(ids)+'"><span class="vth">'+(tu?'<img loading="lazy" alt="" src="'+esc(tu)+'" onerror="this.remove()">':'')+'<i>▶</i>'+(v.best?'<b class="vb">☆</b>':'')+'</span><span class="vt">'+esc(v.title)+'</span><small>'+esc(mdw(v.d)+(v.slot?' '+v.slot:''))+(n?' 💬'+n:'')+(v.want?' 見てほしい':'')+'</small></button>';});
+      h+='<button class="vcard" data-vplay="'+esc(v.id)+'" data-vlist="'+esc(ids)+'"><span class="vth">'+(tu?'<img loading="lazy" alt="" src="'+esc(tu)+'" onerror="this.remove()">':'')+'<i>▶</i>'+(v.best?'<b class="vb">☆</b>':'')+'</span><span class="vt">'+esc(v.title)+'</span><small>'+esc(v.ref?'参考'+((v.tags||[]).length?'：'+v.tags.join('・'):''):mdw(v.d)+(v.slot?' '+v.slot:''))+(n?' 💬'+n:'')+(v.want?' 見てほしい':'')+'</small></button>';});
     h+='</div>';}
   V.innerHTML=h+'</main>';const qi=document.getElementById('vf-q');if(qi)qi.oninput=()=>{VF.q=qi.value;clearTimeout(qi._t);qi._t=setTimeout(()=>{const p=qi.selectionStart;renderVideos();const n=document.getElementById('vf-q');if(n){n.focus();n.setSelectionRange(p,p);}},350);};}
 
 /* ---------- 左右に並べて比べる ---------- */
 let cmp=null;
 function openCompare(lid){const L=(S.videos||[]).find(x=>x.id===lid);if(!L)return;
-  const prev=(S.videos||[]).filter(x=>x.kind===L.kind&&x.id!==L.id&&x.d<=L.d).sort((a,b)=>(a.d+a.at)<(b.d+b.at)?1:-1)[0]||null;
+  const prev=(S.videos||[]).filter(x=>!x.ref&&x.kind===L.kind&&x.id!==L.id&&x.d<=L.d).sort((a,b)=>(a.d+a.at)<(b.d+b.at)?1:-1)[0]||null;
   if(vplay){const ve=document.getElementById('vp-video');if(ve)try{ve.pause();}catch(e){}}
   cmp={L:{v:L,url:'',mark:0},R:prev?{v:prev,url:'',mark:0}:null,rate:1,pick:false};drawCompare();}
 function cmpEl(){let e=document.getElementById('vcmp');if(!e){e=document.createElement('div');e.id='vcmp';e.setAttribute('role','dialog');document.body.appendChild(e);}return e;}
 function paneHtml(side){const p=cmp[side];if(!p)return '<div class="cp empty"><button class="btn" data-cmppick="'+side+'">＋ 比べる動画を選ぶ</button></div>';
   const v=p.v;return '<div class="cp"><div class="cp-st" id="cp-'+side+'"><div class="vp-load">読み込み中…</div></div>'+
-    '<div class="cp-lab"><b>'+esc(v.title)+'</b><small>'+esc(v.local?'スマホの動画（保存しません）':mdw(v.d)+(v.slot?' '+v.slot:''))+'</small></div>'+
+    '<div class="cp-lab"><b>'+esc(v.title)+'</b><small>'+esc(v.local?'スマホの動画（まだ保存していません）':v.ref?'参考動画':mdw(v.d)+(v.slot?' '+v.slot:''))+'</small>'+(v.local?'<button class="btn sm2 pri" data-act="cmpRefSave" data-side="'+side+'">参考動画として保存</button>':'')+'</div>'+
     '<input type="range" class="cp-seek" data-cmpseek="'+side+'" min="0" max="1000" value="0">'+
     '<div class="cp-row"><button class="vp-b sm" data-cmpmark="'+side+'">ここを合わせる</button><button class="vp-b sm" data-cmppick="'+side+'">差し替え</button></div>'+
     '<div class="cp-mk" id="cpm-'+side+'">合わせ位置 '+p.mark.toFixed(2)+'秒</div></div>';}
 function drawCompare(){const e=cmpEl(),c=cmp;document.body.classList.add('noscroll');e.hidden=false;
-  e.innerHTML='<div class="vp-top"><button class="vp-close" data-act="cmpClose">✕ 閉じる</button><span class="vp-ttl">左右に並べて比べる<small>それぞれ同じ場面（例：踏み切り）で止めて「ここを合わせる」→ 同時に再生</small></span></div>'+
+  e.innerHTML='<div class="vp-top"><button class="vp-close" data-act="cmpClose">✕ 閉じる</button><span class="vp-ttl">'+(c.saved?esc(c.saved.by)+'からの比較<small>'+esc(c.saved.text||'')+'</small>':'左右に並べて比べる<small>同じ場面で止めて「ここを合わせる」→ 同時に再生</small>')+'</span><button class="vp-ic" data-act="cmpDraw" aria-label="図示">✏️</button>'+(c.saved?'':'<button class="btn pri sm2" data-act="cmpSave">保存して送る</button>')+'</div>'+
     '<div class="cp-wrap">'+paneHtml('L')+paneHtml('R')+'</div>'+
     '<div class="cp-bot"><div class="vp-row"><button class="vp-b" data-act="cmpStepB">◀1コマ</button><button class="vp-b big" data-act="cmpPlay" id="cmp-pp">▶ 同時に再生</button><button class="vp-b" data-act="cmpStepF">1コマ▶</button></div>'+
     '<div class="vp-row">'+[1,0.5,0.25].map(r=>'<button class="vp-b sm'+(c.rate===r?' on':'')+'" data-cmprate="'+r+'">'+(r===1?'1倍':r===0.5?'½':'¼')+'</button>').join('')+'<button class="vp-b sm" data-act="cmpSwap">⇆ 入れ替え</button></div></div>'+
-    (c.pick?pickHtml():'');
+    (c.pick==='save'?'<div class="vp-panel">'+cmpSaveHtml()+'</div>':c.pick?pickHtml():'');
   ['L','R'].forEach(s=>{if(c[s])mountPane(s);});
-  if(c.pick){const fi=document.getElementById('cmp-file');if(fi)fi.onchange=()=>{const f=fi.files[0];if(!f)return;const url=URL.createObjectURL(f);c[c.pick]={v:{id:'local',title:f.name.replace(/\.[^.]+$/,''),local:true,d:TODAY},url,mark:0};c.pick=false;drawCompare();};}}
+  if(c.pick&&c.pick!=='save'){const fi=document.getElementById('cmp-file');if(fi)fi.onchange=()=>{const f=fi.files[0];if(!f)return;const url=URL.createObjectURL(f);c[c.pick]={v:{id:'local',title:f.name.replace(/\.[^.]+$/,''),local:true,d:TODAY},url,mark:0,file:f};c.pick=false;drawCompare();};}}
 async function mountPane(s){const p=cmp[s],st=document.getElementById('cp-'+s);if(!p||!st)return;
   if(!p.url){try{p.url=p.v.local?p.url:await vBlob(p.v,r=>{const l=st.querySelector('.vp-load');if(l)l.textContent='読み込み中 '+Math.round(r*100)+'%';});}catch(e){return;}}
   if(!cmp||cmp[s]!==p)return;st.innerHTML='<video id="cv-'+s+'" playsinline muted preload="auto" src="'+esc(p.url)+'"></video>';
@@ -1496,12 +1551,301 @@ function cmpPlay(){const L=document.getElementById('cv-L'),R=document.getElement
   if(cmp.playing){cmp.playing=false;cmpPause();return;}
   if(R&&cmp.R){R.currentTime=Math.max(0,cmp.R.mark+(L.currentTime-cmp.L.mark));}cvs().forEach(v=>{v.playbackRate=cmp.rate;v.play();});cmp.playing=true;const b=document.getElementById('cmp-pp');if(b)b.textContent='❚❚ 一時停止';}
 function cmpStep(d){cmp.playing=false;cmpPause();cvs().forEach(v=>{v.currentTime=Math.max(0,Math.min(v.duration||0,v.currentTime+d/60));});}
-function pickHtml(){const c=cmp,base=c.L&&c.L.v,list=(S.videos||[]).filter(v=>!base||v.id!==base.id).sort((a,b)=>((b.kind===(base&&base.kind))-(a.kind===(base&&base.kind)))||((a.d+a.at)<(b.d+b.at)?1:-1)).slice(0,60);
+function pickHtml(){const c=cmp,base=c.L&&c.L.v,refs=(S.videos||[]).filter(v=>v.ref&&(!base||v.id!==base.id)).sort((a,b)=>(a.at<b.at?1:-1)),list=(S.videos||[]).filter(v=>!v.ref&&(!base||v.id!==base.id)).sort((a,b)=>((b.kind===(base&&base.kind))-(a.kind===(base&&base.kind)))||((a.d+a.at)<(b.d+b.at)?1:-1)).slice(0,60);
   return '<div class="vp-panel"><div class="vp-ph"><b>比べる動画を選ぶ</b><button class="vp-ic" data-act="cmpPickClose">✕</button></div>'+
     '<label class="btn" style="display:flex;justify-content:center;align-items:center;min-height:48px">📱 スマホの中の動画を選ぶ（保存しません）<input type="file" id="cmp-file" accept="video/*" hidden></label>'+
+    (refs.length?'<div class="vp-lab">参考動画</div><div class="vgrid sm">'+refs.map(v=>{const tu=thumbUrl(v);return '<button class="vcard" data-cmpset="'+esc(v.id)+'"><span class="vth">'+(tu?'<img loading="lazy" alt="" src="'+esc(tu)+'" onerror="this.remove()">':'')+'</span><span class="vt">'+esc(v.title)+'</span><small>'+esc((v.tags||[]).join('・'))+'</small></button>';}).join('')+'</div>':'')+
     '<div class="vp-lab">登録した動画（同じ活動を先に）</div><div class="vgrid sm">'+list.map(v=>{const tu=thumbUrl(v);return '<button class="vcard" data-cmpset="'+esc(v.id)+'"><span class="vth">'+(tu?'<img loading="lazy" alt="" src="'+esc(tu)+'" onerror="this.remove()">':'')+'</span><span class="vt">'+esc(v.title)+'</span><small>'+esc(mdw(v.d))+'</small></button>';}).join('')+'</div></div>';}
 function closeCompare(){const e=document.getElementById('vcmp');if(e){cvs().forEach(v=>{try{v.pause();}catch(x){}});['L','R'].forEach(s=>{const p=cmp&&cmp[s];if(p&&p.v.local&&p.url)try{URL.revokeObjectURL(p.url);}catch(x){}});e.innerHTML='';e.hidden=true;}
-  cmp=null;if(!vplay)document.body.classList.remove('noscroll');}
+  cmp=null;if(!vplay){document.body.classList.remove('noscroll');render();}}
+// ---------- v4.42：参考動画・比較の保存・次の課題・練習前の1画面・図示 ----------
+const apiImg=id=>id&&S.vkey?'https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(id)+'?alt=media&key='+encodeURIComponent(S.vkey):'';
+const refTags=()=>[...new Set((S.vwords||[]).filter(x=>x.g!=='評価').map(x=>x.w))];
+/* 参考動画のアップロード（コーチ・家族・本人。日付の練習動画とは別） */
+async function uploadRef(files,title,tags,stat){
+  const titles=files.map((f,n)=>(title||f.name.replace(/\.[^.]+$/,''))+(files.length>1?' '+CIRC[n]:''));
+  stat('送信の準備中…');const prep=await call('videoStartMany',{who,key,date:TODAY,ref:true,origin:location.origin,files:files.map((f,n)=>({size:f.size,mime:f.type||'video/mp4',name:'参考_'+titles[n]+(f.name.match(/\.[^.]+$/)||['.mp4'])[0]}))});
+  const ids=[];for(let n=0;n<files.length;n++){const f=files[n],tag=files.length>1?(n+1)+'/'+files.length+'本目 ':'';
+    try{ids[n]=await putDirect(prep.sessions[n].loc,f,r=>stat(tag+'送信中 '+Math.round(r*100)+'%'));}
+    catch(e){ids[n]=await putRelay(f,TODAY,titles[n],r=>stat(tag+'送信中 '+Math.round(r*100)+'%'),stat);}}
+  stat('見出し画像を作成中…');const th=[];for(const f of files){const u=URL.createObjectURL(f);th.push(await makeThumb(u));URL.revokeObjectURL(u);}
+  stat('登録中…');const d=await call('videoRegisterMany',{who,key,date:TODAY,ref:true,kind:'参考',tags,items:files.map((f,n)=>({fileId:ids[n],title:titles[n],size:f.size,thumb:th[n]||''}))});applyPart(d);
+  return ids.map(id=>(S.videos||[]).find(v=>v.fileId===id)).filter(Boolean);}
+let refForm=null;
+function refFormHtml(local){const c=refForm;return '<div class="vp-ph"><b>参考動画として保存</b><button class="vp-ic" data-act="refClose">✕</button></div>'+
+  '<p class="note">家族とコーチの全員が見られます。動画タブの「参考」と、比較の「差し替え」から選べます。</p>'+
+  (local?'':'<label class="lab">動画を選ぶ（何本でも）<input type="file" id="ref-file" accept="video/*" multiple></label>')+
+  '<label class="lab">題名<input type="text" id="ref-title" maxlength="50" value="'+esc(c.title||'')+'" placeholder="例：〇〇選手 コーク720"></label>'+
+  '<div class="vp-lab">技・局面（いくつでも）</div><div class="wrap">'+refTags().map(w=>'<button class="opt sm" data-reftag="'+esc(w)+'" aria-pressed="'+(c.tags.indexOf(w)>=0)+'">'+esc(w)+'</button>').join('')+'</div>'+
+  '<p class="note" id="ref-st"></p><div class="acts"><button class="btn pri" data-act="refGo">保存</button></div>';}
+function openRefForm(where,local){refForm={where,local,title:local?local.v.title:'',tags:[]};drawRefForm();}
+function drawRefForm(){const c=refForm;if(!c)return;const t=document.getElementById('ref-title');if(t)c.title=t.value;
+  if(c.where==='cmp'){const e=document.getElementById('vcmp');let p=e.querySelector('.vp-panel');if(!p){p=document.createElement('div');p.className='vp-panel';e.appendChild(p);}p.innerHTML=refFormHtml(c.local);}
+  else{SH.innerHTML='<div class="grab"></div>'+refFormHtml(null);openS('ref');}}
+async function refGo(){const c=refForm;const ti=document.getElementById('ref-title');c.title=ti?ti.value.trim():c.title;const st=document.getElementById('ref-st'),stat=m=>{if(st)st.textContent=m;};
+  let files=c.local?[c.local.file]:[...((document.getElementById('ref-file')||{}).files||[])];if(!files.length||!files[0]){toast('動画を選んでください');return;}files=files.slice(0,10);
+  if(upBusy)return;upBusy=true;document.querySelectorAll('[data-act="refGo"]').forEach(b=>b.disabled=true);
+  try{const saved=await uploadRef(files,c.title,c.tags,stat);upBusy=false;
+    if(c.where==='cmp'&&cmp&&saved[0]){const side=['L','R'].find(s=>cmp[s]&&cmp[s].v.local&&cmp[s].file===c.local.file);if(side){const keepUrl=cmp[side].url;cmp[side]={v:saved[0],url:keepUrl,mark:cmp[side].mark};}refForm=null;drawCompare();}
+    else{refForm=null;closeSheet();render();}toast('参考動画を保存しました');}
+  catch(e){upBusy=false;document.querySelectorAll('[data-act="refGo"]').forEach(b=>b.disabled=false);stat('');toast('保存できませんでした：'+errMsg(e).replace(/^(Exception|Error):\s*/,''));}}
+/* 比較を保存して送る／届いた比較を開く */
+function cmpSaveHtml(){return '<div class="vp-ph"><b>この比較を保存して送る</b><button class="vp-ic" data-act="cmpPickClose">✕</button></div>'+
+  '<p class="note">左右の動画・合わせ位置・速さがそのまま保存され、本人のホームに「比較が届きました」と出ます。</p>'+
+  '<label class="lab">ひとこと<input type="text" id="cmps-text" maxlength="500" placeholder="例：踏み切りで待てている。前回と比べて上体が起きている"></label><p class="note">🎤 キーボードのマイクで、話して入力できます。</p>'+
+  '<div class="acts"><button class="btn pri" data-act="cmpSaveGo">保存して送る</button></div>';}
+function openSavedCompare(id){const x=(S.cmps||[]).find(c=>c.id===id);if(!x)return;const L=(S.videos||[]).find(v=>v.id===x.l),R=(S.videos||[]).find(v=>v.id===x.r);if(!L||!R){toast('動画が見つかりません');return;}
+  cmp={L:{v:L,url:'',mark:x.lm},R:{v:R,url:'',mark:x.rm},rate:x.rate||1,pick:false,saved:x};drawCompare();
+  if(who==='本人'&&!x.seen)call('saveCompare',{who,key,id,seen:true}).then(r=>{if(r&&r.cmps)S.cmps=r.cmps;}).catch(()=>{});}
+/* 次の課題 */
+const openTasks=()=>(S.tasks||[]).filter(t=>!(t.st==='できた'&&t.ok)).sort((a,b)=>a.at<b.at?1:-1);
+function taskItem(t){const isMe=who==='本人',isC=(S.coaches||[]).indexOf(who)>=0,v=(S.videos||[]).find(x=>x.id===t.vid);
+  return '<div class="task'+(t.st==='できた'?' done':'')+'"><b>'+esc(t.text)+'</b><small>'+esc(String(t.at).slice(5,10)+' '+t.by+(t.st!=='未'?'｜本人：'+t.st:'')+(t.memo?'「'+t.memo+'」':'')+(t.ok?'｜'+t.ok:''))+'</small><div class="task-b">'+
+    (v?'<button class="btn sm2" data-vplay="'+esc(v.id)+'">▶ 動画</button>':'')+
+    (isMe?'<button class="btn sm2'+(t.st==='できた'?' on':'')+'" data-taskst="'+esc(t.id)+'|できた">できた</button><button class="btn sm2'+(t.st==='まだ'?' on':'')+'" data-taskst="'+esc(t.id)+'|まだ">まだ</button>':'')+
+    (!isMe&&t.st==='できた'&&!t.ok?'<button class="btn sm2 pri" data-taskok="'+esc(t.id)+'">確認した</button>':'')+
+    (!isMe&&!isC?'<button class="linkbtn2 danger" data-taskdel="'+esc(t.id)+'">消す</button>':'')+'</div></div>';}
+function tasksHtml(title){const L=openTasks();if(!L.length)return '';return '<h2>'+(title||'次の課題')+'（'+L.length+'）</h2><div class="tasks">'+L.map(taskItem).join('')+'</div>';}
+/* 練習前の1画面（コーチのホーム） */
+function coachBrief(){if((S.coaches||[]).indexOf(who)<0)return '';const n=S.notes[TODAY]||{},d=DAYS[DIDX[TODAY]];const rows=d?rowsOf(d):[];
+  const want=(S.videos||[]).filter(v=>v.want&&v.d>=addD(TODAY,-30)&&!vComs(v.id).some(c=>(S.coaches||[]).indexOf(c.by)>=0)).length;
+  return '<section class="brief"><h2>今日の練習の前に</h2><div class="brief-g">'+
+    '<div><span>体調</span><b>'+esc(n.cond||'未記入')+'</b>'+(n.note?'<small>'+esc(n.note)+'</small>':'')+'</div>'+
+    '<div><span>今日の予定</span><b>'+(rows.length?esc(rows.map(r=>r.slot+' '+r.kind).join('・')):'なし')+'</b></div>'+
+    '<div><span>次の課題</span><b>'+openTasks().length+'件</b></div><div><span>見てほしい動画</span><b>'+want+'本</b></div></div></section>'+tasksHtml('本人の次の課題');}
+/* ---------- 図示（スクリーンショットに描く） ---------- */
+let drw=null;
+function openDraw(base,onSave){drw={base,shapes:[],tool:'arrow',color:'#FF3B30',cur:null,ang:[],onSave};let e=document.getElementById('vdraw');if(!e){e=document.createElement('div');e.id='vdraw';document.body.appendChild(e);}
+  e.hidden=false;e.innerHTML='<div class="vd-top"><button class="vp-close" data-act="drwClose">✕ やめる</button><span class="vp-ttl">図示<small>形を選んで、画面をなぞる（角度は3点を順に押す：端→角→端）</small></span><button class="btn pri sm2" data-act="drwSave">これで保存</button></div>'+
+    '<div class="vd-stage"><canvas id="vd-c"></canvas></div>'+
+    '<div class="vd-tools">'+[['line','直線'],['arrow','矢印'],['circle','丸'],['free','自由線'],['angle','角度']].map(([k,l])=>'<button class="vp-b sm'+(drw.tool===k?' on':'')+'" data-drwtool="'+k+'">'+l+'</button>').join('')+'</div>'+
+    '<div class="vd-tools">'+[['#FF3B30','赤'],['#FFD60A','黄'],['#FFFFFF','白']].map(([c,l])=>'<button class="vp-b sm vd-col'+(drw.color===c?' on':'')+'" data-drwcol="'+c+'"><i style="background:'+c+'"></i>'+l+'</button>').join('')+'<button class="vp-b sm" data-act="drwUndo">1つ戻す</button><button class="vp-b sm" data-act="drwClear">全部消す</button></div>';
+  const cv=document.getElementById('vd-c');cv.width=base.width;cv.height=base.height;drwPaint();
+  const pt=ev=>{const r=cv.getBoundingClientRect(),t=ev.touches?ev.touches[0]||ev.changedTouches[0]:ev;return {x:(t.clientX-r.left)*cv.width/r.width,y:(t.clientY-r.top)*cv.height/r.height};};
+  const down=ev=>{ev.preventDefault();const p=pt(ev);if(drw.tool==='angle'){drw.ang.push(p);if(drw.ang.length===3){drw.shapes.push({t:'angle',p:drw.ang.slice(),c:drw.color});drw.ang=[];}drwPaint();return;}
+    drw.cur=drw.tool==='free'?{t:'free',p:[p],c:drw.color}:{t:drw.tool,a:p,b:p,c:drw.color};drwPaint();};
+  const move=ev=>{if(!drw||!drw.cur)return;ev.preventDefault();const p=pt(ev);if(drw.cur.t==='free')drw.cur.p.push(p);else drw.cur.b=p;drwPaint();};
+  const up=ev=>{if(!drw||!drw.cur)return;drw.shapes.push(drw.cur);drw.cur=null;drwPaint();};
+  cv.addEventListener('touchstart',down,{passive:false});cv.addEventListener('touchmove',move,{passive:false});cv.addEventListener('touchend',up);
+  cv.addEventListener('mousedown',down);cv.addEventListener('mousemove',move);cv.addEventListener('mouseup',up);}
+function drwPaint(){const cv=document.getElementById('vd-c');if(!cv||!drw)return;const g=cv.getContext('2d'),W=cv.width,lw=Math.max(3,W/180);g.drawImage(drw.base,0,0);
+  const arrowHead=(a,b)=>{const an=Math.atan2(b.y-a.y,b.x-a.x),L=lw*5;g.beginPath();g.moveTo(b.x,b.y);g.lineTo(b.x-L*Math.cos(an-0.45),b.y-L*Math.sin(an-0.45));g.lineTo(b.x-L*Math.cos(an+0.45),b.y-L*Math.sin(an+0.45));g.closePath();g.fill();};
+  const one=s=>{g.strokeStyle=g.fillStyle=s.c;g.lineWidth=lw;g.lineCap='round';g.lineJoin='round';g.shadowColor='rgba(0,0,0,.6)';g.shadowBlur=lw;
+    if(s.t==='line'||s.t==='arrow'){g.beginPath();g.moveTo(s.a.x,s.a.y);g.lineTo(s.b.x,s.b.y);g.stroke();if(s.t==='arrow')arrowHead(s.a,s.b);}
+    else if(s.t==='circle'){g.beginPath();g.ellipse((s.a.x+s.b.x)/2,(s.a.y+s.b.y)/2,Math.abs(s.b.x-s.a.x)/2||1,Math.abs(s.b.y-s.a.y)/2||1,0,0,Math.PI*2);g.stroke();}
+    else if(s.t==='free'){g.beginPath();s.p.forEach((p,i)=>i?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y));g.stroke();}
+    else if(s.t==='angle'){const [A,B,C]=s.p;g.beginPath();g.moveTo(A.x,A.y);g.lineTo(B.x,B.y);g.lineTo(C.x,C.y);g.stroke();
+      const a1=Math.atan2(A.y-B.y,A.x-B.x),a2=Math.atan2(C.y-B.y,C.x-B.x);let d=Math.abs(a1-a2)*180/Math.PI;if(d>180)d=360-d;
+      g.beginPath();g.arc(B.x,B.y,lw*7,Math.min(a1,a2),Math.max(a1,a2),Math.abs(a1-a2)>Math.PI);g.stroke();
+      g.font='bold '+Math.round(lw*6)+'px sans-serif';g.shadowBlur=lw*1.5;g.fillText(Math.round(d)+'°',B.x+lw*8,B.y-lw*4);}
+    g.shadowBlur=0;};
+  drw.shapes.forEach(one);if(drw.cur)one(drw.cur);drw.ang.forEach(p=>{g.fillStyle=drw.color;g.beginPath();g.arc(p.x,p.y,lw*1.6,0,Math.PI*2);g.fill();});}
+function closeDraw(){const e=document.getElementById('vdraw');if(e){e.innerHTML='';e.hidden=true;}drw=null;}
+function drwSave(){const cv=document.getElementById('vd-c');if(!cv)return;let b64='';try{const W=Math.min(1080,cv.width),c2=document.createElement('canvas');c2.width=W;c2.height=Math.round(cv.height*W/cv.width);c2.getContext('2d').drawImage(cv,0,0,c2.width,c2.height);b64=c2.toDataURL('image/jpeg',0.85).split(',')[1];}catch(e){toast('この動画は図示できません（先読みできなかったため）');return;}
+  const f=drw.onSave;closeDraw();f(b64);}
+/** 動画の今の場面を画像にする */
+function grabFrame(ve){const c=document.createElement('canvas');c.width=ve.videoWidth||720;c.height=ve.videoHeight||1280;c.getContext('2d').drawImage(ve,0,0,c.width,c.height);return c;}
+function grabPair(){const L=document.getElementById('cv-L'),R=document.getElementById('cv-R');if(!L||!R)return null;const h=720,wl=Math.round((L.videoWidth||9)/(L.videoHeight||16)*h),wr=Math.round((R.videoWidth||9)/(R.videoHeight||16)*h);
+  const c=document.createElement('canvas');c.width=wl+wr+8;c.height=h;const g=c.getContext('2d');g.fillStyle='#000';g.fillRect(0,0,c.width,c.height);g.drawImage(L,0,0,wl,h);g.drawImage(R,wl+8,0,wr,h);return c;}
+// ---------- v4.43：写真・1本ずつ「見てほしい」・裏で見出し画像・外に出してよい・大会ひも付け・選んでまとめて・アーカイブ ----------
+const PCATS=['練習','大会','表彰・賞状','遠征・生活','取材・掲載'];
+const isPh=v=>v&&v.type==='写真';
+/** 写真をJPEGにする（位置情報などの付属情報は消える・画質はそのまま、長い辺は最大4096） */
+function toJpeg(file){return new Promise(res=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{try{const k=Math.min(1,4096/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);c.toBlob(b=>{URL.revokeObjectURL(u);res(b?new File([b],file.name.replace(/\.[^.]+$/,'')+'.jpg',{type:'image/jpeg'}):file);},'image/jpeg',0.92);}catch(e){URL.revokeObjectURL(u);res(file);}};
+  im.onerror=()=>{URL.revokeObjectURL(u);res(file);};im.src=u;});}
+function imgThumb(file){return new Promise(res=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{try{const w=240,h=Math.round(w*im.naturalHeight/im.naturalWidth),c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);res(c.toDataURL('image/jpeg',0.7).split(',')[1]);}catch(e){res('');}URL.revokeObjectURL(u);};im.onerror=()=>{URL.revokeObjectURL(u);res('');};im.src=u;setTimeout(()=>res(''),4000);});}
+/** 見出し画像は登録のあと裏で作る（待たせない） */
+function thumbsLater(pairs){(async()=>{for(const [v,f] of pairs){if(!v||v.thumb||!f)continue;let b='';try{if(isPh(v))b=await imgThumb(f);else{const u=URL.createObjectURL(f);b=await makeThumb(u);URL.revokeObjectURL(u);}}catch(e){}
+  if(b)try{const r=await call('videoThumb',{who,key,id:v.id,thumb:b});if(r&&r.thumb)v.thumb=r.thumb;}catch(e){}}if(tab==='videos')render();})();}
+/* 登録画面（動画・写真） */
+let UP=null;
+const phLeft=date=>Math.max(0,30-(S.videos||[]).filter(v=>v.d===date&&!v.ref&&isPh(v)).length);
+function openVid(date,slot,kind,mode){const ph=mode==='photo',left=ph?phLeft(date):vidLeft(date),per=S.videoPerDay||10;
+  const raceToday=RACES.find(r=>r.d===date);UP={date,ph,files:[],want:[],cat:ph?(raceToday?'大会':'練習'):'',race:raceToday?raceToday.id:'',pub:false};sheetCtx={date};
+  let h='<div class="grab"></div><h3 id="sh-title">'+mdw(date)+(ph?' 写真を登録':' 動画を登録')+'</h3><p class="note">この日はあと <b>'+left+(ph?'枚':'本')+'</b>（1日'+(ph?'30枚':per+'本')+'まで）。一度に何'+(ph?'枚':'本')+'でも選べます。家族とコーチが見られます。</p>';
+  if(!left){SH.innerHTML=h+'<p class="note" style="color:var(--sun)">この日の上限に達しています。</p><div class="acts"><button class="btn" data-act="vidBack">戻る</button></div>';openS('vid');return;}
+  if(!ph)h+='<div class="vtip"><b>画質を落とさないために</b>：写真を選ぶ画面の上の「<b>オプション</b>」で、<b>位置情報：オフ</b>／サイズ：フルサイズ／<b>フォーマット：現在のフォーマット</b></div>';
+  else h+='<div class="vtip">写真は登録のときに<b>JPEGに変換し、撮影場所などの情報を外します</b>（画質はそのまま）。</div>';
+  const acts=(S.acts[date]||[]).filter(a=>a.st==='実施'),pref=acts.find(a=>a.kind==='WJ')||acts.find(a=>a.kind==='雪上')||acts[0]||{},v=view(DAYS[DIDX[date]]);
+  const k0=kind||pref.kind||(v.items[0]||{}).kind||'',s0=slot||pref.slot||'';
+  h+='<label class="lab">'+(ph?'写真':'動画')+'を選ぶ（最大'+left+(ph?'枚':'本')+'）<input type="file" id="v-file" accept="'+(ph?'image/*':'video/*')+'" multiple></label><div id="v-pick"></div>';
+  if(ph)h+='<div class="lab">分類</div>'+pick('v-cat',PCATS,UP.cat);else h+='<div class="lab">活動</div>'+pick('v-kind',S.opt.kinds.filter(k=>k!=='OFF'),k0)+'<div class="lab">時間帯</div>'+pick('v-slot',SLOTS,s0);
+  const near=RACES.filter(r=>r.d>=addD(date,-7)&&r.d<=addD(date,3)).sort((a,b)=>a.d<b.d?-1:1);
+  h+='<label class="lab">大会にひも付け（任意）<select id="v-race"><option value="">なし</option>'+near.concat(RACES.filter(r=>near.indexOf(r)<0&&r.d<=TODAY).sort((a,b)=>a.d<b.d?1:-1)).map(r=>'<option value="'+esc(r.id)+'"'+(r.id===UP.race?' selected':'')+'>'+esc(md(r.d)+' '+(r.short||r.name))+'</option>').join('')+'</select></label>';
+  h+='<label class="lab">題名（空なら「'+esc((ph?'写真':(k0||'動画'))+' '+md(date))+' ①」のように自動）<input type="text" id="v-title" maxlength="50"></label>'+
+    '<label class="lab">メモ（全部に付きます）<input type="text" id="v-memo" maxlength="300"></label>'+
+    (canEdit()?'<label class="chk"><input type="checkbox" id="v-pub"> 外に出してよい（報告書・紹介ページに使える）</label>':'')+
+    (ph?'':'<details class="past"><summary>ファイルではなくリンクで登録する</summary><input type="text" id="v-url" placeholder="https://…（YouTubeの限定公開など）"></details>')+
+    '<div id="v-rows"></div><p class="note" id="v-st"></p><div class="acts"><button class="btn" data-act="vidBack">戻る</button><button class="btn pri" data-act="vidGo">登録</button></div>';
+  SH.innerHTML=h;openS('vid');
+  const fi=document.getElementById('v-file');fi.onchange=()=>{UP.files=[...fi.files].slice(0,left);UP.want=UP.files.map(()=>false);drawPick();};}
+/** 選んだファイルを1本ずつ並べ、「コーチに見てほしい」を1本ずつ／全部 */
+function drawPick(){const e=document.getElementById('v-pick');if(!e||!UP)return;const n=UP.files.length,all=n&&UP.want.every(Boolean),mb=UP.files.reduce((t,f)=>t+f.size,0)/1048576;
+  e.innerHTML=n?'<p class="note">'+n+(UP.ph?'枚':'本')+'（計 '+mb.toFixed(0)+'MB）</p><div class="vpick"><div class="vpick-h"><span>コーチに見てほしい</span><button class="btn sm2'+(all?' on':'')+'" data-upall="1">'+(all?'全部外す':'全部')+'</button></div>'+
+    UP.files.map((f,i)=>'<button class="vpk'+(UP.want[i]?' on':'')+'" data-upwant="'+i+'"><span>'+(i+1)+'. '+esc(f.name)+'</span><b>'+(UP.want[i]?'✓ 見てほしい':'－')+'</b></button>').join('')+'</div>':'';}
+async function uploadVid(){if(upBusy)return;if(!who){askWho();return;}if(!UP)return;
+  const date=UP.date,ph=UP.ph,url=ph?'':val('v-url'),kind=ph?'写真':val('v-kind'),slot=ph?'':val('v-slot'),memo=val('v-memo'),cat=ph?val('v-cat'):'',race=val('v-race'),pub=!!(document.getElementById('v-pub')||{}).checked;
+  let files=UP.files.slice();const base=val('v-title')||((ph?'写真':(kind||'動画'))+' '+md(date)+(slot?' '+slot:''));
+  if(!files.length&&!url){toast((ph?'写真':'動画')+'を選んでください');return;}
+  const big=files.find(f=>!ph&&f.size>S.videoMaxMB*1024*1024);if(big){toast('「'+big.name+'」が大きすぎます（上限 '+S.videoMaxMB+'MB）');return;}
+  const st=document.getElementById('v-st'),box=document.getElementById('v-rows'),t0=Date.now();
+  upBusy=true;SH.querySelectorAll('button,input,select').forEach(b=>b.disabled=true);
+  try{
+    if(!files.length){st.textContent='登録中…';const d=await call('videoRegister',{who,key,date,title:base,kind,slot,memo,fileId:'',url});applyPart(d);upBusy=false;closeSheet();render();openDaySheet(date);toast('動画を登録しました');return;}
+    if(ph){st.textContent='写真を変換中…（撮影場所などの情報を外しています）';const out=[];for(const f of files)out.push(await toJpeg(f));files=out;}
+    const titles=files.map((f,n)=>files.length>1?base+' '+(CIRC[n]||'('+(n+1)+')'):base);
+    box.innerHTML=files.map((f,n)=>'<div class="vrow"><span>'+esc(titles[n])+'（'+(f.size/1048576).toFixed(1)+'MB）</span><div class="prog"><div id="vb'+n+'"></div></div><small id="vs'+n+'">待機中</small></div>').join('');
+    const bar=(n,r)=>{const e=document.getElementById('vb'+n);if(e)e.style.width=Math.round(r*100)+'%';},msg=(n,t)=>{const e=document.getElementById('vs'+n);if(e)e.textContent=t;};
+    st.textContent='送信の準備中…（画面を閉じずにお待ちください）';
+    const prep=await call('videoStartMany',{who,key,date,type:ph?'写真':'動画',origin:location.origin,files:files.map((f,n)=>({size:f.size,mime:f.type||(ph?'image/jpeg':'video/mp4'),name:date+'_'+titles[n]+(f.name.match(/\.[^.]+$/)||[ph?'.jpg':'.mp4'])[0]}))});
+    st.textContent='送信中…';const ids=new Array(files.length).fill('');let relay=false,done=0;
+    const one=async n=>{const f=files[n];msg(n,'送信中');
+      try{ids[n]=await putDirect(prep.sessions[n].loc,f,r=>{bar(n,r);msg(n,'送信中 '+Math.round(r*100)+'%');});}
+      catch(e){relay=true;msg(n,'別の方法で送信中');bar(n,0);ids[n]=await putRelay(f,date,titles[n],r=>{bar(n,r);msg(n,'別の方法で送信中 '+Math.round(r*100)+'%');},t=>msg(n,t));}
+      bar(n,1);msg(n,'✓ 送信済み');done++;st.textContent='送信中… '+done+'/'+files.length;};
+    let next=0;const worker=async()=>{while(next<files.length){const n=next++;await one(n);}};await Promise.all([worker(),worker()]);
+    st.textContent='登録中…';const want=UP.want.slice();
+    const d=await call('videoRegisterMany',{who,key,date,kind,slot,memo,type:ph?'写真':'動画',cat,race,pub,items:files.map((f,n)=>({fileId:ids[n],title:titles[n],size:f.size,want:!!want[n]}))});
+    applyPart(d);upBusy=false;UP=null;closeSheet();render();openDaySheet(date);
+    const secs=Math.round((Date.now()-t0)/1000);toast(files.length+(ph?'枚の写真':'本の動画')+'を登録しました（'+secs+'秒）');
+    reportErr(ph?'写真送信':'動画送信',files.length+(ph?'枚':'本')+'・'+(files.reduce((t,f)=>t+f.size,0)/1048576).toFixed(1)+'MB・'+secs+'秒・'+(relay?'中継あり':'直接'));
+    thumbsLater(ids.map((id,n)=>[(S.videos||[]).find(v=>v.fileId===id),files[n]]));
+  }catch(e){upBusy=false;SH.querySelectorAll('button,input,select').forEach(b=>b.disabled=false);const m=errMsg(e);st.textContent='';
+    if(m.indexOf('KEY')>=0){key='';LS.set('key','');askKey(false);toast('合言葉が違います');return;}
+    toast(/[^\x00-\x7F]/.test(m)?m.replace(/^(Exception|Error):\s*/,''):'送信できませんでした。電波のよい場所でもう一度お試しください。');}}
+/* 写真の表示（全画面、押すと2倍、ひとこと・図示・前後） */
+function drawPhoto(v){if(who&&S.xcoms){const xs=JSON.parse(LS.get('xseen:'+who)||'{}');S.xcoms.filter(x=>x.vid===v.id).forEach(x=>xs[x.id]=1);LS.set('xseen:'+who,JSON.stringify(xs));}const c=vplay,i=c.list.indexOf(v.id),pv=vpEl(),cs=vComs(v.id);document.body.classList.add('noscroll');pv.hidden=false;
+  pv.innerHTML='<div class="vp-stage ph" id="vp-stage"><div class="vp-load" id="vp-load">読み込み中…</div></div><div class="vp-ui" id="vp-ui">'+
+    '<div class="vp-top"><button class="vp-close" data-act="vpClose">✕ 閉じる</button><span class="vp-ttl">'+(v.best?'☆ ':'')+'📷 '+esc(v.title)+'<small>'+esc([mdw(v.d),v.cat].filter(Boolean).join(' '))+(c.list.length>1?'　'+(i+1)+'／'+c.list.length:'')+'</small></span>'+(canEdit()?'<button class="vp-ic" data-act="vpMenu">…</button>':'')+'</div>'+
+    '<div class="vp-bot"><div class="vp-row"><button class="vp-b sm" data-act="vpPrev"'+(i>0?'':' disabled')+'>◀ 前</button><button class="vp-b sm" data-act="vpNext"'+(i<c.list.length-1?'':' disabled')+'>次 ▶</button></div>'+
+    '<div class="vp-row"><button class="vp-b com" data-act="vpCom">💬 ひとこと'+(cs.length?'（'+cs.length+'）':'')+'</button><button class="vp-b" data-act="vpDraw">✏️ 図示</button></div></div></div><div class="vp-panel" id="vp-panel" hidden></div>';
+  (async()=>{const stg=document.getElementById('vp-stage');let u='';try{u=await vBlob(v);}catch(e){return;}if(!vplay||vplay.id!==v.id)return;
+    stg.innerHTML='<img id="vp-img" alt="'+esc(v.title)+'" src="'+esc(u)+'">';const im=document.getElementById('vp-img');im.addEventListener('click',()=>{stg.classList.toggle('zoom');});})();
+  const st=document.getElementById('vp-stage');let x0=null,y0=null;st.addEventListener('touchstart',e=>{const t=e.touches[0];x0=t.clientX;y0=t.clientY;},{passive:true});
+  st.addEventListener('touchend',e=>{if(x0===null||st.classList.contains('zoom'))return;const t=e.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;x0=null;if(Math.abs(dx)>70&&Math.abs(dy)<50)vpGo(dx<0?1:-1);});
+  if(c.panel==='com')drawPanel();
+  if(who){const seen=JSON.parse(LS.get('vseen:'+who)||'{}');seen[v.id]=cs.length;LS.set('vseen:'+who,JSON.stringify(seen));}}
+/* メニュー（家族）：☆・見てほしい・外に出してよい・大会・分類・削除 */
+function vpMenu(){const c=vplay,v=(S.videos||[]).find(x=>x.id===c.id);if(!v)return;c.panel='menu';const p=document.getElementById('vp-panel');
+  p.innerHTML='<div class="vp-ph"><b>この'+(isPh(v)?'写真':'動画')+'</b><button class="vp-ic" data-act="vpComClose">✕</button></div><div class="vp-menu">'+
+    '<button class="btn" data-vstar="'+esc(v.id)+'">'+(v.best?'☆ ベストを外す':'☆ ベストにする')+'</button>'+
+    '<button class="btn" data-vwant="'+esc(v.id)+'">'+(v.want?'✓ コーチに見てほしい（外す）':'コーチに見てほしい')+'</button>'+
+    '<button class="btn" data-vpub="'+esc(v.id)+'">'+(v.pub?'✓ 外に出してよい（外す）':'外に出してよい（報告書・紹介ページに使える）')+'</button>'+
+    (isPh(v)?'<div class="vp-lab">分類</div><div class="wrap">'+PCATS.map(k=>'<button class="opt sm" data-vcat="'+esc(k)+'" aria-pressed="'+(v.cat===k)+'">'+esc(k)+'</button>').join('')+'</div>':'')+
+    '<label class="vp-lab">大会にひも付け<select id="vp-race"><option value="">なし</option>'+RACES.slice().sort((a,b)=>Math.abs(pdate(a.d)-pdate(v.d))-Math.abs(pdate(b.d)-pdate(v.d))).slice(0,30).map(r=>'<option value="'+esc(r.id)+'"'+(r.id===v.race?' selected':'')+'>'+esc(md(r.d)+' '+(r.short||r.name))+'</option>').join('')+'</select></label>'+
+    (v.fileId?'<a class="btn" href="https://drive.google.com/file/d/'+esc(v.fileId)+'/view" target="_blank" rel="noopener">ドライブで開く</a>':'')+
+    (who!=='本人'?'<button class="btn" data-xreq1="'+esc(v.id)+'">外部に評価を依頼（専用リンク）</button>':'')+
+    '<button class="btn danger" data-vdel="'+esc(v.id)+'">削除（アーカイブに残します）</button></div>';p.hidden=false;vpShowUI();
+  const rs=document.getElementById('vp-race');if(rs)rs.onchange=()=>{const val2=rs.value;v.race=val2;call('videoUpdate',{who,key,id:v.id,race:val2}).then(d=>{applyPart(d);toast(val2?'大会にひも付けました':'ひも付けを外しました');}).catch(e=>toast(errMsg(e)));};}
+/* 動画・写真タブ（種別・分類・外に出してよい・選んでまとめて・アーカイブ） */
+Object.assign(VF,{type:'',cat:'',pub:false,arch:false});
+let VSEL=null;
+function vfReset(){Object.assign(VF,{per:'all',kind:'',best:false,want:false,com:false,ref:false,part:'',q:'',sort:'new',type:'',cat:'',pub:false,arch:false});VSEL=null;}
+function vfActive(){return VF.per!=='all'||VF.kind||VF.best||VF.want||VF.com||VF.ref||VF.part||VF.q.trim()||VF.sort!=='new'||VF.type||VF.cat||VF.pub||VF.arch;}
+function vFilter(){const t=TODAY,y=fy(t),pr={all:['0000','9999'],month:[t.slice(0,7)+'-01','9999'],prev:[addD(t.slice(0,7)+'-01',-1).slice(0,7)+'-01',addD(t.slice(0,7)+'-01',-1)],fy:[y+'-04-01',(y+1)+'-03-31']}[VF.per],q=VF.q.trim();
+  return (VF.arch?(S.vArch||[]):(S.videos||[])).filter(v=>{if(VF.ref&&!v.ref)return false;if(VF.type&&(VF.type==='写真')!==isPh(v))return false;if(VF.cat&&v.cat!==VF.cat)return false;if(VF.pub&&!v.pub)return false;
+    if(v.d<pr[0]||v.d>pr[1])return false;if(VF.kind&&v.kind!==VF.kind)return false;if(VF.best&&!v.best)return false;if(VF.want&&!v.want)return false;
+    const cs=vComs(v.id);if(VF.com&&!cs.length)return false;if(VF.part&&!cs.some(c=>c.part===VF.part)&&(v.tags||[]).indexOf(VF.part)<0)return false;
+    if(q&&!(v.title+' '+(v.memo||'')+' '+(v.cat||'')+' '+(v.tags||[]).join(' ')+' '+cs.map(c=>c.text).join(' ')).includes(q))return false;return true;})
+   .sort((a,b)=>(VF.sort==='new'?-1:1)*((a.d+a.at)<(b.d+b.at)?-1:(a.d+a.at)>(b.d+b.at)?1:0));}
+function renderVideos(){const all=S.videos||[],kinds=[...new Set(all.filter(v=>!isPh(v)&&!v.ref).map(v=>v.kind).filter(Boolean))],parts=[...new Set((S.vcoms||[]).map(c=>c.part).concat(...all.map(v=>v.tags||[])).filter(Boolean))],L=vFilter(),fam=canEdit();
+  let h='<main><h2>'+(VF.arch?'アーカイブ（削除した動画・写真）':'動画・写真')+'（'+L.length+(VF.arch?'':'／'+all.length)+'）</h2>'+(vfActive()?'<button class="btn vfclr" data-act="vfClear">✕ 条件をクリア（全部を表示）</button>':'');
+  if(!VF.arch){h+='<div class="vbtns"><button class="btn" data-act="phAddV">＋ 写真を登録</button><button class="btn" data-act="refOpen">＋ 参考動画</button>'+(fam?'<button class="btn'+(VSEL?' on':'')+'" data-act="vselMode">'+(VSEL?'選ぶのをやめる':'☑ 選んでまとめて')+'</button>':'')+'</div>';
+    h+='<div class="vfil"><input type="search" id="vf-q" placeholder="題名・分類・ひとことで探す" value="'+esc(VF.q)+'">'+
+      '<div class="wrap">'+[['','すべて'],['動画','🎬 動画'],['写真','📷 写真']].map(([k,l])=>'<button class="opt sm" data-vftype="'+k+'" aria-pressed="'+(VF.type===k)+'">'+l+'</button>').join('')+'</div>'+
+      '<div class="wrap">'+[['all','全期間'],['month','今月'],['prev','先月'],['fy','今年度']].map(([k,l])=>'<button class="opt sm" data-vfper="'+k+'" aria-pressed="'+(VF.per===k)+'">'+l+'</button>').join('')+'</div>'+
+      (VF.type!=='写真'&&kinds.length>1?'<div class="wrap"><button class="opt sm" data-vfkind="" aria-pressed="'+(!VF.kind)+'">全部の活動</button>'+kinds.map(k=>'<button class="opt sm" data-vfkind="'+esc(k)+'" aria-pressed="'+(VF.kind===k)+'">'+esc(k)+'</button>').join('')+'</div>':'')+
+      (VF.type==='写真'?'<div class="wrap"><button class="opt sm" data-vfcat="" aria-pressed="'+(!VF.cat)+'">全部の分類</button>'+PCATS.map(k=>'<button class="opt sm" data-vfcat="'+esc(k)+'" aria-pressed="'+(VF.cat===k)+'">'+esc(k)+'</button>').join('')+'</div>':'')+
+      '<div class="wrap"><button class="opt sm" data-vfflag="best" aria-pressed="'+VF.best+'">☆ベスト</button><button class="opt sm" data-vfflag="pub" aria-pressed="'+VF.pub+'">外に出してよい</button><button class="opt sm" data-vfflag="want" aria-pressed="'+VF.want+'">見てほしい</button><button class="opt sm" data-vfflag="com" aria-pressed="'+VF.com+'">💬あり</button><button class="opt sm" data-vfflag="ref" aria-pressed="'+VF.ref+'">参考</button><button class="opt sm" data-vfsort="1">'+(VF.sort==='new'?'新しい順':'古い順')+'</button></div>'+
+      (parts.length?'<div class="wrap"><span class="note" style="margin-right:4px">指摘：</span><button class="opt sm" data-vfpart="" aria-pressed="'+(!VF.part)+'">指定なし</button>'+parts.map(p=>'<button class="opt sm" data-vfpart="'+esc(p)+'" aria-pressed="'+(VF.part===p)+'">'+esc(p)+'</button>').join('')+'</div>':'')+'</div>';}
+  if(!L.length)h+='<p class="note">'+(VF.arch?'アーカイブはありません。':'条件に合うものはありません。')+'</p>';
+  else{const ids=L.map(v=>v.id).join(',');let m='';h+='<div class="vgrid">';
+    L.forEach(v=>{const mm=v.d.slice(0,7);if(mm!==m){m=mm;h+='<div class="vgm">'+(+mm.slice(0,4))+'年'+(+mm.slice(5))+'月</div>';}const n=vComs(v.id).length,tu=thumbUrl(v),sel=VSEL&&VSEL[v.id];
+      h+='<button class="vcard'+(sel?' sel':'')+'" '+(VF.arch?'data-vrestore="'+esc(v.id)+'"':VSEL?'data-vsel="'+esc(v.id)+'"':'data-vplay="'+esc(v.id)+'" data-vlist="'+esc(ids)+'"')+'><span class="vth">'+(tu?'<img loading="lazy" alt="" src="'+esc(tu)+'" onerror="this.remove()">':'')+(isPh(v)?'':'<i>▶</i>')+(v.best?'<b class="vb">☆</b>':'')+(VSEL?'<b class="vck">'+(sel?'✓':'')+'</b>':'')+(v.pub?'<b class="vpubm">外OK</b>':'')+'</span>'+
+        '<span class="vt">'+(isPh(v)?'📷 ':'')+esc(v.title)+'</span><small>'+esc(v.ref?'参考'+((v.tags||[]).length?'：'+v.tags.join('・'):''):(isPh(v)?(v.cat||'写真')+' ':'')+mdw(v.d)+(v.slot?' '+v.slot:''))+(n?' 💬'+n:'')+(v.want?' 見てほしい':'')+(VF.arch?'<br>'+esc(v.arch)+'　押すと戻せます':'')+'</small></button>';});
+    h+='</div>';}
+  if(fam&&!VF.arch)h+=reqListHtml();
+  if(fam)h+='<p style="margin-top:14px"><button class="linkbtn2" data-act="varch">'+(VF.arch?'← 動画・写真に戻る':'アーカイブ（削除した動画・写真）を見る（'+(S.vArch||[]).length+'）')+'</button></p>';
+  if(VSEL){const n=Object.keys(VSEL).length;h+='<div class="vselbar"><b>'+n+'件を選択</b><button class="btn sm2" data-act="vselAll">全部選ぶ</button><div class="vselacts">'+
+    [['want','見てほしい'],['best','☆ベスト'],['pub','外に出してよい']].map(([k,l])=>'<button class="btn sm2" data-vbulk="'+k+'|1"'+(n?'':' disabled')+'>'+l+'</button><button class="btn sm2" data-vbulk="'+k+'|0"'+(n?'':' disabled')+'>外す</button>').join('')+
+    '<button class="btn sm2" data-act="vselReq"'+(n?'':' disabled')+'>外部に評価を依頼</button><button class="btn sm2 danger" data-vbulk="delete|1"'+(n?'':' disabled')+'>削除（アーカイブへ）</button></div></div>';}
+  V.innerHTML=h+'</main>';const qi=document.getElementById('vf-q');if(qi)qi.oninput=()=>{VF.q=qi.value;clearTimeout(qi._t);qi._t=setTimeout(()=>{const p=qi.selectionStart;renderVideos();const n=document.getElementById('vf-q');if(n){n.focus();n.setSelectionRange(p,p);}},350);};}
+// ---------- v4.44：外部への評価依頼（依頼ごとのリンク）。外部の画面と、家族が依頼を作る画面 ----------
+const XLINK=k=>location.origin+location.pathname.replace(/index\.html$/,'')+'#r='+k;
+/* ===== 外部の人の画面：この依頼の動画だけ。ほかは何も見えない ===== */
+let XR=null;
+function extMain(key){XR={key,data:null,vid:null,url:{},t:null,part:'',ev:'',img:''};document.body.classList.add('extmode');
+  V.innerHTML='<main><p class="note">読み込み中…</p></main>';
+  call('reqOpen',{key}).then(d=>{XR.data=d;extList();}).catch(e=>{V.innerHTML='<main><h2>動画へのご意見のお願い</h2><p>'+esc(errMsg(e).replace(/^(Exception|Error):\s*/,''))+'</p></main>';});}
+function extList(){const d=XR.data;V.innerHTML='<main><h2>'+esc(d.name)+' 様　動画へのご意見のお願い</h2>'+(d.text?'<div class="xreq-text">'+esc(d.text).replace(/\n/g,'<br>')+'</div>':'')+
+  '<p class="note">動画を押すと再生します。止めた場面に、ひとこと・図を残せます。いただいた内容は選手と家族だけが見ます。</p><div class="vgrid">'+
+  d.videos.map(v=>{const n=d.coms.filter(c=>c.vid===v.id).length;return '<button class="vcard" data-xopen="'+esc(v.id)+'"><span class="vth"><i>'+(v.photo?'📷':'▶')+'</i></span><span class="vt">'+esc(v.title)+'</span><small>'+(n?'ご意見 '+n+'件':'')+'</small></button>';}).join('')+'</div></main>';}
+async function extOpen(id){const d=XR.data,v=d.videos.find(x=>x.id===id);if(!v)return;XR.vid=v;XR.t=null;XR.part='';XR.ev='';XR.img='';
+  const pv=vpEl();document.body.classList.add('noscroll');pv.hidden=false;
+  pv.innerHTML='<div class="vp-stage" id="vp-stage"><div class="vp-load" id="vp-load">読み込み中…</div></div><div class="vp-ui" id="vp-ui"><div class="vp-top"><button class="vp-close" data-act="xClose">✕ 閉じる</button><span class="vp-ttl">'+esc(v.title)+'</span></div>'+
+    (v.photo?'':'<div class="vp-bot"><input type="range" id="vp-seek" min="0" max="1000" value="0"><span class="vp-time" id="vp-time">0.0秒</span>'+
+    '<div class="vp-row"><button class="vp-b" data-act="vpStepB">◀1コマ</button><button class="vp-b big" data-act="vpPlay" id="vp-pp">▶</button><button class="vp-b" data-act="vpStepF">1コマ▶</button></div>'+
+    '<div class="vp-row">'+[1,0.5,0.25].map(r=>'<button class="vp-b sm'+(r===1?' on':'')+'" data-xrate="'+r+'">'+(r===1?'1倍':r===0.5?'½':'¼')+'</button>').join('')+'</div>')+
+    (v.photo?'<div class="vp-bot">':'')+'<div class="vp-row"><button class="vp-b com" data-act="xCom">💬 ご意見を書く</button><button class="vp-b" data-act="xDraw">✏️ 図示</button></div></div></div><div class="vp-panel" id="vp-panel" hidden></div>';
+  try{let u=XR.url[id];if(!u){const parts=[];let part=0,total=0;for(;;){const r=await call('reqVideo',{key:XR.key,vid:id,part});total=r.total;const bin=atob(r.b64),a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);parts.push(a);
+        const got=parts.reduce((t,x)=>t+x.length,0),ld=document.getElementById('vp-load');if(ld)ld.textContent='読み込み中 '+Math.round(got/total*100)+'%';if(!r.more)break;part++;}
+      u=URL.createObjectURL(new Blob(parts,{type:v.photo?'image/jpeg':'video/mp4'}));XR.url[id]=u;}
+    const st=document.getElementById('vp-stage');if(!st)return;
+    if(v.photo){st.innerHTML='<img id="vp-img" alt="" src="'+u+'">';return;}
+    st.innerHTML='<video id="vp-video" playsinline loop muted autoplay preload="auto" src="'+u+'"></video>';const ve=document.getElementById('vp-video'),sk=document.getElementById('vp-seek'),tm=document.getElementById('vp-time'),pp=document.getElementById('vp-pp');
+    ve.addEventListener('timeupdate',()=>{if(ve.duration){sk.value=Math.round(ve.currentTime/ve.duration*1000);tm.textContent=ve.currentTime.toFixed(1)+'秒';}});
+    ve.addEventListener('play',()=>{pp.textContent='❚❚';});ve.addEventListener('pause',()=>{pp.textContent='▶';});
+    sk.oninput=()=>{if(ve.duration){ve.pause();ve.currentTime=sk.value/1000*ve.duration;}};st.addEventListener('touchend',()=>{ve.muted=false;},{once:true});}
+  catch(e){const ld=document.getElementById('vp-load');if(ld)ld.textContent=errMsg(e).replace(/^(Exception|Error):\s*/,'');}}
+function xWords(g){return (XR.data.words||[]).filter(x=>x.g===g).map(x=>x.w);}
+function xPanel(){const v=XR.vid,p=document.getElementById('vp-panel');if(!p)return;const gs=vGroups(v.kind),cs=XR.data.coms.filter(c=>c.vid===v.id);XR.g=XR.g&&gs.indexOf(XR.g)>=0?XR.g:gs[0]||'';
+  let h='<div class="vp-ph"><b>ご意見</b><button class="vp-ic" data-act="xComClose">✕</button></div>'+(cs.length?'<div class="vp-cl">'+cs.map(c=>'<div class="vc"><b>'+(c.t!=null?fmtT(c.t):'')+'</b><span>'+esc(c.text)+(c.img?'（図あり）':'')+'</span></div>').join('')+'</div>':'');
+  h+='<div class="vp-new"><div class="vp-at">'+(XR.t!=null?'<b>'+fmtT(XR.t)+'</b> の場面に':'この'+(v.photo?'写真':'動画')+'に')+'</div>';
+  if(XR.img)h+='<div class="vp-img"><img alt="図" src="data:image/jpeg;base64,'+XR.img+'"><button class="linkbtn2" data-act="xImgDel">図を外す</button></div>';
+  if(gs.length>1)h+='<div class="wrap">'+gs.map(g=>'<button class="opt sm" data-xg="'+esc(g)+'" aria-pressed="'+(XR.g===g)+'">'+esc(g)+'</button>').join('')+'</div>';
+  if(XR.g)h+='<div class="vp-lab">どこ</div><div class="wrap">'+xWords(XR.g).map(w=>'<button class="opt sm" data-xpart="'+esc(w)+'" aria-pressed="'+(XR.part===w)+'">'+esc(w)+'</button>').join('')+'</div>';
+  h+='<div class="vp-lab">どう</div><div class="wrap">'+xWords('評価').map(w=>'<button class="opt sm" data-xev="'+esc(w)+'" aria-pressed="'+(XR.ev===w)+'">'+esc(w)+'</button>').join('')+'</div>'+
+    '<div class="qrow"><input type="text" id="vp-text" maxlength="500" placeholder="書き足す（任意）" value="'+esc(XR.txt||'')+'"><button class="btn pri sm2" data-act="xSend">送る</button></div><p class="note mic">🎤 キーボードのマイクで、話して入力できます</p></div>';
+  p.innerHTML=h;p.hidden=false;const ti=document.getElementById('vp-text');if(ti)ti.oninput=()=>{XR.txt=ti.value;};}
+function xClick(ds,b){
+  if(ds.xopen){extOpen(ds.xopen);return true;}
+  if(ds.act==='xClose'){const pv=document.getElementById('vplayer');if(pv){pv.innerHTML='';pv.hidden=true;}document.body.classList.remove('noscroll');extList();return true;}
+  if(ds.act==='vpPlay'){const ve=document.getElementById('vp-video');if(ve){if(ve.paused){ve.muted=false;ve.play();}else ve.pause();}return true;}
+  if(ds.act==='vpStepB'||ds.act==='vpStepF'){const ve=document.getElementById('vp-video');if(ve){ve.pause();ve.currentTime=Math.max(0,ve.currentTime+(ds.act==='vpStepF'?1:-1)/60);}return true;}
+  if(ds.xrate){const ve=document.getElementById('vp-video');if(ve)ve.playbackRate=+ds.xrate;document.querySelectorAll('[data-xrate]').forEach(x=>x.classList.toggle('on',x===b));return true;}
+  if(ds.act==='xCom'){const ve=document.getElementById('vp-video');if(ve){ve.pause();XR.t=ve.duration?Math.round(ve.currentTime*10)/10:null;}xPanel();return true;}
+  if(ds.act==='xComClose'){const p=document.getElementById('vp-panel');if(p){p.hidden=true;p.innerHTML='';}return true;}
+  if(ds.xg){XR.g=ds.xg;XR.part='';xPanel();return true;}
+  if(ds.xpart!==undefined){XR.part=XR.part===ds.xpart?'':ds.xpart;xPanel();return true;}
+  if(ds.xev!==undefined){XR.ev=XR.ev===ds.xev?'':ds.xev;xPanel();return true;}
+  if(ds.act==='xImgDel'){XR.img='';xPanel();return true;}
+  if(ds.act==='xDraw'){const ve=document.getElementById('vp-video'),im=document.getElementById('vp-img');let base;try{if(ve){ve.pause();XR.t=Math.round(ve.currentTime*10)/10;base=grabFrame(ve);}else if(im){base=document.createElement('canvas');base.width=im.naturalWidth;base.height=im.naturalHeight;base.getContext('2d').drawImage(im,0,0);}else return true;base.getContext('2d').getImageData(0,0,1,1);}catch(e){toast('読み込みが終わってから押してください');return true;}
+    openDraw(base,b64=>{XR.img=b64;xPanel();});return true;}
+  if(ds.act==='xSend'){const extra=(document.getElementById('vp-text')||{value:''}).value.trim(),body=[XR.part,XR.ev].filter(Boolean).join('・')+(extra?([XR.part,XR.ev].some(Boolean)?'：':'')+extra:'');
+    if(!body&&!XR.img){toast('言葉を選ぶか、書いてください');return true;}b.disabled=true;
+    call('reqComment',{key:XR.key,vid:XR.vid.id,text:(XR.t!=null?fmtT(XR.t)+'：':'')+body,t:XR.t,part:XR.part,ev:XR.ev,img:XR.img}).then(r=>{XR.data.coms=r.coms;XR.part='';XR.ev='';XR.txt='';XR.img='';xPanel();toast('ありがとうございます。送りました');}).catch(e=>{b.disabled=false;toast(errMsg(e).replace(/^(Exception|Error):\s*/,''));});return true;}
+  if(ds.act==='drwClose'||ds.act==='drwSave'||ds.drwtool||ds.drwcol||ds.act==='drwUndo'||ds.act==='drwClear')return false;   // 図示は共通の処理へ
+  return true;}
+/* ===== 家族：依頼を作る・一覧 ===== */
+let XF=null;
+function openReqForm(vids){XF={vids,name:'',text:'',show:true};SH.innerHTML='<div class="grab"></div><h3 id="sh-title">外部に評価を依頼</h3>'+
+  '<p class="note">'+vids.length+'件の動画・写真について、この依頼だけの専用リンクを作ります（7日間）。相手には、選んだ動画と依頼文しか見えません。いただいた評価は家族'+'（と、選べば本人）だけが見られ、内部のコーチには見えません。</p>'+
+  '<label class="lab">相手の名前（相手の画面に「〇〇 様」と出ます）<input type="text" id="xf-name" maxlength="40" placeholder="例：〇〇コーチ"></label>'+
+  '<label class="lab">依頼文<textarea id="xf-text" rows="3" maxlength="500" style="width:100%;box-sizing:border-box;font-size:15px;border:1px solid var(--line);border-radius:10px;padding:8px">お世話になっております。第2エアの踏み切りについて、ご意見をいただけますと幸いです。</textarea></label>'+
+  '<label class="chk"><input type="checkbox" id="xf-show" checked> 本人にも見せる（見せないときだけ外す）</label>'+
+  '<div class="acts"><button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="xfGo">リンクを作る</button></div>';openS('xreq');}
+function showReqLink(q){const url=XLINK(q.key),msg=(q.name?q.name+' 様\n':'')+'動画へのご意見のお願いです。こちらからご覧ください。\n'+url;
+  SH.innerHTML='<div class="grab"></div><h3 id="sh-title">依頼のリンクができました</h3><p class="note">このリンクを送ってください。7日間有効です（期限は相手には表示しません）。</p>'+
+  '<div class="xlink">'+esc(url)+'</div><div class="acts" style="flex-wrap:wrap"><a class="btn pri" href="https://line.me/R/share?text='+encodeURIComponent(msg)+'" target="_blank" rel="noopener">LINEで送る</a><button class="btn" data-xcopy="'+esc(msg)+'">文面ごとコピー</button><button class="btn" data-act="close">閉じる</button></div>';openS('xreq');}
+function reqListHtml(){if(!canEdit()||who==='本人'||!(S.xreqs||[]).length)return '';const C=S.xcoms||[];
+  return '<h2>外部への依頼</h2><div class="list">'+S.xreqs.slice().sort((a,b)=>a.at<b.at?1:-1).map(q=>{const n=C.filter(c=>c.req===q.id).length,live=q.st==='受付中'&&(!q.exp||q.exp>=TODAY);
+    return '<div><b>'+esc(q.name)+'</b>　<small class="s">'+esc(String(q.at).slice(5,10))+'作成・'+q.vids.length+'件・評価 '+n+'件・'+(live?'受付中（'+md(q.exp)+'まで）':'終了')+(q.show?'・本人に見せる':'')+'</small><br>'+
+      (live?'<button class="btn sm2" data-xresend="'+esc(q.id)+'">リンクを送る</button><button class="btn sm2" data-xclose="'+esc(q.id)+'">受付を終える</button>':'<button class="btn sm2" data-xreopen="'+esc(q.id)+'">もう7日受け付ける</button>')+
+      '<button class="btn sm2" data-xshow="'+esc(q.id)+'">'+(q.show?'本人に見せない':'本人にも見せる')+'</button></div>';}).join('')+'</div>';}
+/** ホームの新着（家族・本人）：まだ見ていない外部の評価 */
+function extNews(){if(!S.xcoms||!S.xcoms.length)return '';const seen=JSON.parse(LS.get('xseen:'+who)||'{}'),L=[...new Set(S.xcoms.filter(c=>!seen[c.id]).map(c=>c.vid))].map(id=>(S.videos||[]).find(v=>v.id===id)).filter(Boolean);
+  if(!L.length)return '';return '<h2>外部の評価（新着'+L.length+'）</h2><div class="exl">'+L.map(v=>{const c=S.xcoms.filter(x=>x.vid===v.id).slice(-1)[0];return '<button class="vnew ext" data-vplay="'+esc(v.id)+'">📝 '+esc(c.by)+'：'+esc(c.text)+'<small>'+esc(v.title)+'</small></button>';}).join('')+'</div>';}
 // ---------- 今日の1問（本人だけ）：場面の判定と問いの選択 ----------
 const QCLOSE=/^(なかった|ない|どっちもない|わからない|話してない|見てない|思い出せない|まだない|してない|考えてない)$/;
 const termOf=d=>{const y=+d.slice(0,4),m=+d.slice(5,7);return m>=4&&m<=9?y+'前期':(m>=10?y:y-1)+'後期';};
@@ -1770,7 +2114,7 @@ function renderHelp(){
   '<h3>5. 実績とコーチ報告PDF</h3><p>週・月・年度・パーソナルごとに、活動の予定と実施の回数、ROMの回数、メニューの合計（セット数・最大重量、WJの本数）、大会結果、記録の一覧を見られます。「月」または「パーソナル」でPDFを作ると、コーチに渡す報告書ができます。パーソナルを受けた日は「パーソナル」の画面か、日付の画面から登録します。</p>'+
   '<h3>6. メニュー</h3><p>ROMベーシック（フル／ハーフ）、ROMプラス、エクスプロッシブ、WJのメニューは、管理用スプレッドシートの「メニュー」シートにあります。種目、回数・秒数、セット数、インターバル、左右、やり方の説明を書き換えると、記録画面の目安と初期値が変わります。新しい活動の種類を作って、同じ種類名で種目を登録すれば、メニュー付きの活動を増やせます。</p>'+
   '<h3>7. 動画</h3><p>日付を押した画面の「動画を登録」から送れます。動画は、このアプリを使っている人なら誰でも見られます。</p>'+
-  '<h3>記録者を変える</h3><p>画面上の「記録者」の「変更」から選び直せます。この端末に記憶されます。</p>'+
+  (canEdit()&&who!=='本人'?'<h3>最近のアクセス（家族だけ）</h3><div id="alog"><button class="btn" data-act="alogLoad">見る</button></div>':'')+(S.me&&S.me.auth?'<h3>この端末の利用者</h3><p>'+esc(S.me.name)+'（'+esc(S.me.role)+'）として使っています。</p><button class="btn" data-act="ukReset">利用者を変える（合言葉を入れ直す）</button>':'')+'<h3>記録者を変える</h3><p>画面上の「記録者」の「変更」から選び直せます。この端末に記憶されます。</p>'+
   '<h3>文字の大きさ</h3><div class="wrap"><button class="opt sm" data-act="bigTgl" aria-pressed="'+document.documentElement.classList.contains('big')+'">文字を大きくする</button></div>'+
   '<p class="note">バージョン サーバー'+esc(S.version)+'／画面'+CLIENT_VERSION+'<br>今回の起動：HTML受信 '+(TM.html==null?'?':TM.html)+'秒／前回データの表示 '+(TM.cache!=null?TM.cache+'秒':'なし')+'／最新データ '+(TM.fresh==null?'?':TM.fresh)+'秒（うちサーバー処理 '+(TM.srv==null?'?':TM.srv)+'秒'+(TM.srvT?'：'+esc(TM.srvT):'')+'）</p></main>';}
 
@@ -1865,6 +2209,7 @@ function allDone(date){const d=DAYS[DIDX[date]],rows=rowsOf(d).filter(r=>r.plann
 
 // ---------- 操作 ----------
 document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mview],[data-vcmp]');
+  if(XR&&b&&xClick(b.dataset,b))return;
   if(!b){if(e.target.id==='sheetbg'&&!(sheetKind==='who'&&!who)&&!upBusy&&!saving)closeSheet();return;}
   const ds=b.dataset;
   if(ds.who!==undefined){who=ds.who;LS.set('who',who);closeSheet();render();toast(who+'として記録します');return;}
@@ -1873,7 +2218,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.act==='vkGo'){const v=(document.getElementById('vk-in')||{}).value||'';if(!v)return;vkey=v;LS.set('vkey',v);showLoading(true);load(false);return;}
   if(ds.act==='key'){const v=val('k-in');if(!v)return;
     if(sheetCtx&&sheetCtx.kind==='plan'){ekey=v;LS.set('ekey',v);}else{key=v;LS.set('key',v);}closeSheet();if(pending){const q=pending;pending=null;if(q.plan)sendPlan(q.fn,q.p,q.okMsg);else if(['saveActivity','saveActivities','deleteActivity'].indexOf(q.fn)>=0)sendRec(q.fn,q.p,q.okMsg);else send(q.fn,q.p,q.after,q.okMsg);}return;}
-  if(ds.tab){if(tab==='race'&&ds.tab!=='race'&&draftDiff().length&&!confirm('保存していない参加・不参加の変更があります。破棄しますか？'))return;if(ds.tab!=='race')draftTrips=null;if(ds.tab!=='plan'){selMode=false;SEL={};}tab=ds.tab;window.scrollTo(0,0);render();refreshIfStale();return;}
+  if(ds.tab){if(ds.tab==='videos')vfReset();if(tab==='race'&&ds.tab!=='race'&&draftDiff().length&&!confirm('保存していない参加・不参加の変更があります。破棄しますか？'))return;if(ds.tab!=='race')draftTrips=null;if(ds.tab!=='plan'){selMode=false;SEL={};}tab=ds.tab;window.scrollTo(0,0);render();refreshIfStale();return;}
   if(ds.mode){mode=ds.mode;render();window.scrollTo(0,0);return;}
   if(ds.year){year=+ds.year;month=months()[0];render();window.scrollTo(0,0);return;}
   if(ds.mv){moveMonth(+ds.mv);render();window.scrollTo(0,0);refreshIfStale();return;}
@@ -2098,6 +2443,60 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.act==='vpComClose'){vplay.panel='';const p=document.getElementById('vp-panel');if(p){p.hidden=true;p.innerHTML='';}vpAutoHide();return;}
   if(ds.act==='vpMenu'){vpMenu();return;}
   if(ds.act==='vpCmp'){openCompare(vplay.id);return;}
+  if(ds.act==='alogLoad'){const e=document.getElementById('alog');if(e)e.innerHTML='<p class="note">読み込み中…</p>';call('getAccessLog',{who}).then(r=>{const L=r.log||[];const el=document.getElementById('alog');if(!el)return;
+    el.innerHTML='<p class="note">新しい順に'+L.length+'件。「失敗」「外部」「いつもと違う時間帯」に注意。端末番号は端末ごとに違います（この端末：'+esc(DEVID)+'）。</p><div class="alog">'+L.map(x=>'<div class="'+(x.res==='失敗'?'ng':x.role==='外部'?'ext':'')+'"><b>'+esc(String(x.at).slice(5,16))+'</b> '+esc(x.who||'（不明）')+'<small>'+esc([x.fn,x.res,x.tz,x.dev,x.note].filter(Boolean).join('｜'))+'</small></div>').join('')+'</div>';}).catch(e=>{const el=document.getElementById('alog');if(el)el.textContent=errMsg(e);});return;}
+  if(ds.act==='ukGo'){const v=(document.getElementById('uk-in')||{value:''}).value.trim();if(!v)return;LS.set('ukey',v);load(false);return;}
+  if(ds.act==='ukReset'){if(!confirm('この端末の利用者を変えます。あなたの合言葉をもう一度入れてください。'))return;LS.set('ukey','');LS.set('who','');who='';S=null;askUKey('');return;}
+  if(ds.xreq1){openReqForm([ds.xreq1]);return;}
+  if(ds.act==='vselReq'){const ids=Object.keys(VSEL||{});if(!ids.length)return;openReqForm(ids);return;}
+  if(ds.act==='xfGo'){const name=val('xf-name'),text=(document.getElementById('xf-text')||{value:''}).value.trim(),show=!!(document.getElementById('xf-show')||{}).checked;if(!name){toast('相手の名前を書いてください');return;}b.disabled=true;
+    call('createReq',{who,key,vids:XF.vids,name,text,show}).then(r=>{S.xreqs=r.xreqs;VSEL=null;const q=r.xreqs.find(x=>x.id===r.id);showReqLink(q);render();}).catch(e=>{b.disabled=false;toast(errMsg(e));});return;}
+  if(ds.xcopy){try{navigator.clipboard.writeText(ds.xcopy).then(()=>toast('コピーしました'));}catch(e){toast('コピーできませんでした');}return;}
+  if(ds.xresend){const q=(S.xreqs||[]).find(x=>x.id===ds.xresend);if(q)showReqLink(q);return;}
+  if(ds.xclose||ds.xreopen||ds.xshow){const id=ds.xclose||ds.xreopen||ds.xshow,q=(S.xreqs||[]).find(x=>x.id===id);const arg={who,key,id};if(ds.xclose)arg.close=true;if(ds.xreopen)arg.reopen=true;if(ds.xshow)arg.show=!(q&&q.show);
+    call('updateReq',arg).then(r=>{S.xreqs=r.xreqs;render();}).catch(e=>toast(errMsg(e)));return;}
+  if(ds.act==='phAdd'){openVid(openDay.d,'','', 'photo');return;}
+  if(ds.act==='phAddV'){openVid(TODAY,'','','photo');return;}
+  if(ds.upwant!==undefined){const i=+ds.upwant;UP.want[i]=!UP.want[i];drawPick();return;}
+  if(ds.upall){const all=UP.want.every(Boolean);UP.want=UP.want.map(()=>!all);drawPick();return;}
+  if(ds.act==='vselMode'){VSEL=VSEL?null:{};render();return;}
+  if(ds.vsel){if(VSEL[ds.vsel])delete VSEL[ds.vsel];else VSEL[ds.vsel]=1;render();return;}
+  if(ds.act==='vselAll'){vFilter().forEach(v=>VSEL[v.id]=1);render();return;}
+  if(ds.vbulk){const [act,on]=ds.vbulk.split('|'),ids=Object.keys(VSEL||{});if(!ids.length)return;if(act==='delete'&&!confirm(ids.length+'件を削除しますか？\n（アプリからは消えますが、アーカイブとして残り、あとで戻せます）'))return;
+    call('videoBulk',{who,key,ids,act,on:on==='1'}).then(d=>{applyPart(d);VSEL=null;render();toast(act==='delete'?'削除しました（アーカイブに残っています）':'まとめて変更しました');}).catch(e=>toast(errMsg(e)));return;}
+  if(ds.vrestore){if(!confirm('この動画・写真をアーカイブから戻しますか？'))return;call('videoDelete',{who,key,id:ds.vrestore,restore:true}).then(d=>{applyPart(d);render();toast('戻しました');}).catch(e=>toast(errMsg(e)));return;}
+  if(ds.act==='varch'){VF.arch=!VF.arch;VSEL=null;render();return;}
+  if(ds.vftype!==undefined){VF.type=ds.vftype;VF.cat='';render();return;}
+  if(ds.vfcat!==undefined){VF.cat=ds.vfcat;render();return;}
+  if(ds.vpub){const v=(S.videos||[]).find(x=>x.id===ds.vpub);if(!v)return;const nb=!v.pub;v.pub=nb;if(vplay)vpMenu();call('videoUpdate',{who,key,id:v.id,pub:nb}).then(d=>{applyPart(d);if(vplay)vpMenu();toast(nb?'外に出してよい印を付けました':'外しました');}).catch(e=>{v.pub=!nb;toast(errMsg(e));});return;}
+  if(ds.vcat){const v=(S.videos||[]).find(x=>x.id===vplay.id);if(!v)return;v.cat=ds.vcat;vpMenu();call('videoUpdate',{who,key,id:v.id,cat:ds.vcat}).then(d=>{applyPart(d);}).catch(e=>toast(errMsg(e)));return;}
+  if(ds.act==='vpDraw'&&document.getElementById('vp-img')){const im=document.getElementById('vp-img');let base;try{base=document.createElement('canvas');base.width=im.naturalWidth;base.height=im.naturalHeight;base.getContext('2d').drawImage(im,0,0);base.getContext('2d').getImageData(0,0,1,1);}catch(e){toast('読み込みが終わってから押してください');return;}openDraw(base,b64=>{vplay.t=null;vplay.img=b64;vplay.panel='com';drawPanel();vpShowUI();});return;}
+  if(ds.act==='vpDraw'){const ve=document.getElementById('vp-video');if(!ve||!ve.videoWidth){toast('動画の読み込みが終わってから押してください');return;}ve.pause();const t=Math.round(ve.currentTime*10)/10;let base;try{base=grabFrame(ve);base.getContext('2d').getImageData(0,0,1,1);}catch(e){toast('この動画は図示できません（先読みできなかったため）');return;}
+    openDraw(base,b64=>{vplay.t=t;vplay.img=b64;vplay.panel='com';drawPanel();vpShowUI();});return;}
+  if(ds.act==='vpImgDel'){vplay.img='';drawPanel();return;}
+  if(ds.vpimg){const u=apiImg(ds.vpimg);if(u){const e=document.getElementById('vp-panel');e.insertAdjacentHTML('afterbegin','<div class="vp-imgfull" data-act="vpImgClose"><img alt="図" src="'+esc(u)+'"><span>押すと閉じる</span></div>');}return;}
+  if(ds.act==='vpImgClose'){const x=document.querySelector('.vp-imgfull');if(x)x.remove();return;}
+  if(ds.act==='drwClose'){closeDraw();return;}
+  if(ds.act==='drwSave'){drwSave();return;}
+  if(ds.drwtool){drw.tool=ds.drwtool;drw.ang=[];document.querySelectorAll('[data-drwtool]').forEach(x=>x.classList.toggle('on',x.dataset.drwtool===drw.tool));drwPaint();return;}
+  if(ds.drwcol){drw.color=ds.drwcol;document.querySelectorAll('[data-drwcol]').forEach(x=>x.classList.toggle('on',x.dataset.drwcol===drw.color));return;}
+  if(ds.act==='drwUndo'){if(drw.ang.length)drw.ang.pop();else drw.shapes.pop();drwPaint();return;}
+  if(ds.act==='drwClear'){drw.shapes=[];drw.ang=[];drwPaint();return;}
+  if(ds.act==='cmpDraw'){cmpPause();cmp.playing=false;let base;try{base=grabPair();if(!base)throw 0;base.getContext('2d').getImageData(0,0,1,1);}catch(e){toast('左右の動画がそろってから押してください');return;}
+    const lv=cmp.L.v;openDraw(base,b64=>{if(lv.local){toast('左の動画を参考動画として保存してから、図を残せます');return;}const L=document.getElementById('cv-L');
+      call('videoComment',{who,key,vid:lv.id,text:'（比較の図）'+(cmp.R?'右：'+cmp.R.v.title:''),t:L?Math.round(L.currentTime*10)/10:null,img:b64}).then(d=>{applyPart(d);toast('図を、左の動画のひとことに保存しました');}).catch(e=>toast('保存できませんでした：'+errMsg(e)));});return;}
+  if(ds.act==='cmpSave'){if(!cmp.R||cmp.L.v.local||cmp.R.v.local){toast('スマホの動画は、先に「参考動画として保存」してください');return;}cmpPause();cmp.playing=false;cmp.pick='save';drawCompare();return;}
+  if(ds.act==='cmpSaveGo'){const t=(document.getElementById('cmps-text')||{value:''}).value.trim();b.disabled=true;
+    call('saveCompare',{who,key,l:cmp.L.v.id,r:cmp.R.v.id,lm:cmp.L.mark,rm:cmp.R.mark,rate:cmp.rate,text:t}).then(r=>{if(r&&r.cmps)S.cmps=r.cmps;cmp.pick=false;drawCompare();toast('比較を保存して送りました');}).catch(e=>{b.disabled=false;toast('送れませんでした：'+errMsg(e));});return;}
+  if(ds.cmpopen){openSavedCompare(ds.cmpopen);return;}
+  if(ds.act==='cmpRefSave'){const p=cmp[ds.side];if(!p||!p.file)return;cmpPause();cmp.playing=false;openRefForm('cmp',{v:p.v,file:p.file});return;}
+  if(ds.act==='refOpen'){openRefForm('sheet',null);return;}
+  if(ds.reftag!==undefined){const i=refForm.tags.indexOf(ds.reftag);if(i>=0)refForm.tags.splice(i,1);else refForm.tags.push(ds.reftag);b.setAttribute('aria-pressed',i<0);return;}   // 画面は作り直さない（選んだ動画を消さないため）
+  if(ds.act==='refGo'){refGo();return;}
+  if(ds.act==='refClose'){refForm=null;if(cmp){drawCompare();}else closeSheet();return;}
+  if(ds.taskst){const [id,st]=ds.taskst.split('|');const m=st==='まだ'?(prompt('どこがまだ？（ひとこと・任意）')||''):'';call('saveTask',{who,key,id,st,memo:m||undefined}).then(r=>{S.tasks=r.tasks;render();toast(st==='できた'?'「できた」を送りました':'「まだ」を送りました');}).catch(e=>toast(errMsg(e)));return;}
+  if(ds.taskok){call('saveTask',{who,key,id:ds.taskok,ok:true}).then(r=>{S.tasks=r.tasks;render();toast('確認しました');}).catch(e=>toast(errMsg(e)));return;}
+  if(ds.taskdel){if(!confirm('この課題を消しますか？'))return;call('saveTask',{who,key,id:ds.taskdel,remove:true}).then(r=>{S.tasks=r.tasks;render();}).catch(e=>toast(errMsg(e)));return;}
   if(ds.act==='cmpClose'){closeCompare();return;}
   if(ds.act==='cmpPlay'){cmpPlay();return;}
   if(ds.act==='cmpStepB'||ds.act==='cmpStepF'){cmpStep(ds.act==='cmpStepF'?1:-1);return;}
@@ -2107,6 +2506,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.cmppick){cmp.pick=ds.cmppick;cmp.playing=false;cmpPause();drawCompare();return;}
   if(ds.act==='cmpPickClose'){cmp.pick=false;drawCompare();return;}
   if(ds.cmpset){const v=(S.videos||[]).find(x=>x.id===ds.cmpset);if(v){cmp[cmp.pick]={v,url:'',mark:0};}cmp.pick=false;drawCompare();return;}
+  if(ds.act==='vfClear'){vfReset();render();return;}
   if(ds.vfper){VF.per=ds.vfper;render();return;}
   if(ds.vfkind!==undefined){VF.kind=ds.vfkind;render();return;}
   if(ds.vfflag){VF[ds.vfflag]=!VF[ds.vfflag];render();return;}
@@ -2117,16 +2517,17 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.vpev!==undefined){vplay.ev=vplay.ev===ds.vpev?'':ds.vpev;drawPanel();return;}
   if(ds.vpseek!==undefined&&ds.vpseek!==''){const ve=document.getElementById('vp-video');if(ve){ve.pause();ve.currentTime=+ds.vpseek;}return;}
   if(ds.act==='vpSend'){const c=vplay,extra=(document.getElementById('vp-text')||{value:''}).value.trim(),body=[c.part,c.ev].filter(Boolean).join('・')+(extra?([c.part,c.ev].some(Boolean)?'：':'')+extra:'');
-    if(!body){toast('言葉を選ぶか、書いてください');return;}const text=(c.t!=null?fmtT(c.t)+'：':'')+body,id=c.id;b.disabled=true;
-    call('videoComment',{who,key,vid:id,text,t:c.t,part:c.part,ev:c.ev}).then(d=>{applyPart(d);if(vplay&&vplay.id===id){vplay.part='';vplay.ev='';vplay.txt='';drawPanel();const cb=document.querySelector('[data-act="vpCom"]');if(cb)cb.textContent='💬 ひとこと（'+vComs(id).length+'）';}toast('ひとことを送りました');}).catch(e=>{b.disabled=false;toast('送れませんでした：'+errMsg(e));});return;}
+    if(!body&&!c.img){toast('言葉を選ぶか、書いてください');return;}const text=(c.t!=null?fmtT(c.t)+'：':'')+body,id=c.id;b.disabled=true;
+    const mkTask=!!(document.getElementById('vp-task')||{}).checked||!!c.task,img=c.img||'';
+    call('videoComment',{who,key,vid:id,text,t:c.t,part:c.part,ev:c.ev,img}).then(d=>{applyPart(d);if(mkTask)call('saveTask',{who,key,vid:id,text:body}).then(r=>{S.tasks=r.tasks;toast('次の課題にしました');}).catch(e=>toast('課題にできませんでした：'+errMsg(e)));if(vplay&&vplay.id===id){vplay.part='';vplay.ev='';vplay.txt='';vplay.img='';vplay.task=false;drawPanel();const cb=document.querySelector('[data-act="vpCom"]');if(cb)cb.textContent='💬 ひとこと（'+vComs(id).length+'）';}toast('ひとことを送りました');}).catch(e=>{b.disabled=false;toast('送れませんでした：'+errMsg(e));});return;}
   if(ds.vwant){const v=(S.videos||[]).find(x=>x.id===ds.vwant);if(!v)return;const nw=!v.want;v.want=nw;if(vplay)vpMenu();else render();
     call('videoUpdate',{who,key,id:v.id,want:nw}).then(d=>{applyPart(d);if(vplay)vpMenu();else render();toast(nw?'コーチに見てほしい動画にしました':'外しました');}).catch(e=>{v.want=!nw;if(vplay)drawPlayer();toast('変更できませんでした：'+errMsg(e));});return;}
   if(ds.vstar){const v=(S.videos||[]).find(x=>x.id===ds.vstar);if(!v)return;const nb=!v.best;v.best=nb;if(vplay)vpMenu();else render();if(SH&&SH.querySelector('[data-vstar="'+v.id+'"]')){const bt=SH.querySelector('[data-vstar="'+v.id+'"]');bt.textContent=nb?'☆を外す':'☆ベストにする';bt.setAttribute('aria-pressed',nb);}
     call('videoUpdate',{who,key,id:v.id,best:nb}).then(d=>{applyPart(d);if(vplay)vpMenu();else render();toast(nb?'☆ベストの1本にしました':'☆を外しました');}).catch(e=>{v.best=!nb;render();toast('変更できませんでした：'+errMsg(e));});return;}
   if(ds.act==='vidGo'){uploadVid();return;}
   if(ds.act==='vidBack'){if(upBusy)return;const x=sheetCtx&&sheetCtx.date;closeSheet();if(x)openDaySheet(x);return;}
-  if(ds.vdel){if(!confirm('この動画を削除しますか？（ドライブのごみ箱に移ります）'))return;const vid=ds.vdel;
-    sendPlan('videoDelete',{id:vid},'削除しました',()=>{S.videos=(S.videos||[]).filter(x=>x.id!==vid);ingest(S);});return;}
+  if(ds.vdel){if(!confirm('削除しますか？\n（アプリからは消えますが、アーカイブとして残り、あとで戻せます）'))return;const vid=ds.vdel;
+    call('videoDelete',{who,key,id:vid}).then(d=>{applyPart(d);if(vplay&&vplay.id===vid)closePlayer();else render();toast('削除しました（アーカイブに残っています）');}).catch(e=>toast('削除できませんでした：'+errMsg(e)));return;}
   if(ds.trip){ensureDraft();draftTrips.trips[ds.trip]=!draftTrips.trips[ds.trip];renderRace();return;}
   if(ds.race){ensureDraft();draftTrips.races[ds.race]=!draftTrips.races[ds.race];renderRace();return;}
   if(b.id==='selgo'){openSelDays();return;}
@@ -2156,7 +2557,7 @@ document.addEventListener('change',e=>{const id=e.target.id||'';
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetKind&&sheetKind!=='who'&&!saving)closeSheet();});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&S&&!sheetKind&&!saving&&!draftDiff().length)load(true);});
 window.addEventListener('focus',()=>{if(!draftDiff().length)refreshIfStale(60000);});
-if(inAppGuide()){}else if(INSIDE_GAS||API_URL)load(false);
+if(/^#r=/.test(location.hash)&&(API_URL||INSIDE_GAS))extMain(location.hash.slice(3));else if(inAppGuide()){}else if(INSIDE_GAS||API_URL)load(false);
 else V.innerHTML='<main><p class="empty">このページは、デプロイしたウェブアプリのURLから開くか、通信先（API_URL）を設定してください。</p></main>';
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='q-text'){const card=e.target.closest('.qcard');const btn=card&&card.querySelector('[data-act="qOk"]');if(btn)btn.disabled=!(e.target.value.trim()||((qsel[card.dataset.qid]||[]).length));}});
 
