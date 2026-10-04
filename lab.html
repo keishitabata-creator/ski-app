@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>動画の再生試験</title>
+<style>
+body{margin:0;padding:14px 14px 48px;font-family:-apple-system,"Hiragino Sans",sans-serif;background:#0F1A24;color:#E8EEF4;font-size:15px;line-height:1.6}
+h1{font-size:19px;margin:4px 0 6px}p{margin:6px 0}.s{color:#9FB0C0;font-size:13px}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:14px 16px;width:100%;background:#E87A30;color:#fff;margin:10px 0}button:disabled{background:#55606B}
+input[type=password],input[type=text]{font:inherit;width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid #2E3B47;background:#16212B;color:#E8EEF4}
+label.ck{display:flex;gap:8px;align-items:center;margin:8px 0}
+#stage{width:100%;max-width:420px;aspect-ratio:9/16;background:#000;border-radius:10px;overflow:hidden;margin:8px 0}#stage video{width:100%;height:100%;object-fit:contain}
+table{border-collapse:collapse;width:100%;font-size:13px;margin-top:8px}td,th{border:1px solid #2E3B47;padding:5px 6px;vertical-align:top;text-align:left}th{background:#16212B}
+.ok{color:#7BD88F;font-weight:700}.ng{color:#FF8A8A;font-weight:700}.wait{color:#F0C060}
+#now{font-weight:700;color:#F0C060;min-height:1.6em}
+</style>
+</head>
+<body>
+<h1>動画の再生試験</h1>
+<p>iPhone の Safari で、どの方法なら動画が「すぐ」再生できるかを確かめます。下のボタンを1回押すと自動で順に試し、結果を管理用シートの「エラー」に記録します（3〜6分）。</p>
+<p class="s">試すのは同じ動画を6つの方法で読む試験です。大きい動画も試すので、Wi-Fi のある場所でお願いします。途中で画面を閉じたり、ほかのアプリに切り替えたりしないでください。</p>
+<div id="keyBox" hidden><p>この端末にアプリの合言葉が見つかりません。ご自身の合言葉を入れてください（この試験の間だけ使います）。</p><input type="password" id="ukey" autocomplete="off"></div>
+<label class="ck"><input type="checkbox" id="big" checked> 大きい動画（約57MB）も試す</label>
+<button id="go">試験を始める</button>
+<div id="now"></div>
+<div id="stage"></div>
+<table><thead><tr><th>方法</th><th>動画</th><th>結果</th></tr></thead><tbody id="res"></tbody></table>
+<script>
+'use strict';
+const API='https://script.google.com/macros/s/AKfycbxtq3J0htSIzjDbGKf90LSj82dBYTT_4OSzW8eP2vvBaMtLNrPc3PkXdN_O3k5vKZug_w/exec';
+const VKEY='AIzaSyCjQznQ9vnJ5DxWeF459JqOPiezL-P68YY';
+const VIDEOS=[{id:'V261004105749967',file:'1WLSWtXRvDN1hIf1Lfda5bfMqtDoPIK7C',thumb:'1wXbaB_VjgqkhEHLD6_J4WHSMPSuzEJ8a',name:'WJ ④（4.7MB）',big:false},
+  {id:'V261004123448530',file:'1hJvqOKv2SKiTxgoVBWOfuFfA6Fy8V9G2',thumb:'',name:'JO ③（57MB）',big:true}];
+const LSg=k=>{try{return localStorage.getItem(k)||'';}catch(e){return '';}};
+let ukey=LSg('ukey');const dev=LSg('dev')||'Dlab'+Math.random().toString(36).slice(2,8),tz=(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'';}catch(e){return '';}})();
+if(!ukey)document.getElementById('keyBox').hidden=false;
+const $=id=>document.getElementById(id),now=t=>{$('now').textContent=t;},wait=ms=>new Promise(r=>setTimeout(r,ms));
+const sec=ms=>(ms/1000).toFixed(1)+'秒';
+const rows=[];
+function addRow(method,video,ok,text){rows.push({method,video,ok,text});const tr=document.createElement('tr');tr.innerHTML='<td>'+method+'</td><td>'+video+'</td><td class="'+(ok?'ok':'ng')+'">'+text.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</td>';$('res').appendChild(tr);}
+async function api(fn,arg){const r=await fetch(API,{method:'POST',body:JSON.stringify({fn,arg:arg||{},ukey,dev,tz,cv:'lab'}),headers:{'Content-Type':'text/plain;charset=utf-8'},redirect:'follow'});const j=await r.json();if(!j.ok)throw new Error(j.error||'失敗');return j.data;}
+function record(msg){return api('logError',{who:'',ver:'lab',screen:'再生試験',action:'再生試験',msg:msg.slice(0,500),ua:(navigator.userAgent||'').slice(0,120)}).catch(()=>{});}
+/** 動画を1つの方法で試す：情報の受信・再生できる状態・実際に動いた時刻 */
+function tryVideo(src,limit){return new Promise(res=>{const st=$('stage');st.innerHTML='';const v=document.createElement('video');v.muted=true;v.playsInline=true;v.setAttribute('playsinline','');v.preload='auto';v.autoplay=true;st.appendChild(v);
+  const t0=performance.now(),out={};let done=false;const fin=why=>{if(done)return;done=true;clearTimeout(to);out.why=why;out.w=v.videoWidth;out.h=v.videoHeight;out.dur=v.duration;try{v.pause();v.removeAttribute('src');v.load();}catch(e){}st.innerHTML='';res(out);};
+  v.addEventListener('loadedmetadata',()=>{out.meta=performance.now()-t0;});v.addEventListener('canplay',()=>{if(out.can==null)out.can=performance.now()-t0;const p=v.play();if(p&&p.catch)p.catch(()=>{});});
+  v.addEventListener('timeupdate',()=>{if(v.currentTime>0.3&&out.play==null){out.play=performance.now()-t0;setTimeout(()=>fin('ok'),300);}});
+  v.addEventListener('error',()=>{const e=v.error;out.err=e?e.code:'?';fin('error');});
+  const to=setTimeout(()=>fin('timeout'),limit);v.src=src;v.load();});}
+const vText=o=>o.why==='ok'?'動いた '+sec(o.play)+'（情報 '+(o.meta!=null?sec(o.meta):'-')+'・'+o.w+'×'+o.h+'）':o.why==='error'?'失敗 コード'+o.err+(o.meta!=null?'（情報は '+sec(o.meta)+' で受信）':''):'動かない（'+(o.meta!=null?'情報は '+sec(o.meta)+' で受信、':'')+'制限時間内に再生せず）';
+/** 中継で全部受け取る（今の方式）：順番に／同時に */
+async function relayAll(v,par){const t0=performance.now();const first=await api('videoPart',{vid:v.id,part:0,size:8});const n=Math.ceil(first.total/(8*1048576)),parts=new Array(n);parts[0]=first;
+  const rest=[];for(let i=1;i<n;i++)rest.push(i);
+  if(par){const q=rest.slice();await Promise.all(Array.from({length:Math.min(4,q.length)},async()=>{while(q.length){const i=q.shift();parts[i]=await api('videoPart',{vid:v.id,part:i,size:8});}}));}
+  else for(const i of rest)parts[i]=await api('videoPart',{vid:v.id,part:i,size:8});
+  const got=performance.now()-t0;const bufs=parts.map(d=>{const b=atob(d.b64),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;});
+  const url=URL.createObjectURL(new Blob(bufs,{type:'video/mp4'}));const o=await tryVideo(url,20000);URL.revokeObjectURL(url);return {got,o,total:performance.now()-t0,mb:first.total/1048576};}
+async function swReady(){if(!('serviceWorker' in navigator))return '仲介役（Service Worker）が使えない端末';
+  const reg=await navigator.serviceWorker.register('lab-sw.js',{scope:'./lab'});
+  if(!navigator.serviceWorker.controller){await Promise.race([new Promise(r=>navigator.serviceWorker.addEventListener('controllerchange',r,{once:true})),wait(6000)]);}
+  if(!navigator.serviceWorker.controller)return '仲介役が働きはじめない（もう一度このページを開き直すと働くことがあります）';
+  await swMsg({cfg:{api:API,ukey,dev,tz}},'cfgOk');return '';}
+function swMsg(m,key){return new Promise(res=>{const h=e=>{if(e.data&&e.data[key]!==undefined){navigator.serviceWorker.removeEventListener('message',h);res(e.data[key]);}};navigator.serviceWorker.addEventListener('message',h);navigator.serviceWorker.controller.postMessage(m);setTimeout(()=>res(null),5000);});}
+$('go').onclick=async()=>{if(!ukey){ukey=$('ukey').value.trim();if(!ukey){alert('合言葉を入れてください');return;}}
+  $('go').disabled=true;$('res').innerHTML='';rows.length=0;const T=performance.now();
+  try{await api('isTestDevice',{});}catch(e){now('合言葉が違うか、通信できません：'+e.message);$('go').disabled=false;if(/UKEY/.test(e.message)){ukey='';$('keyBox').hidden=false;}return;}
+  const list=VIDEOS.filter(v=>!v.big||$('big').checked);
+  // 0. 診断：同じ鍵でサムネイル画像・Drive API への通信
+  now('準備：ドライブとの通信を確かめています…');
+  { const v=VIDEOS[0];const img=await new Promise(r=>{const im=new Image(),t=setTimeout(()=>r('応答なし'),8000);im.onload=()=>{clearTimeout(t);r('読めた');};im.onerror=()=>{clearTimeout(t);r('読めない');};im.src='https://www.googleapis.com/drive/v3/files/'+v.thumb+'?alt=media&key='+VKEY+'&t='+Date.now();});
+    addRow('診断：サムネイル画像（同じ鍵）',v.name,img==='読めた',img);
+    let f='';const ac=new AbortController(),tt=setTimeout(()=>ac.abort(),15000);try{const r=await fetch('https://www.googleapis.com/drive/v3/files/'+v.file+'?alt=media&key='+VKEY+'&t='+Date.now(),{signal:ac.signal});f='HTTP '+r.status+'・'+(r.headers.get('content-type')||'種類なし');}catch(e){f=e.name==='AbortError'?'15秒応答なし':'通信できない（'+e.message+'）';}clearTimeout(tt);ac.abort();
+    addRow('診断：Drive API への読み込み（fetch）',v.name,/^HTTP 20/.test(f),f); }
+  const swErr=await swReady().catch(e=>'仲介役の準備に失敗：'+e.message);
+  let run=0;
+  for(const v of list){const lim=v.big?30000:15000;
+    const ways=[['A 直接：Drive API','https://www.googleapis.com/drive/v3/files/'+v.file+'?alt=media&key='+VKEY],
+      ['B 直接：ドライブのダウンロード口（usercontent）','https://drive.usercontent.google.com/download?id='+v.file+'&export=download&confirm=t'],
+      ['C 直接：ドライブのダウンロード口（uc）','https://drive.google.com/uc?export=download&id='+v.file]];
+    for(const [name,src] of ways){now(v.name+'：'+name+' を試しています…');const o=await tryVideo(src+(src.indexOf('?')>=0?'&':'?')+'t='+Date.now(),lim);addRow(name,v.name,o.why==='ok',vText(o));}
+    // D 読みながらの中継（仲介役）
+    if(swErr)addRow('D 読みながらの中継（仲介役）',v.name,false,swErr);
+    else{now(v.name+'：D 読みながらの中継 を試しています…');await swMsg({reset:true},'resetOk');run++;
+      const o=await tryVideo('lab-stream/'+encodeURIComponent(v.id)+'?run='+run+'&t='+Date.now(),v.big?45000:25000);const st=await swMsg({stat:true},'stat')||{};
+      addRow('D 読みながらの中継（仲介役）',v.name,o.why==='ok',vText(o)+'｜要求'+(st.req||0)+'回・中継'+(st.calls||0)+'回・範囲 '+((st.ranges||[]).slice(0,6).join(' ')));}
+    // E・F 全部受け取ってから（今の方式）
+    for(const par of [false,true]){const name=par?'F 中継で全部（同時4本）':'E 中継で全部（順番・今の方式）';now(v.name+'：'+name+' を試しています…');
+      try{const r=await relayAll(v,par);addRow(name,v.name,r.o.why==='ok','受け取り '+sec(r.got)+'（'+r.mb.toFixed(1)+'MB）→ '+vText(r.o)+'｜押してから動くまで 約'+sec(r.got+(r.o.play||0)));}
+      catch(e){addRow(name,v.name,false,'失敗：'+e.message);}}
+  }
+  now('記録しています…');
+  const head='【再生試験】'+new Date().toLocaleString('ja-JP')+'　所要 '+sec(performance.now()-T);
+  await record(head);await Promise.all(rows.map((r,i)=>record('['+(i+1)+'/'+rows.length+'] '+(r.ok?'○ ':'× ')+r.method+'｜'+r.video+'｜'+r.text)));
+  now('終わりました。この画面のまま、チャットに「試験した」と送ってください（結果はシートにも記録しました）。');$('go').disabled=false;};
+</script>
+</body>
+</html>
