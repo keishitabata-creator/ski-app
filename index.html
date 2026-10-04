@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.48.5 -->
+<!-- スキー行動予定アプリ 画面側 v4.49.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -566,6 +566,9 @@ body.extmode nav.tabs,body.extmode header{display:none}
 #uppill{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:80;background:#E87A30;color:#fff;font-weight:800;font-size:13px;padding:6px 14px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 nav.tabs button{position:relative}nav.tabs button[data-badge]::after{content:attr(data-badge);position:absolute;top:2px;right:calc(50% - 22px);background:#C42B5E;color:#fff;font-size:10px;font-weight:800;border-radius:999px;padding:0 5px;min-width:16px;line-height:16px;text-align:center}
 .vth .vcat{position:absolute;right:4px;bottom:4px;background:rgba(22,50,79,.85);color:#fff;font-size:10px;border-radius:4px;padding:0 4px}
+.cslt{background:var(--card);border:1px solid var(--line);border-left:4px solid #1F4E78;border-radius:10px;padding:8px 10px;margin:6px 0}.cslt-r{margin-top:4px;line-height:1.6}.cslt-r small{display:block}
+.xprog{margin:6px 0;color:var(--sub)}.xprog b{color:var(--ink)}.xseen{position:absolute;left:6px;bottom:4px;background:#2E8B57;color:#fff;font-size:11px;border-radius:8px;padding:1px 6px}
+.xthr .xc{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;line-height:1.7}.xthr .xc small{color:var(--sub)}
 .xfrom{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:6px 0;font-weight:700}.xfrom small{font-weight:500;color:var(--sub)}
 /* v4.47 */
 .vtop2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0 10px}.vtop2 .btn{min-height:46px;font-weight:800}.btn.navy{background:#16324F;border-color:#16324F;color:#fff}
@@ -588,7 +591,7 @@ body.locked nav.tabs,body.locked #whoin,body.locked #hdrsub,body.locked .hdrx{di
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.48.5';
+const CLIENT_VERSION='4.49.0';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -1471,7 +1474,7 @@ function drawPlayer(){const c=vplay,v=(S.videos||[]).find(x=>x.id===c.id);if(!v)
   if(who){const seen=JSON.parse(LS.get('vseen:'+who)||'{}');seen[v.id]=cs.length;LS.set('vseen:'+who,JSON.stringify(seen));}}
 /** 原本を端末に全部読み込む（同じ画面の間は使い回す）。結果 {blob,type,bytes,urls}。失敗は理由（why）つきで投げる */
 const vMeta={};   // fileId → {status,type,mb}（失敗の記録用）
-async function vFetch(v,onp,ac){const src=vSrc(v);if(!src){const er=new Error('再生用のキーがない');er.why=er.message;throw er;}
+async function vFetch(v,onp,ac,src0){const src=src0!==undefined?src0:vSrc(v);if(!src){const er=new Error('再生用のキーがない');er.why=er.message;throw er;}
   if(vCache[v.fileId])return vCache[v.fileId];
   let r;try{r=await fetch(src,ac?{signal:ac.signal}:{});}catch(e){if(e&&e.name==='AbortError')throw e;const er=new Error('通信できない（'+(errMsg(e)||'fetch')+'）');er.why=er.message;throw er;}
   const type=String(r.headers.get('content-type')||'').split(';')[0].trim(),total=+r.headers.get('content-length')||(v.mb?v.mb*1048576:0);
@@ -1501,18 +1504,20 @@ const thumbUrl=v=>v.thumb&&S.vkey?'https://www.googleapis.com/drive/v3/files/'+e
 const MERR={1:'中断',2:'通信',3:'解読できない',4:'形式か場所に未対応'};
 const mErr=ve=>{const e=ve&&ve.error;return e?'コード'+e.code+'（'+(MERR[e.code]||'?')+(e.message?'：'+String(e.message).slice(0,60):'')+'）':'コード?';};
 /** v4.48.5：①すぐ再生（読みながら）②裏で全部読み込み→止まらない再生に切り替え（％表示）③だめなら種類を変えて再挑戦
- *  ④ドライブの画面は最後の手段。うまくいかなかった方法と理由（形式・状態コード・大きさ）を「エラー」シートに1行で残す */
-async function loadVideo(v){const c=vplay,stage=document.getElementById('vp-stage'),src=vSrc(v);
-  if(!v.fileId){stage.innerHTML='<div class="vp-load"><a href="'+esc(v.url)+'" target="_blank" rel="noopener">▶ リンク先で見る</a></div>';return;}
+ *  ④（リンクのページだけ）サーバーの中継 ⑤ドライブの画面は最後の手段。うまくいかなかった方法と理由は「エラー」シートに1行で残す
+ *  o：{c 状態, src 原本のURL, alive 開いているか, relay 中継, onOk 再生できたら, ext リンクのページ, tag 記録の頭} */
+async function loadVideo(v,o){o=o||{};const c=o.c||vplay,stage=document.getElementById('vp-stage'),src=o.src!==undefined?o.src:vSrc(v);
+  if(!v.fileId&&!o.relay){stage.innerHTML='<div class="vp-load"><a href="'+esc(v.url)+'" target="_blank" rel="noopener">▶ リンク先で見る</a></div>';return;}
   const log=[];let reported=false;
-  const alive=()=>vplay===c&&c.id===v.id&&document.getElementById('vp-stage')===stage;
+  const alive=()=>(o.alive?o.alive():(vplay===c&&c.id===v.id))&&document.getElementById('vp-stage')===stage;
   const report=res=>{if(reported||!log.length)return;reported=true;const m=vMeta[v.fileId]||{};
-    reportErr('動画再生',log.join('／')+' → '+res+'｜'+[m.type||'種類?',m.status?'HTTP '+m.status:'',(m.mb!=null?m.mb:v.mb||'?')+'MB',inAppBrowser()?'アプリ内ブラウザ':''].filter(Boolean).join('・')+'｜'+v.id);};
+    reportErr('動画再生',(o.tag?o.tag+'｜':'')+log.join('／')+' → '+res+'｜'+[m.type||'種類?',m.status?'HTTP '+m.status:'',(m.mb!=null?m.mb:v.mb||'?')+'MB',inAppBrowser()?'アプリ内ブラウザ':''].filter(Boolean).join('・')+'｜'+v.id);};
   const prog=t=>{const p=document.getElementById('vp-prog'),l=document.getElementById('vp-load');if(p){p.hidden=!t;p.textContent=t||'';}else if(l&&t)l.textContent=t;};
+  const ok=res=>{c.pending=false;prog('');report(res);if(o.onOk)o.onOk();};
   const toDrive=why=>{if(!alive())return;c.pending=false;log.length||log.push(why||'原本が使えない');report('ドライブの画面');
-    stage.innerHTML='<iframe src="https://drive.google.com/file/d/'+esc(v.fileId)+'/preview" allow="autoplay"></iframe><div class="vp-alt">原本を再生できなかったため、ドライブの画面で表示しています（画質が下がることがあります）<button class="vp-b sm" data-act="vpRetry">もう一度試す</button></div>';};
+    stage.innerHTML=(v.fileId?'<iframe src="https://drive.google.com/file/d/'+esc(v.fileId)+'/preview" allow="autoplay"></iframe>':'')+'<div class="vp-alt">'+(v.fileId?'原本を再生できなかったため、ドライブの画面で表示しています（画質が下がることがあります）':'動画を再生できませんでした')+'<button class="vp-b sm" data-act="vpRetry">もう一度試す</button></div>';};
   /** 画面の部品（作るのは1回だけ。切り替えても同じ部品を使う） */
-  const ui=ve=>{ve.playbackRate=c.rate;ve.defaultPlaybackRate=c.rate;
+  const ui=ve=>{ve.playbackRate=c.rate||1;ve.defaultPlaybackRate=c.rate||1;
     const seek=document.getElementById('vp-seek'),tm=document.getElementById('vp-time'),pp=document.getElementById('vp-pp');
     ve.addEventListener('timeupdate',()=>{if(ve.duration&&seek){seek.value=Math.round(ve.currentTime/ve.duration*1000);tm.textContent=ve.currentTime.toFixed(1)+'秒';}});
     ve.addEventListener('play',()=>{if(pp)pp.textContent='❚❚';vpAutoHide();});ve.addEventListener('pause',()=>{if(pp)pp.textContent='▶';vpShowUI();});
@@ -1526,30 +1531,34 @@ async function loadVideo(v){const c=vplay,stage=document.getElementById('vp-stag
     let ve=document.getElementById('vp-video');
     if(!ve){stage.innerHTML='<video id="vp-video" playsinline loop muted autoplay preload="auto"></video><div class="vp-prog" id="vp-prog" hidden></div>';ve=document.getElementById('vp-video');ui(ve);}
     const t0=keep?ve.currentTime:0,go=keep?!ve.paused:true;c.trying=true;
-    const fin=(ok,why)=>{clearTimeout(to);ve.removeEventListener('loadedmetadata',okF);ve.removeEventListener('error',ngF);c.trying=false;ok?res(ve):rej(new Error(why));};
-    const okF=()=>{if(t0){try{ve.currentTime=t0;}catch(e){}}ve.playbackRate=c.rate;if(go){const p=ve.play();if(p&&p.catch)p.catch(()=>{});}fin(true);};
+    const fin=(okk,why)=>{clearTimeout(to);ve.removeEventListener('loadedmetadata',okF);ve.removeEventListener('error',ngF);c.trying=false;okk?res(ve):rej(new Error(why));};
+    const okF=()=>{if(t0){try{ve.currentTime=t0;}catch(e){}}ve.playbackRate=c.rate||1;if(go){const p=ve.play();if(p&&p.catch)p.catch(()=>{});}fin(true);};
     const ngF=()=>fin(false,mErr(ve));
     const to=setTimeout(()=>fin(false,'15秒たっても始まらない'),15000);
     ve.addEventListener('loadedmetadata',okF);ve.addEventListener('error',ngF);ve.src=url;ve.load();});
-  if(!src){toDrive('再生用のキーがない');return;}
-  c.ac&&c.ac.abort();c.ac=new AbortController();c.pending=true;
-  // 裏で全部読み込み（％を出す）
-  const full=vFetch(v,(r,got,tot)=>prog('全部読み込み中 '+Math.min(99,Math.round(r*100))+'%（'+(got/1048576).toFixed(1)+'／'+(tot/1048576).toFixed(1)+'MB）'),c.ac).then(o=>({o}),e=>({e}));
-  // ① すぐ再生（読みながら）
+  c.ac&&c.ac.abort();c.ac=new AbortController();
   let streaming=false;
-  if(!vCache[v.fileId]){try{await tryUrl(src,false);streaming=true;}catch(e){if(!alive())return;log.push('読みながら：'+e.message);prog('読み込み中…');}}
-  // ② 全部読み込めたら切り替え
-  const {o,e}=await full;if(!alive()||(e&&e.name==='AbortError'))return;
-  if(e)log.push('全部読み込み：'+(e.why||errMsg(e)));
-  if(o){for(const ty of vTypes(o)){try{await tryUrl(vUrlOf(o,ty),streaming);c.pending=false;prog('');
-        report('全部読み込み（'+ty+'）で再生');
-        if(!v.thumb&&canEdit()&&!/^image\//.test(ty)){makeThumb(vUrlOf(o,ty)).then(b=>{if(!b)return;call('videoThumb',{who,key,id:v.id,thumb:b}).then(r=>{if(r&&r.thumb)v.thumb=r.thumb;}).catch(()=>{});});}
-        return;}
-      catch(er){if(!alive())return;log.push('全部読み込み（'+ty+'）：'+er.message);}}}
-  c.pending=false;
-  // ③ 切り替えに失敗したが、読みながらの再生はできていた → そのまま続ける
-  if(streaming){try{await tryUrl(src,true);prog('');const n=document.createElement('div');n.className='vp-note';n.textContent='読みながら再生しています（コマ送りが粗いことがあります）';stage.appendChild(n);report('読みながらで再生');return;}catch(er){if(!alive())return;log.push('読みながら（戻す）：'+er.message);}}
-  // ④ 最後の手段
+  if(src){c.pending=true;
+    // 裏で全部読み込み（％を出す）
+    const full=vFetch(v,(r,got,tot)=>prog('全部読み込み中 '+Math.min(99,Math.round(r*100))+'%（'+(got/1048576).toFixed(1)+'／'+(tot/1048576).toFixed(1)+'MB）'),c.ac,src).then(x=>({ob:x}),e=>({e}));
+    // ① すぐ再生（読みながら）
+    if(!vCache[v.fileId]){try{await tryUrl(src,false);streaming=true;if(o.onOk)o.onOk();}catch(e){if(!alive())return;log.push('読みながら：'+e.message);prog('読み込み中…');}}
+    // ② 全部読み込めたら切り替え
+    const {ob,e}=await full;if(!alive()||(e&&e.name==='AbortError'))return;
+    if(e)log.push('全部読み込み：'+(e.why||errMsg(e)));
+    if(ob){for(const ty of vTypes(ob)){try{await tryUrl(vUrlOf(ob,ty),streaming);ok('全部読み込み（'+ty+'）で再生');
+          if(!o.ext&&!v.thumb&&canEdit()&&!/^image\//.test(ty)){makeThumb(vUrlOf(ob,ty)).then(b=>{if(!b)return;call('videoThumb',{who,key,id:v.id,thumb:b}).then(r=>{if(r&&r.thumb)v.thumb=r.thumb;}).catch(()=>{});});}
+          return;}
+        catch(er){if(!alive())return;log.push('全部読み込み（'+ty+'）：'+er.message);}}}
+    c.pending=false;
+    // ③ 切り替えに失敗したが、読みながらの再生はできていた → そのまま続ける
+    if(streaming){try{await tryUrl(src,true);const n=document.createElement('div');n.className='vp-note';n.textContent='読みながら再生しています（コマ送りが粗いことがあります）';stage.appendChild(n);ok('読みながらで再生');return;}catch(er){if(!alive())return;log.push('読みながら（戻す）：'+er.message);}}
+  } else log.push('再生用のキーがない');
+  // ④ リンクのページ：サーバーの中継（遅いが確実）
+  if(o.relay){try{prog('別の方法で読み込み中…');const b=await o.relay((r)=>prog('別の方法で読み込み中 '+Math.min(99,Math.round(r*100))+'%'));if(!alive())return;
+      await tryUrl(URL.createObjectURL(b),false);ok('中継で再生');return;}
+    catch(er){if(!alive())return;log.push('中継：'+(er.message||errMsg(er)));}}
+  // ⑤ 最後の手段
   toDrive();}
 let vpHideT=0;
 function vpShowUI(){const u=document.getElementById('vp-ui');if(u)u.classList.remove('off');clearTimeout(vpHideT);}
@@ -1830,7 +1839,7 @@ function vpMenu(){const c=vplay,v=(S.videos||[]).find(x=>x.id===c.id);if(!v)retu
     (isPh(v)?'<div class="vp-lab">分類</div><div class="wrap">'+PCATS.map(k=>'<button class="opt sm" data-vcat="'+esc(k)+'" aria-pressed="'+(v.cat===k)+'">'+esc(k)+'</button>').join('')+'</div>':'')+
     '<label class="vp-lab">大会にひも付け<select id="vp-race"><option value="">なし</option>'+RACES.slice().sort((a,b)=>Math.abs(pdate(a.d)-pdate(v.d))-Math.abs(pdate(b.d)-pdate(v.d))).slice(0,30).map(r=>'<option value="'+esc(r.id)+'"'+(r.id===v.race?' selected':'')+'>'+esc(md(r.d)+' '+(r.short||r.name))+'</option>').join('')+'</select></label>'+
     (v.fileId?'<a class="btn" href="https://drive.google.com/file/d/'+esc(v.fileId)+'/view" target="_blank" rel="noopener">ドライブで開く</a>':'')+
-    '<button class="btn" data-xreq1="'+esc(v.id)+'">ゲストコーチに見てもらう（専用リンク）</button>'+
+    '<button class="btn" data-xreq1="'+esc(v.id)+'">コーチに送る（この動画）</button>'+
     '<button class="btn danger" data-vdel="'+esc(v.id)+'">削除（アーカイブに残します）</button></div>';p.hidden=false;vpShowUI();
   const rs=document.getElementById('vp-race');if(rs)rs.onchange=()=>{const val2=rs.value;v.race=val2;call('videoUpdate',{who,key,id:v.id,race:val2}).then(d=>{applyPart(d);toast(val2?'大会にひも付けました':'ひも付けを外しました');}).catch(e=>toast(errMsg(e)));};}
 /* 動画・写真タブ（種別・分類・外に出してよい・選んでまとめて・アーカイブ） */
@@ -1873,26 +1882,40 @@ let XR=null;
 function extMain(key){XR={key,data:null,vid:null,url:{},t:null,part:'',ev:'',img:''};document.body.classList.add('extmode');
   V.innerHTML='<main><p class="note">読み込み中…</p></main>';
   call('reqOpen',{key}).then(d=>{XR.data=d;extList();}).catch(e=>{V.innerHTML='<main><div class="xmsg">'+esc(errMsg(e).replace(/^(Exception|Error):\s*/,''))+'</div></main>';});}
-function extList(){const d=XR.data,f=d.from||{};V.innerHTML='<main><p class="xfrom">'+esc([f.sport,f.athlete].filter(Boolean).join('　'))+(f.org?'（'+esc(f.org)+'）':'')+' より'+(f.sender?'<br><small>送った人：'+esc(f.sender)+'</small>':'')+'</p><h2>'+esc(d.name)+'へ</h2>'+(d.text?'<div class="xmsg">'+esc(d.text).replace(/\n/g,'<br>')+'</div>':'')+
-  '<p class="note">動画を押すと再生します。止めた場面に、ひとことや図を残せます。お時間のあるときに、気になったところを一言いただけたら十分です。いただいた内容は、本人と家族で大切に読ませていただきます。</p><div class="vgrid">'+
-  d.videos.map(v=>{const n=d.coms.filter(c=>c.vid===v.id).length;return '<button class="vcard" data-xopen="'+esc(v.id)+'"><span class="vth"><i>'+(v.photo?'📷':'▶')+'</i></span><span class="vt">'+esc(v.title)+'</span><small>'+(n?'ご意見 '+n+'件':'')+'</small></button>';}).join('')+'</div></main>';}
-async function extOpen(id){const d=XR.data,v=d.videos.find(x=>x.id===id);if(!v)return;XR.vid=v;XR.t=null;XR.part='';XR.ev='';XR.img='';
+/** リンクのページ：誰から・相談の文・動画（☆が先頭）・見た本数・返事（言葉だけで可） */
+const xThumb=v=>v.thumb&&XR.data.vkey?'https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(v.thumb)+'?alt=media&key='+encodeURIComponent(XR.data.vkey):'';
+const xSrc=v=>v.fileId&&XR.data.vkey?'https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(v.fileId)+'?alt=media&key='+encodeURIComponent(XR.data.vkey):'';
+function extList(){const d=XR.data,f=d.from||{},seen=d.seen||[],vs=d.videos.slice().sort((a,b)=>(b.star?1:0)-(a.star?1:0)),ns=vs.filter(v=>seen.indexOf(v.id)>=0).length,all=d.coms.filter(c=>!c.vid);
+  V.innerHTML='<main><p class="xfrom">'+esc([f.sport,f.athlete].filter(Boolean).join('　'))+(f.org?'（'+esc(f.org)+'）':'')+' より'+(f.sender?'<br><small>送った人：'+esc(f.sender)+'</small>':'')+'</p><h2>'+esc(d.name)+'へ</h2>'+(d.text?'<div class="xmsg">'+esc(d.text).replace(/\n/g,'<br>')+'</div>':'')+
+    '<p class="xprog">見た動画 <b>'+ns+'／'+vs.length+'本</b>'+((d.star||[]).length?'　☆は特に見てほしい動画です':'')+'</p><div class="vgrid">'+
+    vs.map(v=>{const n=d.coms.filter(c=>c.vid===v.id).length,tu=xThumb(v);return '<button class="vcard" data-xopen="'+esc(v.id)+'"><span class="vth">'+(tu?'<img loading="lazy" alt="" src="'+esc(tu)+'" onerror="this.remove()">':'')+'<i>'+(v.photo?'📷':'▶')+'</i>'+(v.star?'<b class="vb">☆</b>':'')+(seen.indexOf(v.id)>=0?'<b class="xseen">見た</b>':'')+'</span><span class="vt">'+esc(v.title)+'</span><small>'+(n?'ひとこと '+n+'件':'')+'</small></button>';}).join('')+'</div>'+
+    '<h2>返事</h2>'+(all.length?'<div class="xthr">'+all.map(c=>'<div class="xc"><small>'+esc(String(c.at||'').slice(5,16))+'</small><div>'+esc(c.text).replace(/\n/g,'<br>')+'</div>'+(c.reply?'<div class="grr">'+esc(c.rby||'')+'より：'+esc(c.reply)+'</div>':'')+'</div>').join('')+'</div>':'')+
+    (d.done?'<p class="note">「こちらからは以上です」をいただきました。ありがとうございました。追加があれば、下から書けます。</p>':'')+
+    '<p class="note">言葉だけの返事で十分です。途中まで見たところで送っても大丈夫です。動画ごとに、止めた場面へのひとことや図も残せます（任意）。いただいた内容は、本人と家族で大切に読ませていただきます。</p>'+
+    '<textarea id="xr-text" rows="4" maxlength="1000" class="ta2" placeholder="例：☆の2本では、②の方が踏み切りのタイミングが合っています。">'+esc(XR.rtxt||'')+'</textarea><p class="note mic">🎤 キーボードのマイクで、話して入力できます</p>'+
+    '<div class="acts" style="flex-wrap:wrap"><button class="btn pri" data-act="xReply">返事を送る</button>'+(d.done?'':'<button class="btn" data-act="xDone">こちらからは以上です</button>')+'</div></main>';
+  const ta=document.getElementById('xr-text');if(ta)ta.oninput=()=>{XR.rtxt=ta.value;};}
+async function extOpen(id){const d=XR.data,v=d.videos.find(x=>x.id===id);if(!v)return;XR.vid=v;XR.id=id;XR.t=null;XR.part='';XR.ev='';XR.img='';XR.rate=1;
   const pv=vpEl();document.body.classList.add('noscroll');pv.hidden=false;
-  pv.innerHTML='<div class="vp-stage" id="vp-stage"><div class="vp-load" id="vp-load">読み込み中…</div></div><div class="vp-ui" id="vp-ui"><div class="vp-top"><button class="vp-close" data-act="xClose">✕ 閉じる</button><span class="vp-ttl">'+esc(v.title)+'</span></div>'+
+  pv.innerHTML='<div class="vp-stage" id="vp-stage"><div class="vp-load" id="vp-load">読み込み中…</div></div><div class="vp-ui" id="vp-ui"><div class="vp-top"><button class="vp-close" data-act="xClose">✕ 閉じる</button><span class="vp-ttl">'+(v.star?'☆ ':'')+esc(v.title)+'</span></div>'+
     (v.photo?'':'<div class="vp-bot"><input type="range" id="vp-seek" min="0" max="1000" value="0"><span class="vp-time" id="vp-time">0.0秒</span>'+
     '<div class="vp-row"><button class="vp-b" data-act="vpStepB">◀1コマ</button><button class="vp-b big" data-act="vpPlay" id="vp-pp">▶</button><button class="vp-b" data-act="vpStepF">1コマ▶</button></div>'+
     '<div class="vp-row">'+[1,0.5,0.25].map(r=>'<button class="vp-b sm'+(r===1?' on':'')+'" data-xrate="'+r+'">'+(r===1?'1倍':r===0.5?'½':'¼')+'</button>').join('')+'</div>')+
-    (v.photo?'<div class="vp-bot">':'')+'<div class="vp-row"><button class="vp-b com" data-act="xCom">💬 ひとこと・アドバイスを書く</button><button class="vp-b" data-act="xDraw">✏️ 図示</button></div></div></div><div class="vp-panel" id="vp-panel" hidden></div>';
-  try{let u=XR.url[id];if(!u){const parts=[];let part=0,total=0;for(;;){const r=await call('reqVideo',{key:XR.key,vid:id,part});total=r.total;const bin=atob(r.b64),a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);parts.push(a);
-        const got=parts.reduce((t,x)=>t+x.length,0),ld=document.getElementById('vp-load');if(ld)ld.textContent='読み込み中 '+Math.round(got/total*100)+'%';if(!r.more)break;part++;}
-      u=URL.createObjectURL(new Blob(parts,{type:v.photo?'image/jpeg':'video/mp4'}));XR.url[id]=u;}
-    const st=document.getElementById('vp-stage');if(!st)return;
-    if(v.photo){st.innerHTML='<img id="vp-img" alt="" src="'+u+'">';return;}
-    st.innerHTML='<video id="vp-video" playsinline loop muted autoplay preload="auto" src="'+u+'"></video>';const ve=document.getElementById('vp-video'),sk=document.getElementById('vp-seek'),tm=document.getElementById('vp-time'),pp=document.getElementById('vp-pp');
-    ve.addEventListener('timeupdate',()=>{if(ve.duration){sk.value=Math.round(ve.currentTime/ve.duration*1000);tm.textContent=ve.currentTime.toFixed(1)+'秒';}});
-    ve.addEventListener('play',()=>{pp.textContent='❚❚';});ve.addEventListener('pause',()=>{pp.textContent='▶';});
-    sk.oninput=()=>{if(ve.duration){ve.pause();ve.currentTime=sk.value/1000*ve.duration;}};st.addEventListener('touchend',()=>{ve.muted=false;},{once:true});}
-  catch(e){const ld=document.getElementById('vp-load');if(ld)ld.textContent=errMsg(e).replace(/^(Exception|Error):\s*/,'');}}
+    (v.photo?'<div class="vp-bot">':'')+'<div class="vp-row"><button class="vp-b com" data-act="xCom">💬 この場面にひとこと</button><button class="vp-b" data-act="xDraw">✏️ 図示</button></div></div></div><div class="vp-panel" id="vp-panel" hidden></div>';
+  const st=document.getElementById('vp-stage');
+  st.addEventListener('click',e=>{if(e.target.closest('.vp-alt'))return;const u=document.getElementById('vp-ui');if(u){u.classList.toggle('off');if(!u.classList.contains('off'))vpAutoHide();}});
+  const alive=()=>XR&&XR.id===id&&!!document.getElementById('vplayer')&&!document.getElementById('vplayer').hidden;
+  const seen=()=>{if((d.seen||[]).indexOf(id)>=0)return;d.seen=(d.seen||[]).concat(id);call('reqSeen',{key:XR.key,vid:id}).catch(()=>{});};
+  /** サーバーの中継（4MBずつ）。原本が直接読めないときだけ */
+  const relay=async onp=>{const parts=[];let part=0;
+    for(;;){const r=await call('reqVideo',{key:XR.key,vid:id,part});const bin=atob(r.b64),a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);parts.push(a);
+      const got=parts.reduce((t,x)=>t+x.length,0);if(onp&&r.total)onp(got/r.total);if(!r.more)break;part++;}
+    return new Blob(parts,{type:v.photo?'image/jpeg':'video/mp4'});};
+  const src=xSrc(v);
+  if(v.photo){const show=u=>{if(alive()){st.innerHTML='<img id="vp-img" alt="" crossorigin="anonymous" src="'+esc(u)+'">';seen();}};
+    const viaRelay=()=>relay().then(b=>show(URL.createObjectURL(b))).catch(e=>{const ld=document.getElementById('vp-load');if(ld)ld.textContent=errMsg(e).replace(/^(Exception|Error):\s*/,'');});
+    if(!src){viaRelay();return;}const im=new Image();im.crossOrigin='anonymous';im.onload=()=>show(src);im.onerror=viaRelay;im.src=src;return;}
+  await loadVideo({id:v.id,fileId:v.fileId,mb:v.mb,title:v.title},{c:XR,src,ext:true,tag:'リンク：'+d.name,alive,relay,onOk:seen});}
 function xWords(g){return (XR.data.words||[]).filter(x=>x.g===g).map(x=>x.w);}
 function xPanel(){const v=XR.vid,p=document.getElementById('vp-panel');if(!p)return;const gs=vGroups(v.kind),cs=XR.data.coms.filter(c=>c.vid===v.id);XR.g=XR.g&&gs.indexOf(XR.g)>=0?XR.g:gs[0]||'';
   let h='<div class="vp-ph"><b>ひとこと・アドバイス</b><button class="vp-ic" data-act="xComClose">✕</button></div>'+(cs.length?'<div class="vp-cl">'+cs.map(c=>'<div class="vc"><b>'+(c.t!=null?fmtT(c.t):'')+'</b><span>'+esc(c.text)+(c.img?'（図あり）':'')+'</span>'+(c.reply?'<div class="grr">'+esc(c.rby||'')+'より：'+esc(c.reply)+'</div>':'')+'</div>').join('')+'</div>':'');
@@ -1905,10 +1928,13 @@ function xPanel(){const v=XR.vid,p=document.getElementById('vp-panel');if(!p)ret
   p.innerHTML=h;p.hidden=false;const ti=document.getElementById('vp-text');if(ti)ti.oninput=()=>{XR.txt=ti.value;};}
 function xClick(ds,b){
   if(ds.xopen){extOpen(ds.xopen);return true;}
-  if(ds.act==='xClose'){const pv=document.getElementById('vplayer');if(pv){pv.innerHTML='';pv.hidden=true;}document.body.classList.remove('noscroll');extList();return true;}
+  if(ds.act==='xReply'||ds.act==='xDone'){const t=(document.getElementById('xr-text')||{value:''}).value.trim(),done=ds.act==='xDone';if(!t&&!done){toast('返事を書いてください');return true;}
+    const back=busy(b);call('reqComment',{key:XR.key,vid:'',text:t,done}).then(r=>{XR.data.coms=r.coms;XR.data.done=!!r.done;XR.rtxt='';extList();toast(done?'ありがとうございました':'送りました。ありがとうございます');}).catch(e=>{back();toast(errMsg(e).replace(/^(Exception|Error):\s*/,''));});return true;}
+  if(ds.act==='vpRetry'){const v=XR.vid;if(v){const o=vCache[v.fileId];if(o){Object.keys(o.urls).forEach(t=>{try{URL.revokeObjectURL(o.urls[t]);}catch(e){}});delete vCache[v.fileId];}extOpen(v.id);}return true;}
+  if(ds.act==='xClose'){XR.id=null;if(XR.ac)XR.ac.abort();const pv=document.getElementById('vplayer');if(pv){pv.innerHTML='';pv.hidden=true;}document.body.classList.remove('noscroll');extList();return true;}
   if(ds.act==='vpPlay'){const ve=document.getElementById('vp-video');if(ve){if(ve.paused){ve.muted=false;ve.play();}else ve.pause();}return true;}
   if(ds.act==='vpStepB'||ds.act==='vpStepF'){const ve=document.getElementById('vp-video');if(ve){ve.pause();ve.currentTime=Math.max(0,ve.currentTime+(ds.act==='vpStepF'?1:-1)/60);}return true;}
-  if(ds.xrate){const ve=document.getElementById('vp-video');if(ve)ve.playbackRate=+ds.xrate;document.querySelectorAll('[data-xrate]').forEach(x=>x.classList.toggle('on',x===b));return true;}
+  if(ds.xrate){const ve=document.getElementById('vp-video');XR.rate=+ds.xrate;if(ve)ve.playbackRate=+ds.xrate;document.querySelectorAll('[data-xrate]').forEach(x=>x.classList.toggle('on',x===b));return true;}
   if(ds.act==='xCom'){const ve=document.getElementById('vp-video');if(ve){ve.pause();XR.t=ve.duration?Math.round(ve.currentTime*10)/10:null;}xPanel();return true;}
   if(ds.act==='xComClose'){const p=document.getElementById('vp-panel');if(p){p.hidden=true;p.innerHTML='';}return true;}
   if(ds.xg){XR.g=ds.xg;XR.part='';xPanel();return true;}
@@ -1937,13 +1963,59 @@ function showReqLink(q){const url=XLINK(q.key),msg=(q.name?q.name+' 様\n':'')+'
   SH.innerHTML='<div class="grab"></div><h3 id="sh-title">依頼のリンクができました</h3><p class="note">このリンクを送ってください。7日間有効です（期限は相手には表示しません）。</p>'+
   '<div class="xlink">'+esc(url)+'</div><div class="acts" style="flex-wrap:wrap"><a class="btn pri" href="https://line.me/R/share?text='+encodeURIComponent(msg)+'" target="_blank" rel="noopener">LINEで送る</a><button class="btn" data-xcopy="'+esc(msg)+'">文面ごとコピー</button><button class="btn" data-act="close">閉じる</button></div>';openS('xreq');}
 function reqListHtml(){if(!canEdit()||!(S.xreqs||[]).length)return '';const C=S.xcoms||[];
-  return '<h2>ゲストコーチへの依頼</h2><div class="list">'+S.xreqs.slice().sort((a,b)=>a.at<b.at?1:-1).map(q=>{const n=C.filter(c=>c.req===q.id).length,live=q.st==='受付中'&&(!q.exp||q.exp>=TODAY);
+  return '<h2>コーチに送ったもの（リンク）</h2><div class="list">'+S.xreqs.slice().sort((a,b)=>a.at<b.at?1:-1).map(q=>{const n=C.filter(c=>c.req===q.id).length,live=q.st==='受付中'&&(!q.exp||q.exp>=TODAY);
     return '<div><b>'+esc(q.name)+'</b>'+(q.org?'<small class="s">（'+esc(q.org)+'）</small>':'')+'　<small class="s">'+esc(String(q.at).slice(5,10))+'作成・'+q.vids.length+'件・評価 '+n+'件・'+(live?'受付中（'+md(q.exp)+'まで）':'終了')+(q.show?'・本人に見せる':'')+'</small><br>'+
-      (live?'<button class="btn sm2" data-xresend="'+esc(q.id)+'">リンクを送る</button><button class="btn sm2" data-xclose="'+esc(q.id)+'">受付を終える</button>':'<button class="btn sm2" data-xreopen="'+esc(q.id)+'">もう7日受け付ける</button>')+
+      (live?'<button class="btn sm2" data-xresend="'+esc(q.id)+'">リンクを送る</button><button class="btn sm2" data-xclose="'+esc(q.id)+'">受付を終える</button>':'<button class="btn sm2" data-xreopen="'+esc(q.id)+'">もう一度受け付ける（'+(q.kind==='チーム'?'30':'7')+'日）</button>')+
       (who!=='本人'&&q.by!=='本人'?'<button class="btn sm2" data-xshow="'+esc(q.id)+'">'+(q.show?'本人に見せない':'本人にも見せる')+'</button>':'')+(q.by?'<br><small class="s">依頼した人：'+esc(q.by)+'</small>':'')+'</div>';}).join('')+'</div>';}
+
+/* ===== v4.49：コーチに送る（動画と相談）。チームのコーチもゲストも同じ作り。1人のコーチ×1回の相談 ===== */
+let CS=null;
+function openSend(ids,star){const vids=ids.filter(id=>(S.videos||[]).some(v=>v.id===id));if(!vids.length)return;if(vids.length>10){toast('10本までにしてください');return;}
+  CS={ids:vids,star:(star||[]).filter(id=>vids.indexOf(id)>=0),to:[],guest:false,ok6:false};const cs=(S.coaches||[]).filter(c=>c!=='コーチ');
+  SH.innerHTML='<div class="grab"></div><h3 id="sh-title">コーチに送る（'+vids.length+'本'+(CS.star.length?'・☆'+CS.star.length+'本':'')+'）</h3>'+
+    '<div class="lab">誰に（複数選ぶと、コーチごとに別の相談になります）</div><div class="wrap">'+cs.map(c=>'<button class="opt sm" data-sdto="'+esc(c)+'" aria-pressed="false">'+esc(c)+'</button>').join('')+'<button class="opt sm" data-act="sdGuest" aria-pressed="false">＋ ゲストコーチ</button></div>'+
+    '<div id="sd-guest" hidden><label class="lab">ゲストコーチの名前（相手の画面に「〇〇へ」と出ます）<input type="text" id="sd-gname" maxlength="40" placeholder="例：〇〇コーチ"></label><label class="lab">所属・関係（例：〇〇クラブ、合宿でお世話になった）<input type="text" id="sd-gorg" maxlength="60"></label></div>'+
+    '<label class="lab">相談の文（自分の言葉で）<textarea id="sd-text" rows="5" maxlength="1000" class="ta2" placeholder="例：第2エアの踏み切りが早くなってしまいます。☆の2本を比べて見てもらえるとうれしいです。"></textarea></label><p class="note mic">🎤 キーボードのマイクで、話して入力できます</p>'+
+    '<p class="note">コーチはアプリも合言葉もなしで、LINEのリンクから見られます。リンクはチームのコーチ30日、ゲストコーチ7日で使えなくなります（相手には表示しません）。</p>'+
+    '<div class="acts" style="flex-wrap:wrap"><button class="btn" data-act="close">やめる</button><button class="btn" data-act="sdPrev">コーチにはこう見えます</button><button class="btn pri" data-act="sdGo">送る</button></div>';openS('send');}
+const sdText=()=>(document.getElementById('sd-text')||{value:''}).value.trim();
+/** 確認用の見本（コーチの画面と同じ見た目） */
+function sdPreview(){const t=sdText(),to=CS.to[0]||(CS.guest&&(document.getElementById('sd-gname')||{value:''}).value.trim())||'〇〇コーチ';
+  const vs=CS.ids.map(id=>(S.videos||[]).find(v=>v.id===id)).filter(Boolean).sort((a,b)=>(CS.star.indexOf(b.id)>=0)-(CS.star.indexOf(a.id)>=0));
+  const p=document.createElement('div');p.className='xprev';p.innerHTML='<div class="xprev-in"><div class="note" style="text-align:center;background:#FFF3E3;border-radius:8px;padding:4px">確認用の見本です（'+esc(to)+'の画面）</div>'+
+    '<p class="xfrom">モーグル（フリースタイルスキー）　'+esc(String((S.cfgView||{}).athlete||dispName('本人')))+'<br><small>送った人：'+esc(me())+'</small></p><h2>'+esc(to)+'へ</h2><div class="xmsg">'+(esc(t)||'（相談の文がまだありません）').replace(/\n/g,'<br>')+'</div>'+
+    '<p class="xprog">見た動画 <b>0／'+vs.length+'本</b>'+(CS.star.length?'　☆は特に見てほしい動画です':'')+'</p>'+
+    '<div class="vgrid">'+vs.map(v=>{const tu=thumbUrl(v);return '<div class="vcard"><span class="vth">'+(tu?'<img alt="" src="'+esc(tu)+'">':'')+'<i>'+(isPh(v)?'📷':'▶')+'</i>'+(CS.star.indexOf(v.id)>=0?'<b class="vb">☆</b>':'')+'</span><span class="vt">'+esc(v.title)+'</span></div>';}).join('')+'</div>'+
+    '<h2>返事</h2><p class="note">ここに返事を書く欄があります。言葉だけで返事できます。動画ごとに、止めた場面へのひとことも残せます（任意）。</p>'+
+    '<button class="btn" data-act="xprevClose" style="width:100%">← 戻って直す</button></div>';document.body.appendChild(p);}
+/** 送る：コーチごとに1つの相談（リンク）を作る */
+async function sdGo(btn){const t=sdText(),tg=CS.to.map(n=>({name:n,kind:'チーム'}));
+  if(CS.guest){const g=(document.getElementById('sd-gname')||{value:''}).value.trim();if(!g){toast('ゲストコーチの名前を書いてください');return;}tg.push({name:g,org:(document.getElementById('sd-gorg')||{value:''}).value.trim(),kind:'ゲスト'});}
+  if(!tg.length){toast('誰に送るか選んでください');return;}if(!t){toast('相談の文を書いてください');return;}
+  if(CS.ids.length>=6&&!CS.ok6){if(!confirm('動画が'+CS.ids.length+'本あります。コーチの負担が大きくなりますが、このまま送りますか？'))return;CS.ok6=true;}
+  const back=busy(btn),made=[];
+  try{let k=0;for(const x of tg){k++;if(tg.length>1)btn.innerHTML='送っています…（'+k+'／'+tg.length+'）';
+      const r=await call('createReq',{who,key,vids:CS.ids,star:CS.star,name:x.name,org:x.org||'',text:t,kind:x.kind,show:true});S.xreqs=r.xreqs;made.push(r.xreqs.find(q=>q.id===r.id)||{name:x.name,key:r.key});}
+    VSEL=null;sdLine(made,t);try{render();}catch(e){reportErr('コーチに送る','送ったあとの再描画：'+errMsg(e));}}
+  catch(e){if(made.length){VSEL=null;sdLine(made,t);try{render();}catch(x){}toast('一部だけ送れました：'+errMsg(e));}else{back();toast(errMsg(e));}}}
+/** LINEで知らせる：コーチごと（直せる）／グループに1回 */
+function sdLine(qs,text){const short=text.length>60?text.slice(0,60)+'…':text;
+  const mk=q=>fillT(tpl('コーチへのLINEのひな形')||'{名前}\n{送る人}です。動画を見ていただけたらうれしいです。\n{ひとこと}\n{リンク}',{名前:q.name,送る人:me(),ひとこと:short,リンク:XLINK(q.key)});
+  const grp=qs.length>1?qs.map(q=>q.name).join('・')+'\n'+me()+'です。動画を見ていただけたらうれしいです。\n'+short+'\n'+qs.map(q=>q.name+'：'+XLINK(q.key)).join('\n'):'';
+  SH.innerHTML='<div class="grab"></div><h3 id="sh-title">LINEで知らせる</h3><p class="note">送りました。リンクを押すと、アプリも合言葉もなしで、動画と相談が開きます（Safariで開きます）。</p>'+
+    qs.map((q,i)=>'<div class="lab">'+esc(q.name)+'へ（直せます）</div><textarea id="cl-'+i+'" rows="6" class="ta2">'+esc(mk(q))+'</textarea><div class="acts"><button class="btn line" data-clsend="'+i+'">'+esc(q.name)+'に LINE</button><button class="btn" data-clcopy="'+i+'">コピー</button></div>').join('')+
+    (grp?'<div class="lab">グループに1回で送る（直せます）</div><textarea id="cl-g" rows="7" class="ta2">'+esc(grp)+'</textarea><div class="acts"><button class="btn line" data-clsend="g">グループに LINE</button><button class="btn" data-clcopy="g">コピー</button></div>':'')+
+    '<div class="acts"><button class="btn" data-act="close">閉じる</button></div>';openS('cline');}
+/** 送った相談（簡易版。v4.49の次の段階で、相談の一覧とチャットに作り直す） */
+function consultLite(){const Q=(S.xreqs||[]).slice().sort((a,b)=>a.at<b.at?1:-1).slice(0,6);if(!Q.length)return '';const C=S.xcoms||[];
+  return '<h2>コーチに送った相談</h2><div class="list">'+Q.map(q=>{const cs=C.filter(c=>c.req===q.id),last=cs.slice(-1)[0],live=q.st==='受付中'&&(!q.exp||q.exp>=TODAY),
+      days=Math.max(0,Math.round((Date.parse(TODAY)-Date.parse(String(q.at).slice(0,10).replace(/\//g,'-')))/864e5)),sn=(q.seen||[]).length,
+      st=cs.some(c=>c.ev==='以上')?'済（以上です）':last?'返事あり':live?'返事待ち（'+days+'日）':'終了';
+    return '<div class="cslt"><b>'+esc(q.name)+'</b>'+(q.kind==='ゲスト'?'<small class="s">（ゲスト）</small>':'')+'<small class="s">　'+esc(String(q.at).slice(5,10))+'送信・'+q.vids.length+'本・見た '+sn+'／'+q.vids.length+'・'+st+'</small>'+
+      (last?'<div class="cslt-r">'+esc(last.text.length>140?last.text.slice(0,140)+'…':last.text).replace(/\n/g,'<br>')+'<small class="s">（'+esc(String(last.at).slice(5,16))+(last.vid?'・動画へのひとこと':'')+'）</small></div>':'')+'</div>';}).join('')+'</div>';}
 /** ホームの新着（家族・本人）：まだ見ていない外部の評価 */
 function extNews(){if(!S.xcoms||!S.xcoms.length)return '';const seen=JSON.parse(LS.get('xseen:'+who)||'{}'),L=[...new Set(S.xcoms.filter(c=>!seen[c.id]).map(c=>c.vid))].map(id=>(S.videos||[]).find(v=>v.id===id)).filter(Boolean);
-  if(!L.length)return '';return '<h2>ゲストコーチの評価（新着'+L.length+'）</h2><div class="exl">'+L.map(v=>{const c=S.xcoms.filter(x=>x.vid===v.id).slice(-1)[0];return '<button class="vnew ext" data-vplay="'+esc(v.id)+'">📝 ゲスト：'+esc(c.by)+'：'+esc(c.text)+'<small>'+esc(v.title)+'</small></button>';}).join('')+'</div>';}
+  if(!L.length)return '';return '<h2>コーチからのひとこと（新着'+L.length+'）</h2><div class="exl">'+L.map(v=>{const c=S.xcoms.filter(x=>x.vid===v.id).slice(-1)[0];const q=(S.xreqs||[]).find(x=>x.id===c.req)||{};return '<button class="vnew ext" data-vplay="'+esc(v.id)+'">📝 '+(q.kind==='チーム'?'':'ゲスト：')+esc(c.by)+'：'+esc(c.text)+'<small>'+esc(v.title)+'</small></button>';}).join('')+'</div>';}
 // ---------- v4.46：使う人の目線で「動画・写真」を作り直し（撮影日から自動振り分け・過去の動画・写真・これまでの大会） ----------
 const SUBS=['表彰・賞状','取材・掲載','遠征・生活','表彰台・集合写真','その他'],CATS=['練習','大会','合宿','学校行事','過去'];
 const isCoachMe=()=>(S.coaches||[]).indexOf(who)>=0;
@@ -2019,7 +2091,7 @@ function vpMenu(){const c=vplay,v=(S.videos||[]).find(x=>x.id===c.id);if(!v)retu
   p.innerHTML='<div class="vp-ph"><b>この'+(isPh(v)?'写真':'動画')+'</b><button class="vp-ic" data-act="vpComClose">✕</button></div><div class="vp-menu">'+
     '<button class="btn" data-vstar="'+esc(v.id)+'">'+(v.best?'☆ ベストを外す':'☆ ベストにする')+'</button>'+
     (isPh(v)?'':'<button class="btn" data-vwant="'+esc(v.id)+'">'+(v.want?'✓ コーチに見てほしい（外す）':'コーチに見てほしい')+'</button>')+
-    '<button class="btn" data-xreq1="'+esc(v.id)+'">ゲストコーチに見てもらう（専用リンク）</button>'+
+    '<button class="btn" data-xreq1="'+esc(v.id)+'">コーチに送る（この動画）</button>'+
     '<button class="btn" data-vdl="'+esc(v.id)+'">保存（ダウンロード）</button>'+
     '<button class="btn" data-vnodl="'+esc(v.id)+'">'+(v.nodl?'コーチの保存：できない（押すと「できる」）':'コーチの保存：できる（押すと「できない」）')+'</button>'+
     (who!=='本人'?'<button class="btn" data-vpub="'+esc(v.id)+'">'+(v.pub?'✓ 学校・スポンサー向けの資料に使ってよい（外す）':'学校・スポンサー向けの資料に使ってよい')+'</button>':'')+
@@ -2041,8 +2113,8 @@ function vpFix(btn){const v=(S.videos||[]).find(x=>x.id===vplay.id);if(!v)return
 function renderVideos(){const all=S.videos||[],coach=isCoachMe(),fam=canEdit()&&!coach,L=vFilter(),parts=[...new Set((S.vcoms||[]).map(c=>c.part).concat(...all.map(v=>v.tags||[])).filter(Boolean))],kinds=[...new Set(all.filter(v=>!isPh(v)&&!v.ref).map(v=>v.kind).filter(Boolean))];
   let h='<main>';
   if(VF.arch){h+='<h2>アーカイブ（削除した動画・写真）</h2><p class="note">押すと戻せます。</p>';}
-  else if(VSEL){h+='<h2>'+(VSEL._req?'ゲストコーチに見てもらう動画・写真を選んでください':VSEL._want?'コーチに見てもらう動画を選んでください':'整理する（選んでまとめて）')+'</h2>';}
-  else{if(fam)h+='<button class="btn pri big" data-act="addOpen" style="width:100%;min-height:52px">＋ 動画・写真を入れる</button><div class="vtop2"><button class="btn navy" data-act="wantMode">コーチに見てもらう</button><button class="btn" data-act="reqMode">ゲストコーチに見てもらう</button></div>';
+  else if(VSEL){h+='<h2>'+(VSEL._send?'コーチに送る動画を選んでください':VSEL._req?'ゲストコーチに見てもらう動画・写真を選んでください':VSEL._want?'コーチに見てもらう動画を選んでください':'整理する（選んでまとめて）')+'</h2>'+(VSEL._send?'<p class="note">押すと選びます（✓）。もう一度押すと「特に見てほしい」☆（コーチの画面で先頭に出ます）。もう一度で外れます。5本までがおすすめ、10本まで。</p>':'');}
+  else{if(fam)h+='<button class="btn pri big" data-act="addOpen" style="width:100%;min-height:52px">＋ 動画・写真を入れる</button><button class="btn navy big" data-act="sendMode" style="width:100%;margin-top:8px;min-height:48px">コーチに送る（動画と相談）</button>'+consultLite();
     if(coach){const W=all.filter(v=>v.want&&!vComs(v.id).some(c=>(S.coaches||[]).indexOf(c.by)>=0)).sort((a,b)=>a.d<b.d?1:-1);
       h+='<h2>👀 見てほしい動画（'+W.length+'）</h2>'+W.map(v=>{const c=vComs(v.id).filter(x=>x.to).slice(-1)[0];return c?'<div class="news"><b>'+esc(dispName(c.by))+'より（'+esc(c.to)+'へ）</b><br>'+esc(c.text)+'<small>'+esc(v.title)+'</small></div>':'';}).filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i).join('')+(W.length?'<div class="vgrid">'+W.map(v=>vcard(v,W.map(x=>x.id).join(','))).join('')+'</div>':'<p class="note">今はありません。</p>');}
     h+='<div class="seg"><button data-vfref="0" aria-pressed="'+!VF.ref+'">自分の動画・写真</button><button data-vfref="1" aria-pressed="'+VF.ref+'">参考動画</button></div>';
@@ -2059,13 +2131,13 @@ function renderVideos(){const all=S.videos||[],coach=isCoachMe(),fam=canEdit()&&
     (vfActive()?'<button class="btn vfclr" data-act="vfClear">✕ 条件をクリア</button>':'')+'</div></details>';
   h+=(L.length?'':'<p class="note">'+(VF.arch?'アーカイブはありません。':'まだありません。')+'</p>');
   if(L.length){const ids=L.map(v=>v.id).join(',');let m='';h+='<div class="vgrid">';L.forEach(v=>{const mm=v.d.slice(0,7);if(mm!==m){m=mm;h+='<div class="vgm">'+(+mm.slice(0,4))+'年'+(+mm.slice(5))+'月</div>';}h+=vcard(v,ids);});h+='</div>';}
-  if(VSEL){const n=Object.keys(VSEL).filter(k=>k[0]!=='_').length;h+='<div class="vselbar"><b>'+n+'件を選択</b>'+(VSEL._want?'<button class="btn sm2" data-act="vselMode">やめる</button><button class="btn pri sm2" data-act="vselWant"'+(n?'':' disabled')+'>次へ（誰に・ひとこと）</button>':VSEL._req?'<button class="btn sm2" data-act="vselMode">やめる</button><button class="btn pri sm2" data-act="vselReq"'+(n?'':' disabled')+'>次へ（相手と頼みたいこと）</button>':
+  if(VSEL){const n=Object.keys(VSEL).filter(k=>k[0]!=='_').length;h+='<div class="vselbar"><b>'+n+'本を選択'+(VSEL._send&&Object.keys(VSEL._star).length?'（☆'+Object.keys(VSEL._star).length+'）':'')+'</b>'+(VSEL._send?'<button class="btn sm2" data-act="vselMode">やめる</button><button class="btn pri sm2" data-act="vselSend"'+(n?'':' disabled')+'>次へ（誰に・相談）</button>':VSEL._want?'<button class="btn sm2" data-act="vselMode">やめる</button><button class="btn pri sm2" data-act="vselWant"'+(n?'':' disabled')+'>次へ（誰に・ひとこと）</button>':VSEL._req?'<button class="btn sm2" data-act="vselMode">やめる</button><button class="btn pri sm2" data-act="vselReq"'+(n?'':' disabled')+'>次へ（相手と頼みたいこと）</button>':
     '<button class="btn sm2" data-act="vselAll">全部選ぶ</button><button class="btn sm2" data-act="vselMode">やめる</button><div class="vselacts">'+[['want','見てほしい'],['best','☆ベスト'],['dl','コーチの保存']].concat(who==='本人'?[]:[['pub','資料用']]).map(([k,l])=>'<button class="btn sm2" data-vbulk="'+k+'|1"'+(n?'':' disabled')+'>'+l+'</button><button class="btn sm2" data-vbulk="'+k+'|0"'+(n?'':' disabled')+'>外す</button>').join('')+'<button class="btn sm2 danger" data-vbulk="delete|1"'+(n?'':' disabled')+'>削除（アーカイブへ）</button></div>')+'</div>';}
   if(fam&&!VSEL&&!VF.ref)h+='<details class="vfold" style="margin-top:14px"><summary>… 整理・管理</summary><div class="vmgr">'+(VF.arch?'<button class="btn" data-act="varch">← 動画・写真に戻る</button>':
     '<button class="btn" data-act="vselMode">☑ 整理する（☆・見てほしい・外に出してよい・削除をまとめて）</button><button class="btn" data-act="addPast">＋ 過去の動画・写真を入れる</button><button class="btn" data-act="pastRaces">これまでの大会（'+(S.praces||[]).length+'）</button><button class="btn" data-act="varch">アーカイブ（'+(S.vArch||[]).length+'）</button>')+'</div>'+(VF.arch?'':reqListHtml())+'</details>';
   V.innerHTML=h+'</main>';const qi=document.getElementById('vf-q');if(qi)qi.oninput=()=>{VF.q=qi.value;clearTimeout(qi._t);qi._t=setTimeout(()=>{const p=qi.selectionStart;renderVideos();const n=document.getElementById('vf-q');if(n){n.focus();n.setSelectionRange(p,p);}},350);};}
 function vcard(v,ids){const n=vComs(v.id).length,tu=thumbUrl(v),sel=VSEL&&VSEL[v.id],c=v.cat&&v.cat!=='練習'?v.cat:'';
-  return '<button class="vcard'+(sel?' sel':'')+'" '+(VF.arch?'data-vrestore="'+esc(v.id)+'"':VSEL?'data-vsel="'+esc(v.id)+'"':'data-vplay="'+esc(v.id)+'" data-vlist="'+esc(ids)+'"')+'><span class="vth">'+(tu?'<img loading="lazy" alt="" src="'+esc(tu)+'" onerror="this.remove()">':'')+(isPh(v)?'':'<i>▶</i>')+(v.best?'<b class="vb">☆</b>':'')+(VSEL?'<b class="vck">'+(sel?'✓':'')+'</b>':'')+(c?'<b class="vcat">'+esc(c)+'</b>':'')+'</span>'+
+  return '<button class="vcard'+(sel?' sel':'')+'" '+(VF.arch?'data-vrestore="'+esc(v.id)+'"':VSEL?'data-vsel="'+esc(v.id)+'"':'data-vplay="'+esc(v.id)+'" data-vlist="'+esc(ids)+'"')+'><span class="vth">'+(tu?'<img loading="lazy" alt="" src="'+esc(tu)+'" onerror="this.remove()">':'')+(isPh(v)?'':'<i>▶</i>')+(v.best?'<b class="vb">☆</b>':'')+(VSEL?'<b class="vck">'+(sel?(VSEL._star&&VSEL._star[v.id]?'☆':'✓'):'')+'</b>':'')+(c?'<b class="vcat">'+esc(c)+'</b>':'')+'</span>'+
     '<span class="vt">'+(isPh(v)?'📷 ':'')+esc(v.title)+'</span><small>'+esc(v.ref?'参考'+((v.tags||[]).length?'：'+v.tags.join('・'):''):(v.race?raceName(v.race)+' ':'')+(v.sub?v.sub+' ':'')+mdw(v.d))+(n?' 💬'+n:'')+(v.want?' 見てほしい':'')+'</small></button>';}
 /** タブの中の新着（本人・家族）：コーチのひとこと・外部の評価・届いた比較 */
 function videoNewsLite(){const seen=JSON.parse(LS.get('vseen:'+who)||'{}'),L=(S.videos||[]).filter(v=>{const cc=vComs(v.id).filter(c=>(S.coaches||[]).indexOf(c.by)>=0);return cc.length&&vComs(v.id).length>(seen[v.id]||0);});
@@ -2782,7 +2854,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
     el.innerHTML='<p class="note">新しい順に'+L.length+'件。「失敗」「ゲスト」「いつもと違う時間帯」に注意。端末番号は端末ごとに違います（この端末：'+esc(DEVID)+'）。</p><div class="alog">'+L.map(x=>'<div class="'+(x.res==='失敗'?'ng':x.role==='ゲスト'?'ext':'')+'"><b>'+esc(String(x.at).slice(5,16))+'</b> '+esc(x.who||'（不明）')+'<small>'+esc([x.fn,x.res,x.tz,x.dev,x.note].filter(Boolean).join('｜'))+'</small></div>').join('')+'</div>';}).catch(e=>{const el=document.getElementById('alog');if(el)el.textContent=errMsg(e);});return;}
   if(ds.act==='ukGo'){const v=(document.getElementById('uk-in')||{value:''}).value.trim();if(!v)return;LS.set('ukey',v);load(false);return;}
   if(ds.act==='ukReset'){if(!confirm('この端末の利用者を変えます。あなたの合言葉をもう一度入れてください。'))return;LS.set('ukey','');LS.set('who','');who='';askUKey('');return;}   // 前の人のデータを端末に残さない
-  if(ds.xreq1){openReqForm([ds.xreq1]);return;}
+  if(ds.xreq1){openSend([ds.xreq1]);return;}
   if(ds.xfname){const e=document.getElementById('xf-name');if(e)e.value=ds.xfname;const L=(S.xreqs||[]).filter(x=>x.name===ds.xfname).sort((a,c)=>a.at<c.at?1:-1),q=L[0],o=document.getElementById('xf-org'),t=document.getElementById('xf-text');if(q){if(o)o.value=q.org||'';if(t&&q.text)t.value=q.text;}toast('前回の内容を下書きに入れました。読み直して直してください');return;}
   if(ds.xftpl){const e=document.getElementById('xf-text');if(e)e.value='お世話になっております。'+ds.xftpl+'について、ご意見をいただけますと幸いです。';return;}
   if(ds.act==='vselReq'){const ids=Object.keys(VSEL||{}).filter(k=>k!=='_req');if(!ids.length)return;openReqForm(ids);return;}
@@ -2797,7 +2869,15 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.upwant!==undefined){const i=+ds.upwant;UP.want[i]=!UP.want[i];drawPick();return;}
   if(ds.upall){const all=UP.want.every(Boolean);UP.want=UP.want.map(()=>!all);drawPick();return;}
   if(ds.act==='vselMode'){VSEL=VSEL?null:{};render();return;}
-  if(ds.vsel){if(VSEL[ds.vsel])delete VSEL[ds.vsel];else VSEL[ds.vsel]=1;render();return;}
+  if(ds.vsel){const id=ds.vsel;if(VSEL._send){if(!VSEL[id]){if(Object.keys(VSEL).filter(k=>k[0]!=='_').length>=10){toast('10本までです');return;}VSEL[id]=1;}else if(!VSEL._star[id])VSEL._star[id]=1;else{delete VSEL[id];delete VSEL._star[id];}}
+    else if(VSEL[id])delete VSEL[id];else VSEL[id]=1;render();return;}
+  if(ds.act==='sendMode'){VSEL={_send:true,_star:{}};render();return;}
+  if(ds.act==='vselSend'){const ids=Object.keys(VSEL||{}).filter(k=>k[0]!=='_');if(ids.length)openSend(ids,Object.keys(VSEL._star||{}).filter(id=>VSEL[id]));return;}
+  if(ds.sdto!==undefined){const i=CS.to.indexOf(ds.sdto);if(i>=0)CS.to.splice(i,1);else CS.to.push(ds.sdto);b.setAttribute('aria-pressed',String(i<0));return;}
+  if(ds.act==='sdGuest'){CS.guest=!CS.guest;b.setAttribute('aria-pressed',String(CS.guest));const g=document.getElementById('sd-guest');if(g){g.hidden=!CS.guest;if(CS.guest){const n=document.getElementById('sd-gname');if(n)n.focus();}}return;}
+  if(ds.act==='sdPrev'){sdPreview();return;}
+  if(ds.act==='sdGo'){sdGo(b);return;}
+  if(ds.clcopy!==undefined){const t=(document.getElementById('cl-'+ds.clcopy)||{value:''}).value;try{navigator.clipboard.writeText(t).then(()=>toast('コピーしました'),()=>toast('コピーできませんでした'));}catch(e){toast('コピーできませんでした');}return;}
   if(ds.act==='vselAll'){vFilter().forEach(v=>VSEL[v.id]=1);render();return;}
   if(ds.act==='reqMode'){VSEL={_req:true};render();return;}
   if(ds.vbulk){const [act,on]=ds.vbulk.split('|'),ids=Object.keys(VSEL||{}).filter(k=>k!=='_req');if(!ids.length)return;if(act==='delete'&&!confirm(ids.length+'件を削除しますか？\n（アプリからは消えますが、アーカイブとして残り、あとで戻せます）'))return;
