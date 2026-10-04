@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>動画再生テスト</title>
+<style>
+body{margin:0;padding:12px 12px 40px;font-family:-apple-system,"Hiragino Sans",sans-serif;background:#0F1A24;color:#E8EEF4;font-size:15px;line-height:1.5}
+h1{font-size:18px;margin:4px 0 8px}h2{font-size:15px;margin:18px 0 6px;color:#F0A35E}
+video,iframe{width:100%;max-width:520px;background:#000;border-radius:10px;display:block}
+iframe{aspect-ratio:9/16;border:0}
+.log{font-size:13px;background:#16212B;border:1px solid #2E3B47;border-radius:8px;padding:8px;margin-top:6px;white-space:pre-wrap}
+.ok{color:#7BD88F}.ng{color:#FF8A8A}
+</style>
+</head>
+<body>
+<h1>動画再生テスト（WJ 10/3 昼）</h1>
+<p>A と B を再生して、画質と始まるまでの時間を比べてください。</p>
+
+<h2>A：原本をそのまま再生（新しい方式）</h2>
+<video id="a" controls playsinline preload="metadata"
+ src="https://www.googleapis.com/drive/v3/files/1XK18Ge1-HKN_VFML0gqtCo2XG7-cagH3?alt=media&key=AIzaSyCjQznQ9vnJ5DxWeF459JqOPiezL-P68YY"></video>
+<div class="log" id="la">読み込み中…</div>
+
+<h2>B：ドライブのプレビュー（今の方式）</h2>
+<iframe src="https://drive.google.com/file/d/1XK18Ge1-HKN_VFML0gqtCo2XG7-cagH3/preview" allow="autoplay"></iframe>
+
+<script>
+const v=document.getElementById('a'),L=document.getElementById('la'),t0=performance.now();
+const sec=()=>((performance.now()-t0)/1000).toFixed(1)+'秒';
+const log=(m,c)=>{L.innerHTML+=(L.textContent==='読み込み中…'?'':'\n')+(c?'<span class="'+c+'">':'')+m+(c?'</span>':'');if(L.firstChild&&L.firstChild.nodeValue==='読み込み中…')L.firstChild.nodeValue='';};
+v.addEventListener('loadedmetadata',()=>log('✓ 動画の情報を受信（'+sec()+'）　大きさ '+v.videoWidth+'×'+v.videoHeight+'、長さ '+v.duration.toFixed(1)+'秒','ok'));
+v.addEventListener('canplay',()=>log('✓ 再生できる状態（'+sec()+'）','ok'),{once:true});
+v.addEventListener('playing',()=>log('▶ 再生開始（'+sec()+'）','ok'),{once:true});
+v.addEventListener('error',()=>{const e=v.error;log('✕ 再生できません（コード '+(e?e.code:'?')+'）','ng');});
+v.addEventListener('stalled',()=>log('…読み込みが止まっています（'+sec()+'）'));
+</script>
+</body>
+</html>
