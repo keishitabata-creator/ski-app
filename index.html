@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.54.0 -->
+<!-- スキー行動予定アプリ 画面側 v4.54.1 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -647,8 +647,9 @@ body.locked nav.tabs,body.locked #whoin,body.locked #hdrsub,body.locked .hdrx{di
 .sc-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .sc-panel{position:absolute;left:0;right:0;bottom:0;max-height:62%;overflow-y:auto;background:#101A24;border-radius:14px 14px 0 0;padding:8px 12px calc(12px + env(safe-area-inset-bottom,0px));z-index:5;box-shadow:0 -6px 24px rgba(0,0,0,.5)}
 .sc-panel[hidden],.sc-bub[hidden],.sc-flash[hidden],.sc-cv[hidden]{display:none}
-#vplayer.sc.shrink .vp-stage{bottom:40%}
-#vplayer.sc.shrink .sc-panel{top:60%;max-height:none;border-radius:0}
+#vplayer.sc.shrink .vp-stage{bottom:24%}
+#vplayer.sc.shrink .sc-panel{top:76%;max-height:none;border-radius:0;padding:4px 8px calc(4px + env(safe-area-inset-bottom,0px))}
+@media (max-height:700px){#vplayer.sc.shrink .vp-stage{bottom:30%}#vplayer.sc.shrink .sc-panel{top:70%}}
 #vplayer.sc.shrink .sc-bot{display:none}
 .sc-tools{display:flex;align-items:center;gap:5px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px solid #2E3B47;margin-bottom:6px}
 .sc-time2{font-size:13px;font-weight:800;color:#fff}
@@ -737,7 +738,7 @@ body.locked nav.tabs,body.locked #whoin,body.locked #hdrsub,body.locked .hdrx{di
 .cs-it span{display:block}
 .cs-ih small{color:var(--sub)}
 .cs-ans{font-size:13.5px;color:#2F6FD6;border-left:3px solid #9CC3FF;padding-left:8px;margin-top:3px}
-#vplayer.seqon .sc-bot{display:none}
+#vplayer.seqon .sc-bot,#vplayer.seqmode .sc-bot{display:none}
 #vplayer .linkbtn2{background:transparent;border-color:transparent;color:#9CC3FF}
 .sd-h{margin:6px 0}
 .sd-h b{font-size:13.5px;color:#8A5A2B}
@@ -759,6 +760,76 @@ body.locked nav.tabs,body.locked #whoin,body.locked #hdrsub,body.locked .hdrx{di
 .cs-sw{display:block;width:100%;margin:5px 0;text-align:left}
 .xqs{background:#FFF0F0;border:1px solid #F2B8B8;color:#9B2C2C;font-weight:800;border-radius:10px;padding:8px 10px;margin:8px 0}
 .xoq{display:inline-block;margin-left:6px;color:#C53030;font-weight:800}
+
+/* v4.54：ダークモード（画面を暗くする設定）のときの、明るい背景の枠 */
+.xbar{background:var(--card);color:var(--ink)}
+@media (prefers-color-scheme:dark){
+:root:not([data-theme="light"]) .xmsg,:root:not([data-theme="light"]) .xhow{background:#2B2217;border-color:#5C4428}
+:root:not([data-theme="light"]) .xhd,:root:not([data-theme="light"]) .sd-h b,:root:not([data-theme="light"]) .xtk small{color:#F0B47A}
+:root:not([data-theme="light"]) .xpv{background:#16301F;border-color:#2E5A3C}
+:root:not([data-theme="light"]) .xqs{background:#3A1818;border-color:#7A3434;color:#FFD0D0}
+:root:not([data-theme="light"]) .xoq{color:#FF9B9B}
+:root:not([data-theme="light"]) .xfam,:root:not([data-theme="light"]) .sd-v small{color:#8DB6FF}
+:root:not([data-theme="light"]) .xthr .xc.fam,:root:not([data-theme="light"]) .cm.me{background:#1B3049;border-color:#2F5378}
+:root:not([data-theme="light"]) .xstate{background:#1C2B38}
+:root:not([data-theme="light"]) .cm.mark{background:#182A20}
+:root:not([data-theme="light"]) .cbox{background:#2E2616;border-color:#7A5E2A}
+:root:not([data-theme="light"]) .xthanks{background:#16301F;border-color:#2E5A3C;color:#DCEFE2}
+:root:not([data-theme="light"]) .ukwhy{background:#1B3049;color:#DCEAF7}
+:root:not([data-theme="light"]) .cs-ans{color:#9CC3FF}
+:root:not([data-theme="light"]) .xcmpi,:root:not([data-theme="light"]) .xrefi,:root:not([data-theme="light"]) .cs-it,:root:not([data-theme="light"]) .cs-vh,:root:not([data-theme="light"]) .sd-v{color:var(--ink)}
+}
+:root[data-theme="dark"] .xmsg,:root[data-theme="dark"] .xhow{background:#2B2217;border-color:#5C4428}
+:root[data-theme="dark"] .xhd,:root[data-theme="dark"] .sd-h b,:root[data-theme="dark"] .xtk small{color:#F0B47A}
+:root[data-theme="dark"] .xpv{background:#16301F;border-color:#2E5A3C}
+:root[data-theme="dark"] .xqs{background:#3A1818;border-color:#7A3434;color:#FFD0D0}
+:root[data-theme="dark"] .xoq{color:#FF9B9B}
+:root[data-theme="dark"] .xfam,:root[data-theme="dark"] .sd-v small{color:#8DB6FF}
+:root[data-theme="dark"] .xthr .xc.fam,:root[data-theme="dark"] .cm.me{background:#1B3049;border-color:#2F5378}
+:root[data-theme="dark"] .xstate{background:#1C2B38}
+:root[data-theme="dark"] .cm.mark{background:#182A20}
+:root[data-theme="dark"] .cbox{background:#2E2616;border-color:#7A5E2A}
+:root[data-theme="dark"] .xthanks{background:#16301F;border-color:#2E5A3C;color:#DCEFE2}
+:root[data-theme="dark"] .ukwhy{background:#1B3049;color:#DCEAF7}
+:root[data-theme="dark"] .cs-ans{color:#9CC3FF}
+:root[data-theme="dark"] .xcmpi,:root[data-theme="dark"] .xrefi,:root[data-theme="dark"] .cs-it,:root[data-theme="dark"] .cs-vh,:root[data-theme="dark"] .sd-v{color:var(--ink)}
+/* 明るい一覧の中の札（暗い動画の画面とは別の色） */
+.cs-it .sc-who{color:var(--ink);background:rgba(232,122,48,.16)}
+.cs-it .sc-who.fam{color:var(--ink);background:rgba(61,139,253,.18)}
+/* 画面の上の「最新 ○○:○○」：ダークモードでも読める明るさに */
+.sync.info{opacity:1;color:#C9D6E2;background:rgba(255,255,255,.14)}
+.sc-row1{display:flex;gap:5px;align-items:center;overflow-x:auto;white-space:nowrap;padding:3px 0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.sc-row1::-webkit-scrollbar{display:none}
+.sc-row1>*{flex:0 0 auto}
+.sc-row1 .opt.sm{min-height:34px;padding:0 10px}
+.sc-rl{font-size:11.5px;color:#AFC0CF;font-weight:800;padding-right:2px}
+.sc-sep{width:1px;height:22px;background:#3A4A5A;margin:0 2px}
+#sc-panel .sc-tools{border-bottom:1px solid #2E3B47;margin-bottom:2px;padding-bottom:5px}
+#vplayer .sc-txt{margin-top:4px}
+#vplayer .sc-txt textarea{min-height:38px;resize:none}
+#vplayer .sc-foot{margin-top:4px;padding:6px 0 8px}
+.sc-seqbar{position:absolute;left:0;right:0;bottom:0;z-index:5;background:rgba(10,18,26,.94);border-top:1px solid #2E3B47;padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px))}
+.sc-seqn{font-size:12.5px;color:#CFE0EF;text-align:center;margin-bottom:5px}
+.sc-seqn b{color:#fff;font-size:14px}
+.sc-seqbtns{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:6px}
+.sc-seqbtns .sc-b{min-height:52px;font-size:14px;line-height:1.25}
+#vplayer.seqmode .sc-bub.seq{bottom:calc(98px + env(safe-area-inset-bottom,0px));max-height:45%}
+#vplayer.seqmode.shrink .sc-seqbar{display:none}
+#sc-panel .sc-tools{flex-wrap:nowrap}
+#vplayer .sc-foot.sc-txt{display:flex;align-items:flex-end;gap:6px}
+#vplayer .sc-foot.sc-txt textarea{flex:1;min-width:0}
+#vplayer .sc-foot .sc-b{min-width:44px;min-height:40px;font-size:18px}
+.sc-send{flex:0 0 auto;min-height:42px;padding:0 18px}
+#vplayer.seqmode #sc-n{display:none}
+#vplayer.shrink .sc-top{display:none}
+.sc-ftop{display:none}
+#vplayer.shrink .sc-ftop{display:flex;position:absolute;left:0;right:0;top:0;z-index:6;align-items:center;gap:8px;padding:calc(6px + env(safe-area-inset-top,0px)) 8px 6px;background:rgba(0,0,0,.5)}
+.sc-ftop .sc-time2{flex:1;text-align:center;font-size:14px}
+/* 上の帯はボタン以外を指が通り抜ける（動画の上の端にも図をかける） */
+#vplayer.shrink .sc-ftop{pointer-events:none;background:linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,0))}
+#vplayer.shrink .sc-ftop button{pointer-events:auto}
+.sc-hint{position:absolute;left:50%;top:22%;transform:translateX(-50%);background:rgba(20,40,60,.88);color:#fff;font-weight:700;font-size:14px;padding:8px 14px;border-radius:999px;z-index:7;pointer-events:none;white-space:nowrap;max-width:92vw}
+.sc-hint[hidden]{display:none}
 .ukwhy{font-weight:700;color:#16324F;background:#EAF3FF;border-radius:10px;padding:8px 10px}
 </style>
 </head>
@@ -767,7 +838,7 @@ body.locked nav.tabs,body.locked #whoin,body.locked #hdrsub,body.locked .hdrx{di
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.54.0';
+const CLIENT_VERSION='4.54.1';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -2135,9 +2206,9 @@ function scOpen(o){setTimeout(navSync,0);if(SC)scClose(true);SC=Object.assign({r
   Promise.resolve(o.load(SC)).then(()=>{}).catch(()=>{});
   scShow();navSync();}
 /** 動画が再生できるようになったら（loadVideo の onOk）：再生が始まったらすぐ操作を消す・止めたら出す */
-function scBind(){const ve=scVe();if(!ve||ve.dataset.sc)return;ve.dataset.sc='1';ve.loop=true;if(!LS.get('scHint')){LS.set('scHint','1');setTimeout(()=>scFlash('画面をたたくと、操作が出ます',2200),300);}
-  ve.addEventListener('play',()=>{const pp=document.getElementById('vp-pp');if(pp)pp.textContent='❚❚';const fg=document.getElementById('sc-figimg');if(fg)fg.remove();if(SC&&!SC.form){SC.hideAt=Date.now();scHide();}});
-  ve.addEventListener('pause',()=>{const pp=document.getElementById('vp-pp');if(pp)pp.textContent='▶';scShow();});
+function scBind(){const ve=scVe();if(!ve||ve.dataset.sc)return;ve.dataset.sc='1';ve.loop=true;if(!LS.get('scHint')){LS.set('scHint','1');setTimeout(()=>scHint('画面をたたくと、操作が出ます'),300);}
+  ve.addEventListener('play',()=>{const pp=document.getElementById('vp-pp');if(pp)pp.textContent='❚❚';const fg=document.getElementById('sc-figimg');if(fg)fg.remove();if(SC&&!SC.form){SC.hideAt=Date.now();scHide();}if(SC&&SC.seq&&typeof cSeqBar==='function')cSeqBar();});
+  ve.addEventListener('pause',()=>{const pp=document.getElementById('vp-pp');if(pp)pp.textContent='▶';scShow();if(SC&&SC.seq&&typeof cSeqBar==='function')cSeqBar();});
   ve.addEventListener('timeupdate',scTime);ve.addEventListener('seeked',scTime);ve.addEventListener('loadedmetadata',()=>{scMarks();scFit();});
   ve.playbackRate=SC?SC.rate:1;if(ve.readyState>=1){scMarks();scFit();}if(!ve.paused)scHide();}
 function scHide(){const u=document.getElementById('vp-ui');if(u&&!(SC&&SC.form))u.classList.add('off');}
@@ -2170,22 +2241,26 @@ function scAdd(edit,rep){navSync();const ve=scVe(),pv=document.getElementById('v
   const m=edit?L.find(x=>x.id===edit):null,q=rep?L.find(x=>x.id===rep):null;if(m&&m.t!=null&&ve)ve.currentTime=m.t;if(q&&q.t!=null&&ve)ve.currentTime=q.t;
   const dr=!m&&!q&&SC.draft?SC.draft.get():null;
   SC.form={id:m?m.id:'',rep:q?q.id:'',t:ve&&!SC.v.photo?Math.round(ve.currentTime*100)/100:(m?m.t:null),part:m?m.part:(dr&&dr.part)||'',ev:m?m.ev:(dr&&dr.ev)||'',text:m?m.text:(dr&&dr.text)||'',star:m?!!m.star:false,shapes:[],tool:'arrow',ang:[],g:''};
-  SC.listOpen=false;{const fl=document.getElementById('sc-flash');if(fl)fl.hidden=true;}document.getElementById('sc-bub').hidden=true;pv.classList.remove('seqon');scFig('');pv.classList.add('shrink');document.getElementById('vp-ui').classList.remove('off');scForm();setTimeout(scFit,60);}
+  SC.listOpen=false;{const fl=document.getElementById('sc-flash');if(fl)fl.hidden=true;const hn=document.getElementById('sc-hint');if(hn)hn.hidden=true;}document.getElementById('sc-bub').hidden=true;pv.classList.remove('seqon');scFig('');pv.classList.add('shrink');document.getElementById('vp-ui').classList.remove('off');scForm();setTimeout(scFit,60);}
 function scForm(){const f=SC.form,p=document.getElementById('sc-panel'),gs=SC.groups?SC.groups():vGroups(SC.v.kind);f.g=f.g&&gs.indexOf(f.g)>=0?f.g:gs[0]||'';
-  const q=f.rep?SC.marks().find(x=>x.id===f.rep):null;
-  let h='<div class="sc-tools"><button class="sc-b sm" data-sc="stepB">◀|</button><button class="sc-b sm" data-sc="stepF">|▶</button><span class="sc-time2">'+esc(scT(f.t))+'</span><span class="sc-sp"></span>'+
-    [['line','線'],['arrow','矢印'],['angle','角度']].map(([k,l])=>'<button class="sc-b sm'+(f.tool===k?' on':'')+'" data-sctool="'+k+'">'+l+'</button>').join('')+'<button class="sc-b sm" data-sc="undo"'+(f.shapes.length?'':' disabled')+'>戻す</button></div>';
-  h+='<div class="vp-ph"><b>'+(q?esc((q.kindL||'本人')+'の'+(SC.mode==='coach'?'書き添え・質問に答える':'ひとことについて聞く')):f.id?'ひとことを直す':(SC.v.photo?'この写真へのひとこと':esc(scT(f.t))+'の場面'))+'</b><button class="sc-b sm" data-sc="formX">やめる</button></div>';
+  const q=f.rep?SC.marks().find(x=>x.id===f.rep):null,ttl=q?(q.kindL||'本人')+'に答える':f.id?'直す':SC.v.photo?'この写真':scT(f.t)+'の場面';
+  // 動画をできるだけ大きく見せるため、欄は詰めて並べる（言葉は横に流れる1行。送るはいつも見える）
+  // ひとこと欄を開いている間は、縮めた動画の上の帯を「やめる・○秒の場面・☆ いちばん大事」に替える（よく使うものを隠さない）
+  const pv=document.getElementById('vplayer');let ft=document.getElementById('sc-ftop');if(!ft){ft=document.createElement('div');ft.id='sc-ftop';ft.className='sc-ftop';pv.appendChild(ft);}
+  ft.innerHTML='<button class="sc-b sm" data-sc="formX">やめる</button><b class="sc-time2">'+esc(ttl)+'</b>'+(SC.canStar?'<button class="sc-b sm'+(f.star?' on':'')+'" data-sc="star" aria-pressed="'+f.star+'">☆ いちばん大事</button>':'<span></span>');
+  let h='<div class="sc-row1 sc-tools">'+(SC.v.photo?'':'<button class="sc-b sm" data-sc="stepB">◀|</button><button class="sc-b sm" data-sc="stepF">|▶</button>')+
+    (SC.v.photo&&!document.getElementById('vp-img')?'':[['line','線'],['arrow','矢印'],['angle','角度']].map(([k,l])=>'<button class="sc-b sm'+(f.tool===k?' on':'')+'" data-sctool="'+k+'">'+l+'</button>').join('')+'<button class="sc-b sm" data-sc="undo"'+(f.shapes.length?'':' disabled')+'>戻す</button><span class="sc-fig" id="sc-fig"'+(f.shapes.length?'':' hidden')+'>図あり ✓</span>')+'</div>';
   if(q)h+='<div class="sc-quote">「'+esc([[q.part,q.ev].filter(Boolean).join('・'),q.text].filter(Boolean).join('：'))+'」</div>';
-  if(gs.length>1)h+='<div class="wrap">'+gs.map(g=>'<button class="opt sm" data-scg="'+esc(g)+'" aria-pressed="'+(f.g===g)+'">'+esc(g)+'</button>').join('')+'</div>';
-  if(f.g&&SC.mode!=='fam')h+='<div class="vp-lab">どこ</div><div class="wrap">'+[...new Set(SC.words(f.g))].map(w=>'<button class="opt sm" data-scpart="'+esc(w)+'" aria-pressed="'+(f.part===w)+'">'+esc(w)+'</button>').join('')+'</div>';
-  if(SC.mode!=='fam')h+='<div class="vp-lab">どう</div><div class="wrap">'+[...new Set(SC.words('評価'))].map(w=>'<button class="opt sm" data-scev="'+esc(w)+'" aria-pressed="'+(f.ev===w)+'">'+esc(w)+'</button>').join('')+'</div>';
-  h+='<div class="sc-txt"><textarea id="sc-text" rows="2" maxlength="500" placeholder="'+esc(SC.mode==='coach'?'書き足す（任意）':SC.mode==='note'?'この場面で見てほしいこと・感じていること':'聞きたいこと')+'">'+esc(f.text||'')+'</textarea><button class="sc-b sm" data-sc="mic" id="sc-mic">🎤 話して書く</button></div>';
-  h+='<div class="sc-foot">'+(SC.canStar?'<button class="sc-b sm'+(f.star?' on':'')+'" data-sc="star" aria-pressed="'+f.star+'">☆ いちばん大事</button>':'')+'<span class="sc-fig" id="sc-fig"'+(f.shapes.length?'':' hidden')+'>図あり ✓</span><span class="sc-sp"></span><button class="btn pri" data-sc="send">'+(f.id?'直して送る':'送る')+'</button></div>';
-  if(!SC.v.photo)h+='<p class="note sc-hint">止まった画面に、指で直接図をかけます（線・矢印・角度）</p>';
-  p.innerHTML=h;p.hidden=false;const ta=document.getElementById('sc-text');ta.oninput=()=>{f.text=ta.value;scDraftSave();};scDraw();}
+  if(SC.mode!=='fam'&&f.g){h+='<div class="sc-row1"><span class="sc-rl">どこ</span>'+(gs.length>1?gs.map(g=>'<button class="opt sm sc-g" data-scg="'+esc(g)+'" aria-pressed="'+(f.g===g)+'">'+esc(g)+'</button>').join('')+'<span class="sc-sep"></span>':'')+
+    [...new Set(SC.words(f.g))].map(w=>'<button class="opt sm" data-scpart="'+esc(w)+'" aria-pressed="'+(f.part===w)+'">'+esc(w)+'</button>').join('')+'</div>';}
+  if(SC.mode!=='fam')h+='<div class="sc-row1"><span class="sc-rl">どう</span>'+[...new Set(SC.words('評価'))].map(w=>'<button class="opt sm" data-scev="'+esc(w)+'" aria-pressed="'+(f.ev===w)+'">'+esc(w)+'</button>').join('')+'</div>';
+  h+='<div class="sc-txt sc-foot"><textarea id="sc-text" rows="1" maxlength="500" placeholder="'+esc(SC.mode==='coach'?'書き足す（任意）':SC.mode==='note'?'見てほしいこと・感じていること':'聞きたいこと')+'">'+esc(f.text||'')+'</textarea><button class="sc-b sm" data-sc="mic" id="sc-mic" aria-label="話して書く">🎤</button><button class="btn pri sc-send" data-sc="send">'+(f.id?'直して送る':'送る')+'</button></div>';
+  p.innerHTML=h;p.hidden=false;const ta=document.getElementById('sc-text');ta.oninput=()=>{f.text=ta.value;scDraftSave();ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,88)+'px';};if(f.text)ta.oninput();
+  const sel=p.querySelector('.sc-row1 [aria-pressed="true"]');if(sel&&sel.scrollIntoView)try{sel.scrollIntoView({block:'nearest',inline:'center'});}catch(e){}
+  if(!SC.v.photo&&!LS.get('scDrawHint')){LS.set('scDrawHint','1');setTimeout(()=>scHint('止まった画面に、指で直接図をかけます'),200);}
+  scDraw();}
 function scDraftSave(){const f=SC.form;if(!SC.draft||!f||f.id||f.rep)return;SC.draft.set({part:f.part,ev:f.ev,text:f.text});}
-function scFormClose(){const pv=document.getElementById('vplayer');SC.form=null;if(pv)pv.classList.remove('shrink');const p=document.getElementById('sc-panel');if(p){p.hidden=true;p.innerHTML='';}const cv=document.getElementById('sc-cv');if(cv)cv.hidden=true;setTimeout(scFit,60);scShow();}
+function scFormClose(){const pv=document.getElementById('vplayer');SC.form=null;{const ft=document.getElementById('sc-ftop');if(ft)ft.remove();}if(pv)pv.classList.remove('shrink');const p=document.getElementById('sc-panel');if(p){p.hidden=true;p.innerHTML='';}const cv=document.getElementById('sc-cv');if(cv)cv.hidden=true;setTimeout(scFit,60);scShow();}
 /* ---------- 止まった画面に直接図をかく ---------- */
 /** 動画（写真）が画面に出ている四角（object-fit: contain） */
 function scRect(){const st=document.getElementById('vp-stage'),ve=scVe(),im=document.getElementById('vp-img');if(!st)return null;const r=st.getBoundingClientRect(),w=ve?ve.videoWidth:im?im.naturalWidth:0,h=ve?ve.videoHeight:im?im.naturalHeight:0;
@@ -2229,6 +2304,8 @@ async function scSend(b){const f=SC.form;if(!f)return;const text=(document.getEl
   SC.sent=(SC.sent||0)+1;
   const tt=f.t;if(!f.id&&!f.rep&&SC.draft)SC.draft.set(null);scFormClose();scMarks();scFlash((SC.sentLabel||'送りました')+(tt!=null&&!SC.v.photo?'（'+scT(tt)+'）':''));
   const ve=scVe();if(ve&&!SC.noResume){const pr=ve.play();if(pr&&pr.catch)pr.catch(()=>{});}}
+/** はじめての1回だけの案内（「送りました」とは別の場所に出す） */
+function scHint(m){const pv=document.getElementById('vplayer');if(!pv)return;let e=document.getElementById('sc-hint');if(!e){e=document.createElement('div');e.id='sc-hint';e.className='sc-hint';pv.appendChild(e);}e.textContent=m;e.hidden=false;clearTimeout(scHint.h);scHint.h=setTimeout(()=>{e.hidden=true;},2400);}
 function scFlash(m,ms){const e=document.getElementById('sc-flash');if(!e)return;e.textContent=m;e.hidden=false;clearTimeout(scFlash.h);scFlash.h=setTimeout(()=>{e.hidden=true;},ms||1000);}
 function scClose(silent){const pv=document.getElementById('vplayer');if(SC&&SC.c&&SC.c.ac)SC.c.ac.abort();if(scMic.cur){try{scMic.cur.stop();}catch(e){}}
   if(pv){const ve=pv.querySelector('video');if(ve){try{ve.pause();ve.removeAttribute('src');ve.load();}catch(e){}}pv.innerHTML='';pv.hidden=true;pv.className='';}
@@ -2251,12 +2328,13 @@ function scClick(ds,b){if(!SC)return false;
   const a=ds.sc;if(!a)return false;const ve=scVe();
   if(a==='close'){scClose();return true;}
   if(a==='play'){if(!ve)return true;if(ve.paused){const p=ve.play();if(p&&p.catch)p.catch(()=>{});}else ve.pause();return true;}
-  if(a==='stepB'||a==='stepF'){vpStep(a==='stepB'?-1:1);scTime();if(SC.form&&ve){SC.form.t=Math.round(ve.currentTime*100)/100;const e=document.querySelector('.sc-time2');if(e)e.textContent=scT(SC.form.t);const h=document.querySelector('#sc-panel .vp-ph b');if(h&&!SC.form.id&&!SC.form.rep)h.textContent=scT(SC.form.t)+'の場面';}return true;}
+  if(a==='stepB'||a==='stepF'){vpStep(a==='stepB'?-1:1);scTime();if(SC.form&&ve){SC.form.t=Math.round(ve.currentTime*100)/100;const e=document.querySelector('.sc-time2');if(e&&!SC.form.id&&!SC.form.rep)e.textContent=scT(SC.form.t)+'の場面';}return true;}
   if(a==='rate'){const i=(SC_RATES.indexOf(SC.rate)+1)%SC_RATES.length;SC.rate=SC_RATES[i];if(SC.c)SC.c.rate=SC.rate;if(ve){ve.playbackRate=SC.rate;ve.defaultPlaybackRate=SC.rate;}b.textContent=scRateL(SC.rate);return true;}
   if(a==='add'){scAdd('','');return true;}
   if(a==='list'){if(SC.listOpen){document.getElementById('sc-panel').hidden=true;SC.listOpen=false;}else{if(ve)ve.pause();scList();}return true;}
   if(a==='panelX'){document.getElementById('sc-panel').hidden=true;SC.listOpen=false;return true;}
   if(a==='bubX'){document.getElementById('sc-bub').hidden=true;return true;}
+  if(a==='seqPlay'){if(!ve)return true;if(!ve.paused){ve.pause();if(SC.seq)SC.seq.show(SC.seq.i);return true;}SC.rate=0.5;ve.playbackRate=0.5;const rb=document.getElementById('sc-rate');if(rb)rb.textContent='½';document.getElementById('sc-bub').hidden=true;document.getElementById('vplayer').classList.remove('seqon');scFig('');const p=ve.play();if(p&&p.catch)p.catch(()=>{});return true;}
   if(a==='fromHere'){if(!ve)return true;SC.rate=0.5;ve.playbackRate=0.5;const rb=document.getElementById('sc-rate');if(rb)rb.textContent='½';document.getElementById('sc-bub').hidden=true;document.getElementById('vplayer').classList.remove('seqon');scFig('');const p=ve.play();if(p&&p.catch)p.catch(()=>{});return true;}
   if(a==='formX'){scFormClose();return true;}
   if(a==='undo'){const f=SC.form;if(f.ang.length)f.ang=[];else f.shapes.pop();scFormFig();scDraw();return true;}
@@ -2684,11 +2762,14 @@ function cSeqShow(q,vid,j,first){if(!SC||!SC.seq)return;const S0=SC.seq,s=S0.lis
       nav:{n:j+1,of:S0.list.length,prev:j>0?()=>{CP.onClose=null;cpClose();cPlay(q,vid,(S0.list[j-1].m||S0.list[j-1].c).id);}:null,next:j<S0.list.length-1?()=>{CP.onClose=null;cpClose();cPlay(q,vid,(S0.list[j+1].m||S0.list[j+1].c).id);}:null}});return;}
   const m=s.m,ve=scVe();if(ve&&m.t!=null){ve.pause();ve.currentTime=m.t;scTime();}cSeenMark([m.id]);
   const b=document.getElementById('sc-bub');if(!b)return;b.className='sc-bub seq'+(m.fam?' fam':'');
-  b.innerHTML='<div class="sc-seqh"><b>'+esc(cVT(vid))+' のひとこと '+(j+1)+'／'+S0.list.length+'</b></div>'+scItem(m,false)+
-    '<div class="sc-acts">'+(m.img?'<button class="sc-b sm" data-scfig="'+esc(m.img)+'">図を消す</button>':'')+(m.t!=null?'<button class="sc-b sm" data-sc="stepB">◀ 1コマ</button><button class="sc-b sm pri" data-sc="fromHere">▶ ここから再生（½）</button><button class="sc-b sm" data-sc="stepF">1コマ ▶</button>':'')+'</div>'+
-    (m.fam?'':'<button class="linkbtn2 sc-ask" data-scans="'+esc(m.id)+'">この場面について聞く（どうしても聞きたいとき）</button>')+
-    '<div class="sc-acts sc-nav"><button class="sc-b sm" data-scseq="'+(j-1)+'"'+(j>0?'':' disabled')+'>◀ 前</button><span class="sc-sp"></span><button class="sc-b sm" data-scseq="'+(j+1)+'"'+(j<S0.list.length-1?'':' disabled')+'>次 ▶'+(S0.list[j+1]&&S0.list[j+1].k==='c'?'（比較）':'')+'</button></div>';
-  b.hidden=false;document.getElementById('vplayer').classList.add('seqon');scFig(m.img);}
+  b.innerHTML=scItem(m,false)+'<div class="sc-acts">'+(m.img?'<button class="sc-b sm" data-scfig="'+esc(m.img)+'">図を消す</button>':'')+(m.fam?'':'<button class="sc-b sm" data-scans="'+esc(m.id)+'">この場面について聞く</button>')+'</div>';
+  b.hidden=false;const pv=document.getElementById('vplayer');pv.classList.add('seqon','seqmode');scFig(m.img);cSeqBar();}
+/** 順に見るの下の帯：前のひとこと・ここから再生／止める・次のひとこと（再生中も出しておく） */
+function cSeqBar(){if(!SC||!SC.seq)return;const S0=SC.seq,j=S0.i,n=S0.list.length,pv=document.getElementById('vplayer');let e=document.getElementById('sc-seqbar');
+  if(!e){e=document.createElement('div');e.id='sc-seqbar';e.className='sc-seqbar';pv.appendChild(e);}
+  const ve=scVe(),playing=ve&&!ve.paused,nx=S0.list[j+1];
+  e.innerHTML='<div class="sc-seqn">'+esc(cVT(SC.v.id))+' のひとこと <b>'+(j+1)+'／'+n+'</b></div><div class="sc-seqbtns"><button class="sc-b" data-scseq="'+(j-1)+'"'+(j>0?'':' disabled')+'>◀ 前の<br>ひとこと</button>'+
+    '<button class="sc-b pri" data-sc="seqPlay">'+(playing?'❚❚ 止める':'▶ ここから<br>再生（½）')+'</button><button class="sc-b" data-scseq="'+(j+1)+'"'+(nx?'':' disabled')+'>次の'+(nx&&nx.k==='c'?'（比較）':'')+'<br>ひとこと ▶</button></div>';}
 /** 止まった場面に図を重ねる（もう一度押すと消す） */
 function scFig(u){let f=document.getElementById('sc-figimg');if(!u){if(f)f.remove();return;}const R=scRect();if(!R)return;if(!f){f=document.createElement('img');f.id='sc-figimg';f.className='sc-figimg';f.alt='図';document.getElementById('vplayer').appendChild(f);}
   f.src=u;Object.assign(f.style,{left:R.x+'px',top:R.y+'px',width:R.w+'px',height:R.h+'px'});}
