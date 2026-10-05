@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- スキー行動予定アプリ 画面側 v4.52.0 -->
+<!-- スキー行動予定アプリ 画面側 v4.54.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,14 +12,21 @@
 <meta name="theme-color" content="#16324F">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<script>window.APP_CONFIG={apiUrl:'https://script.google.com/macros/s/AKfycbxtq3J0htSIzjDbGKf90LSj82dBYTT_4OSzW8eP2vvBaMtLNrPc3PkXdN_O3k5vKZug_w/exec'};</script>
-<script>/* コーチのリンク（#r=…）：本体のプログラムを読み込む前に、相談の中身の問い合わせを始めておく（待ち時間を重ねて短くする） */
+<script>window.APP_CONFIG={apiUrl:'https://script.google.com/macros/s/AKfycbxtq3J0htSIzjDbGKf90LSj82dBYTT_4OSzW8eP2vvBaMtLNrPc3PkXdN_O3k5vKZug_w/exec',linkCopy:'https://storage.googleapis.com/ski-app-510601-links/c/'};</script>
+<script>/* コーチのリンク（#r=…）：本体のプログラムを読み込む前に、①写し専用の置き場の写し（初回も約1秒）と ②サーバーへの問い合わせを、同時に始めておく
+ * ②は5秒返らなければやり直す（LINE→Safari の切り替えなどで止まる対策）。やり直したことは、開く時間の記録に残す */
 (function(){try{var m=/^#r=([0-9a-z]+)/.exec(location.hash);if(!m||!window.fetch)return;var g=function(k){try{return localStorage.getItem(k)||'';}catch(e){return '';}};
 var dev=g('dev');if(!dev){dev='D'+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);try{localStorage.setItem('dev',dev);}catch(e){}}
 var tz='';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'';}catch(e){}
-window.__xr={key:m[1],t0:performance.now(),p:fetch(window.APP_CONFIG.apiUrl,{method:'POST',body:JSON.stringify({fn:'reqOpen',arg:{key:m[1]},vkey:'',ukey:'',dev:dev,tz:tz,cv:'リンク'}),headers:{'Content-Type':'text/plain;charset=utf-8'},redirect:'follow'})
-  .then(function(r){if(!r.ok)throw new Error('通信エラー（'+r.status+'）');return r.json();}).then(function(j){window.__xr.t1=performance.now();if(!j||j.ok!==true)throw new Error((j&&j.error)||'通信エラー');return j.data;})};
-window.__xr.p.catch(function(){});}catch(e){}})();</script>
+var X=window.__xr={key:m[1],t0:performance.now()};
+var go=function(lim){var ac=window.AbortController?new AbortController():null,to=lim&&ac?setTimeout(function(){ac.abort();},lim):0;
+  return fetch(window.APP_CONFIG.apiUrl,{method:'POST',body:JSON.stringify({fn:'reqOpen',arg:{key:m[1]},vkey:'',ukey:'',dev:dev,tz:tz,cv:'リンク'}),headers:{'Content-Type':'text/plain;charset=utf-8'},redirect:'follow',signal:ac?ac.signal:undefined})
+  .then(function(r){clearTimeout(to);if(!r.ok)throw new Error('通信エラー（'+r.status+'）');return r.json();}).then(function(j){X.t1=performance.now();if(!j||j.ok!==true)throw new Error((j&&j.error)||'通信エラー');return j.data;},function(e){clearTimeout(to);throw e;});};
+X.p=go(5000).catch(function(e){if(e&&e.name==='AbortError'){X.retry='5秒で返らず';return go(0);}throw e;});X.p.catch(function(){});
+if(window.APP_CONFIG.linkCopy&&window.crypto&&crypto.subtle&&window.TextEncoder){var C=window.__xc={key:m[1],t0:performance.now()};
+  C.p=crypto.subtle.digest('SHA-256',new TextEncoder().encode('ski-app-link:'+m[1])).then(function(b){var h=Array.prototype.map.call(new Uint8Array(b),function(x){return ('0'+x.toString(16)).slice(-2);}).join('');
+    return fetch(window.APP_CONFIG.linkCopy+h+'.json',{cache:'no-store'});}).then(function(r){if(!r.ok)throw new Error('写しなし（'+r.status+'）');return r.json();}).then(function(d){C.t1=performance.now();return d;});C.p.catch(function(){});}
+}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>スキー行動予定</title>
 <style>
@@ -574,6 +581,12 @@ body.extmode nav.tabs,body.extmode header{display:none}
 #uppill{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:80;background:#E87A30;color:#fff;font-weight:800;font-size:13px;padding:6px 14px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 nav.tabs button{position:relative}nav.tabs button[data-badge]::after{content:attr(data-badge);position:absolute;top:2px;right:calc(50% - 22px);background:#C42B5E;color:#fff;font-size:10px;font-weight:800;border-radius:999px;padding:0 5px;min-width:16px;line-height:16px;text-align:center}
 .vth .vcat{position:absolute;right:4px;bottom:4px;background:rgba(22,50,79,.85);color:#fff;font-size:10px;border-radius:4px;padding:0 4px}
+.cbadge{display:inline-block;font-size:11px;border-radius:8px;padding:1px 7px;background:#E8EEF3;color:#16324F}.cbadge.new{background:#FFE7D1;color:#B4530F}.cbadge.wait,.cbadge.talk{background:#FFF4CC;color:#7A5B00}.cbadge.done{background:#E3F4E8;color:#2E7D46}.cbadge.end{background:#EEE;color:#777}
+.cnew{font-size:11px;color:#fff;background:#E87A30;border-radius:8px;padding:1px 6px}.cwarn{display:block;font-size:12px;color:#B4530F;margin-top:2px}
+button.cslt{display:block;width:100%;text-align:left;font:inherit;color:var(--ink);cursor:pointer}
+.cchat{max-height:52vh;overflow-y:auto;padding:4px 0;margin:6px 0}.cm{max-width:86%;border-radius:12px;padding:6px 10px;margin:6px 0;line-height:1.6;background:var(--card);border:1px solid var(--line)}.cm small{display:block;color:var(--sub);font-size:11px}
+.cm.me{margin-left:auto;background:#EAF3FF;border-color:#C9DDF5}.cm.coach{margin-right:auto}.cm.done{border-color:#7FC08F}.cm.mark{max-width:100%;text-align:center;background:#F3F7F4;border-style:dashed;font-size:13px}
+.cbox{border:1px solid #F0C27A;background:#FFF8EC;border-radius:10px;padding:8px 10px;margin:8px 0}.xthr .xc.fam{background:#EAF3FF}
 .cslt{background:var(--card);border:1px solid var(--line);border-left:4px solid #1F4E78;border-radius:10px;padding:8px 10px;margin:6px 0}.cslt-r{margin-top:4px;line-height:1.6}.cslt-r small{display:block}
 .xstate{background:#F3F7FB;border-radius:8px;padding:4px 8px;margin:4px 0}
 .xprog{margin:6px 0;color:var(--sub)}.xprog b{color:var(--ink)}.xseen{position:absolute;left:6px;bottom:4px;background:#2E8B57;color:#fff;font-size:11px;border-radius:8px;padding:1px 6px}
@@ -593,6 +606,160 @@ nav.tabs button{position:relative}nav.tabs button[data-badge]::after{content:att
 .gr{border-top:1px solid #2E3B47;padding:6px 0;margin-top:4px}.gr small{display:block;color:#AFC0CF}
 .grr{background:rgba(232,122,48,.12);border-left:3px solid #E87A30;border-radius:6px;padding:5px 8px;margin:4px 0;font-size:14px}
 body.locked nav.tabs,body.locked #whoin,body.locked #hdrsub,body.locked .hdrx{display:none!important}
+/* ===== v4.54 場面の画面（全画面・操作は半透明の細い帯） ===== */
+#vplayer.sc .vp-stage{transition:bottom .2s}
+#vplayer.sc .vp-ui{transition:opacity .15s}
+.sc-top{pointer-events:auto;position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:8px;padding:calc(6px + env(safe-area-inset-top,0px)) 8px 6px;background:rgba(0,0,0,.32)}
+.sc-x{background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:999px;min-width:40px;min-height:40px;font-size:18px;font-weight:800}
+.sc-ttl{flex:1;min-width:0;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-ttl small{display:block;font-weight:500;color:#CFE0EF;font-size:11px}
+.sc-rate{background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:999px;min-width:48px;min-height:36px;font-size:14px;font-weight:800}
+.sc-bot{pointer-events:auto;position:absolute;left:0;right:0;bottom:0;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:rgba(0,0,0,.32)}
+.sc-bar{position:relative;height:22px;margin:0 6px 4px;cursor:pointer}
+.sc-bar:before{content:'';position:absolute;left:0;right:0;top:9px;height:4px;border-radius:2px;background:rgba(255,255,255,.3)}
+.sc-fill{position:absolute;left:0;top:9px;height:4px;border-radius:2px;background:#fff;width:0}
+.sc-m{position:absolute;top:-8px;width:28px;height:38px;margin-left:-14px;border:0;background:transparent;padding:0}
+.sc-m:after{content:'';position:absolute;left:8px;top:10px;width:12px;height:18px;border-radius:6px;border:2px solid #fff;background:#E87A30;box-sizing:border-box}
+.sc-m.fam:after{background:#3D8BFD}
+.sc-m.star:after{left:6px;width:16px;background:#FFB300}
+.sc-row{display:flex;align-items:center;gap:6px}
+.sc-b{min-height:38px;min-width:42px;border-radius:10px;border:1px solid rgba(255,255,255,.28);background:rgba(20,30,40,.55);color:#fff;font-size:14px;font-weight:700;padding:0 10px}
+.sc-b.big{min-width:52px;font-size:18px}
+.sc-b.sm{min-height:34px;font-size:12.5px}
+.sc-b.on,.sc-b.pri{background:#E87A30;border-color:#E87A30}
+.sc-b:disabled{opacity:.35}
+.sc-time{font-size:12px;color:#E6EEF5;min-width:44px}
+.sc-sp{flex:1}
+.sc-add{min-height:34px;border-radius:999px;border:0;background:#E87A30;color:#fff;font-size:12.5px;font-weight:800;padding:0 12px;white-space:nowrap}
+.sc-bub{position:absolute;left:10px;right:10px;bottom:calc(92px + env(safe-area-inset-bottom,0px));background:rgba(16,26,36,.94);border:1px solid #E87A30;border-radius:12px;padding:8px 36px 8px 10px;z-index:4;max-height:45%;overflow:auto}
+.sc-bub.fam{border-color:#3D8BFD}
+.sc-bx{position:absolute;right:6px;top:6px;background:transparent;border:0;color:#fff;font-size:18px;min-width:30px;min-height:30px}
+.sc-it{background:#16212B;border:1px solid #2E3B47;border-radius:10px;padding:7px 10px;margin:5px 0}
+.sc-bub .sc-it{background:transparent;border:0;padding:0;margin:0}
+.sc-ih{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:#F0A35E}
+.sc-who{font-size:11.5px;color:#CFE0EF;background:rgba(232,122,48,.25);border-radius:999px;padding:1px 8px}
+.sc-who.fam{background:rgba(61,139,253,.3)}
+.sc-star{color:#FFB300}
+.sc-new{color:#fff;background:#D93F3F;border-radius:6px;padding:0 5px;font-size:11px}
+.sc-ib{font-size:15px;line-height:1.6;margin-top:2px}
+.sc-iimg{max-width:100%;max-height:160px;border-radius:8px;margin-top:4px;display:block}
+.sc-ans{margin-top:4px;font-size:13.5px;color:#BFE3C8;border-left:3px solid #4CAF7A;padding-left:8px}
+.sc-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.sc-panel{position:absolute;left:0;right:0;bottom:0;max-height:62%;overflow-y:auto;background:#101A24;border-radius:14px 14px 0 0;padding:8px 12px calc(12px + env(safe-area-inset-bottom,0px));z-index:5;box-shadow:0 -6px 24px rgba(0,0,0,.5)}
+.sc-panel[hidden],.sc-bub[hidden],.sc-flash[hidden],.sc-cv[hidden]{display:none}
+#vplayer.sc.shrink .vp-stage{bottom:40%}
+#vplayer.sc.shrink .sc-panel{top:60%;max-height:none;border-radius:0}
+#vplayer.sc.shrink .sc-bot{display:none}
+.sc-tools{display:flex;align-items:center;gap:5px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px solid #2E3B47;margin-bottom:6px}
+.sc-time2{font-size:13px;font-weight:800;color:#fff}
+.sc-txt{display:flex;gap:6px;align-items:flex-start;margin-top:6px}
+.sc-txt textarea{flex:1}
+#vplayer .sc-txt textarea,#vcmp2 .sc-txt textarea{font:inherit;font-size:15px;border-radius:10px;border:1px solid #3A4A5A;background:#0B131B;color:#fff;padding:7px;min-height:44px}
+.sc-foot{display:flex;align-items:center;gap:8px;margin-top:8px;position:sticky;bottom:calc(-12px - env(safe-area-inset-bottom,0px));background:#101A24;padding:8px 0 10px;z-index:2}
+.sc-fig{font-size:12.5px;color:#7FD39A;font-weight:800}
+.sc-quote{font-size:13.5px;color:#CFE0EF;border-left:3px solid #3D8BFD;padding-left:8px;margin:4px 0}
+.sc-hint{color:#AFC0CF!important;font-size:11.5px!important;margin:6px 0 0!important}
+.sc-cv{position:fixed;z-index:4;touch-action:none}
+.sc-flash{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);background:rgba(0,0,0,.72);color:#fff;font-weight:800;padding:10px 18px;border-radius:999px;z-index:6;pointer-events:none}
+/* ===== 比べる ===== */
+#vcmp2{position:fixed;inset:0;z-index:62;background:#000;color:#F2F6FA;display:flex;flex-direction:column;overflow:hidden}
+#vcmp2[hidden]{display:none}
+#vcmp2 .vp-top{position:static;background:#000;padding-bottom:6px}
+.cp2-seg{display:flex;gap:4px}
+.cp2-seg .vp-b{flex:0 0 auto;padding:0 10px;min-height:36px}
+.cp2-wrap{flex:1;display:flex;gap:4px;min-height:0;position:relative}
+.cp2-wrap.side .cp2-p{flex:1;display:flex;flex-direction:column;min-width:0}
+.cp2-st{flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:0;background:#000}
+.cp2-st video{width:100%;height:100%;object-fit:contain}
+.cp2-wrap.over .cp2-p{position:absolute;inset:0;display:flex;flex-direction:column}
+.cp2-wrap.over #cp2-R .cp2-st{background:transparent}
+.cp2-wrap.over #cp2-R{pointer-events:none}
+.cp2-wrap.over #cp2-R .cp2-mk,.cp2-wrap.over #cp2-R .cp2-lab{pointer-events:auto}
+.cp2-wrap.over #cp2-L .cp2-lab{visibility:hidden}
+.cp2-lab{font-size:12px;padding:2px 6px;color:#CFE0EF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cp2-lab b{color:#F0A35E}
+.cp2-mk{display:flex;align-items:center;gap:6px;padding:2px 6px;font-size:11.5px;color:#CFE0EF}
+.cp2-mk .vp-b{flex:0 0 auto;min-height:32px;padding:0 8px}
+.cp2-op{display:flex;align-items:center;gap:8px;padding:4px 12px;font-size:12px}
+.cp2-op input{flex:1}
+.cp2-how{color:#CFE0EF!important;padding:0 10px;margin:4px 0!important;font-size:12px!important}
+.cp2-card{background:#16212B;border:1px solid #E87A30;border-radius:10px;padding:8px 10px;margin-top:6px;font-size:14.5px;line-height:1.6}
+.cp2-imgs{display:flex;gap:6px;margin-top:6px}
+.cp2-imgs img{max-width:48%;max-height:120px;border-radius:6px}
+#vcmp2 .vp-panel{position:absolute;max-height:70%}
+#vcmp2 .opt{background:#1E2A36;color:#F2F6FA;border-color:#3A4A5A}
+#vcmp2 .opt[aria-pressed="true"]{background:#E87A30;border-color:#E87A30;color:#fff}
+#vcmp2 .btn{background:#1E2A36;color:#F2F6FA;border-color:#3A4A5A}
+#vcmp2 .btn.pri{background:#E87A30;border-color:#E87A30;color:#fff}
+#vcmp2 .vcard{background:#16212B;border-color:#2E3B47;color:#F2F6FA}
+#vdraw{z-index:80}
+/* ===== リンクのページ ===== */
+.xmain{padding-bottom:96px}
+.xhd{display:block;font-size:13px;color:#8A5A2B;margin-top:4px}
+.xpv{background:#F2F8EE;border:1px solid #CFE3C3;border-radius:12px;padding:10px 12px;margin:8px 0}
+.xpv .xpt{margin-top:6px}
+.xpv small{color:var(--sub)}
+.xh3{font-size:16px;margin:18px 0 6px}
+.xh3 small{font-size:12px;font-weight:500;color:var(--sub)}
+.xfam{display:inline-block;margin-left:6px;color:#2F6FD6;font-weight:700}
+.xbar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:center;gap:10px;justify-content:space-between;background:#fff;border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 14px rgba(0,0,0,.08)}
+.xbar b{font-size:14px;display:block}
+.xbar small{font-size:11.5px;color:var(--sub)}
+.xcnt{display:flex;gap:10px}
+.xcnt div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px}
+.xcnt b{display:block;font-size:18px}
+.xtk{margin:6px 0}
+.xtk input{width:100%;box-sizing:border-box;font:inherit;font-size:15px;border:1px solid var(--line);border-radius:10px;padding:9px}
+.xtk small{color:#B8742A;font-weight:700}
+.xfin{flex-direction:column;align-items:stretch}
+.xthx{text-align:center;line-height:1.8}
+.xmain .acts{position:static;background:transparent;padding:0;z-index:auto}
+.xcmpi{display:block;width:100%;text-align:left;font:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:5px 0;color:var(--ink)}
+.xcmpi small{display:block;color:var(--sub)}
+.xrefi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0}
+.xfile{display:flex;justify-content:center;align-items:center;min-height:48px}
+.sc-figimg{position:fixed;z-index:3;pointer-events:none;object-fit:fill}
+.sc-bub.seq{bottom:calc(10px + env(safe-area-inset-bottom,0px));max-height:55%}
+.sc-seqh{font-size:13px;color:#CFE0EF;margin-bottom:4px}
+.sc-ans.q{color:#BCD6FF;border-left-color:#3D8BFD}
+.sc-ask{display:block;margin:6px 0 0;color:#9CC3FF!important}
+.sc-nav{border-top:1px solid #2E3B47;padding-top:6px}
+.cp2-n{font-size:12px;color:#CFE0EF;align-self:center;padding:0 6px}
+.cs-all{width:100%;margin:6px 0}
+.starc{border:2px solid #FFB300!important}
+.cm.scene .linkbtn2{display:block;margin-top:4px}
+.cs-tabs{margin:4px 0 8px}
+.cs-vh{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin:10px 0 6px}
+.cs-seq{width:100%;margin-top:6px}
+.cs-it{display:block;width:100%;text-align:left;font:inherit;background:var(--card);border:1px solid var(--line);border-left:4px solid #E87A30;border-radius:10px;padding:7px 10px;margin:5px 0;color:var(--ink)}
+.cs-it.fam{border-left-color:#3D8BFD}
+.cs-it.cmp{border-left-color:#7A5AF8}
+.cs-it span{display:block}
+.cs-ih small{color:var(--sub)}
+.cs-ans{font-size:13.5px;color:#2F6FD6;border-left:3px solid #9CC3FF;padding-left:8px;margin-top:3px}
+#vplayer.seqon .sc-bot{display:none}
+#vplayer .linkbtn2{background:transparent;border-color:transparent;color:#9CC3FF}
+.sd-h{margin:6px 0}
+.sd-h b{font-size:13.5px;color:#8A5A2B}
+.sd-vs{display:grid;gap:6px}
+.sd-v{display:flex;align-items:center;gap:10px;text-align:left;font:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px;color:var(--ink)}
+.sd-v img,.sd-v i{width:54px;height:54px;object-fit:cover;border-radius:8px;background:#DDE6EE;display:flex;align-items:center;justify-content:center;font-style:normal;flex:0 0 auto}
+.sd-v span{display:flex;flex-direction:column}
+.sd-v small{color:#2F6FD6;font-weight:700}
+.sc-xb{padding:0 10px;font-size:12.5px}
+.sc-row{min-width:0}
+.sc-row .sc-b,.sc-row .sc-add{flex:0 0 auto}
+.xhow{font-size:13.5px;line-height:1.7;background:#FFF8F1;border:1px solid #F3D3B5;border-radius:10px;padding:8px 10px;margin:8px 0}
+.sc-flash{white-space:nowrap;max-width:92vw}
+.cp2-mk{flex-wrap:wrap;row-gap:2px}
+.cp2-mk span{flex:1 1 100%}
+.cp2-mk .vp-b{flex:1 1 auto;min-width:0;white-space:normal;line-height:1.2}
+.xmsg,.xc,.xthr div,.cm,.cm div,.sc-ib,.sc-ans,.sc-quote,.cs-it span,.cp2-card,.xpv,.xcmpi,.xrefi,.vcard .vt,.cslt,.cslt-r,.task b{overflow-wrap:anywhere;word-break:break-word}
+.sc-x.wide{min-width:0;padding:0 12px;font-size:14px}
+.cs-sw{display:block;width:100%;margin:5px 0;text-align:left}
+.xqs{background:#FFF0F0;border:1px solid #F2B8B8;color:#9B2C2C;font-weight:800;border-radius:10px;padding:8px 10px;margin:8px 0}
+.xoq{display:inline-block;margin-left:6px;color:#C53030;font-weight:800}
+.ukwhy{font-weight:700;color:#16324F;background:#EAF3FF;border-radius:10px;padding:8px 10px}
 </style>
 </head>
 <body>
@@ -600,7 +767,7 @@ body.locked nav.tabs,body.locked #whoin,body.locked #hdrsub,body.locked .hdrx{di
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.52.0';
+const CLIENT_VERSION='4.54.0';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -640,8 +807,9 @@ const canEdit=()=>!!(S&&who&&(S.coaches||[]).indexOf(who)<0);
 
 function ingest(d){
   if(d&&d._upgrade){checkVersion();return;}   // サーバーからの「空の返事」（古い画面向け）は取り込まない
-  if(d&&S&&d!==S&&d.me===undefined){['me','xreqs','xcoms','gurls','_gat','gurlTtl'].forEach(k=>{if(S[k]!==undefined)d[k]=S[k];});}
+  if(d&&S&&d!==S&&d.me===undefined){['me','xreqs','xcoms','myreqs','gurls','_gat','gurlTtl'].forEach(k=>{if(S[k]!==undefined)d[k]=S[k];});}
   if(d&&d.me&&d.me.auth){LS.set('authMode','1');try{document.body.classList.remove('locked');}catch(e){}}
+  if(d&&d.me&&d.me.auth&&d.me.name&&ukAfter(d))return;
   if(d&&d.me&&d.me.auth&&d.me.name&&who!==d.me.name){who=d.me.name;LS.set('who',who);}
   if(d&&d.gurls&&d.gurlAt){d._gat={};Object.keys(d.gurls).forEach(k=>d._gat[k]=d.gurlAt);}   // 置き場のアドレスを受け取った時刻（動画ごと。期限が近ければ取り直す）
   if(d&&d.videos&&!d.videos._split){d.vArch=d.videos.filter(v=>v.arch);d.videos=d.videos.filter(v=>!v.arch);d.videos._split=true;}
@@ -701,7 +869,7 @@ function call(fn,arg,tryNo){
   const once=()=>fetch(API_URL,{method:'POST',body:JSON.stringify({fn,arg:arg||{},vkey,ukey:LS.get('ukey')||'',dev:DEVID,tz:DEVTZ,cv:CLIENT_VERSION}),headers:{'Content-Type':'text/plain;charset=utf-8'},redirect:'follow'})
     .then(r=>{if(!r.ok)throw new Error('通信エラー（'+r.status+'）');return r.json();})
     .then(j=>{if(j&&j.minClient)forceUpdate(j.minClient);if(j&&j.data&&j.data.minClient)forceUpdate(j.data.minClient);if(!j||j.ok!==true)throw new Error((j&&j.error)||'通信エラー');return j.data;});
-  return once().catch(e=>{const n=tryNo||0;const m=errMsg(e);
+  return once().catch(e0=>{const e=/^(Load failed|Failed to fetch|NetworkError.*|The Internet connection appears to be offline\.?|The network connection was lost\.?|cancelled)$/i.test(errMsg(e0).trim())?new Error('通信できませんでした。電波のよいところで、もう一度お試しください'):e0;const n=tryNo||0;const m=errMsg(e);
     if(READ_FNS[fn]&&n<2&&!/VKEY|KEY|EKEY|UKEY|LOCKED|呼べません/.test(m))return new Promise(r=>setTimeout(r,1500*(n+1))).then(()=>call(fn,arg,n+1));
     throw e;});}
 const errMsg=e=>String((e&&e.message)||e||'');
@@ -714,18 +882,25 @@ function inAppBrowser(){const ua=navigator.userAgent||'';return /Line\//i.test(u
 function inAppGuide(){if(!inAppBrowser()||INSIDE_GAS)return false;
   const url=location.href.split('#')[0].replace(/[?&]openExternalBrowser=1/,'');const lineUrl=url+(url.indexOf('?')>=0?'&':'?')+'openExternalBrowser=1';
   V.innerHTML='<main><h2>SafariかChromeで開いてください</h2><p>いまはLINEなどのアプリの中の簡易ブラウザで開いています。この状態では、ホーム画面への追加ができず、表示も崩れます。</p>'+
-    '<a class="btn pri" href="'+esc(lineUrl)+'" style="display:flex;align-items:center;justify-content:center;text-decoration:none;min-height:52px;font-size:17px">Safariで開く</a>'+
-    '<p class="note">開かない場合：右上の「…」→「他のアプリで開く」「Safariで開く」を選んでください。またはこのURLをコピーしてSafariに貼ってください。</p><p class="note" style="word-break:break-all">'+esc(url)+'</p></main>';return true;}
+    '<a class="btn pri" href="'+esc(lineUrl)+'" style="display:flex;align-items:center;justify-content:center;text-decoration:none;min-height:52px;font-size:17px">'+(/Android/i.test(navigator.userAgent||'')?'Chromeで開く':'Safariで開く')+'</a>'+
+    '<p class="note">'+(/Android/i.test(navigator.userAgent||'')?'開かない場合：右上の「︙」→「他のアプリで開く」「ブラウザで開く」を選んでください。またはこのURLをコピーしてChromeに貼ってください。':'開かない場合：右上の「…」→「他のアプリで開く」「Safariで開く」を選んでください。またはこのURLをコピーしてSafariに貼ってください。')+'</p><p class="note" style="word-break:break-all">'+esc(url)+'</p></main>';return true;}
 function refreshIfStale(ms){if(!S||inflight>0||saving)return;if(Date.now()-FRESH_AT<(ms||120000))return;if(sheetKind&&sheetKind!=='who')return;load(true);}
 const T0=Date.now();   // 画面のプログラムが動き始めた時刻
 let TM={html:null,cache:null,fresh:null,srv:null,srvT:''};
 try{const pt=performance.timing;if(pt&&pt.navigationStart)TM.html=Math.round((pt.responseEnd-pt.navigationStart)/100)/10;}catch(e){}
 /** 閲覧の合言葉（外に置いた画面から開くときだけ） */
 function lockOut(){try{localStorage.removeItem('cacheV1');}catch(e){}S=null;try{const w=document.getElementById('whoin');if(w)w.innerHTML='';}catch(e){}try{document.body.classList.add('locked');}catch(e){}try{if(typeof closeSheet==='function')closeSheet();}catch(e){}const pv=document.getElementById('vplayer');if(pv){pv.innerHTML='';pv.hidden=true;}}
+/** この端末で使った人（名前だけ。合言葉は覚えない）。名前を押すと、その人の合言葉を聞く（共有の端末で、本人が家族に切り替えられないように） */
+let UKFOR=null;   // 名前を押して選んだ人（合言葉を聞く見出しに使う）
+const ukUsed=()=>{try{const L=JSON.parse(LS.get('ukUsed')||'[]');if(L.some(x=>x.key)){const c=L.map(x=>({name:x.name,disp:x.disp}));LS.set('ukUsed',JSON.stringify(c));return c;}return L;}catch(e){return [];}};   // 合言葉は覚えない（前の版で覚えた分は消す）
+/** 合言葉が通ったあと：使った人に入れる。前と違う人の合言葉なら確かめる（違えば前の合言葉に戻す）。戻したら true */
+function ukAfter(d){const nm=d.me.name,ds=x=>(d.disp&&d.disp[x])||x,exp=LS.get('ukExpect');LS.set('ukExpect','');
+  if(exp&&exp!==nm&&!confirm('「'+ds(nm)+'」の合言葉です（'+(UKFOR?'「'+ds(exp)+'」を選んでいました':'この端末は今まで「'+ds(exp)+'」で使っていました')+'）。\n「'+ds(nm)+'」として使いますか？')){LS.set('ukey','');LS.set('who','');who='';setTimeout(()=>{lockOut();askUKey('');},0);return true;}
+  UKFOR=null;LS.set('ukLastName',nm);const L=ukUsed().filter(x=>x.name!==nm);L.unshift({name:nm,disp:ds(nm)});LS.set('ukUsed',JSON.stringify(L.slice(0,6)));return false;}
 function askUKey(note){lockOut();let to='',from='';try{const h=new URLSearchParams(String(location.hash||'').replace(/^#/,''));to=h.get('to')||'';from=h.get('from')||'';}catch(e){}
   const many=to.indexOf('・')>=0,title=to?(many?'コーチの合言葉を入れてください':to+'の合言葉を入れてください'):'このアプリの合言葉を入れてください';
   const sub=to?(from?esc(from)+'から':'')+'「見てほしい動画」が届いています。先日お伝えした、'+(many?'ご自身（'+esc(to)+'）':esc(to))+'専用の合言葉を入れると、動画が開きます。':'家族から一人ずつお伝えしている、あなた専用の合言葉です。';
-  V.innerHTML='<main><h2>'+esc(title)+'</h2><p>'+sub+'</p>'+(note?'<p class="note" style="color:#a0321e">'+esc(note)+'</p>':'')+'<input type="password" id="uk-in" placeholder="あなたの合言葉" autocomplete="current-password" style="width:100%;font-size:18px;padding:12px;border:1.5px solid var(--line);border-radius:12px;margin:8px 0"><button class="btn pri" data-act="ukGo" style="width:100%;min-height:52px">開く</button><p class="note">一度入れると、この端末では次から聞かれません。LINEの中で開いた場合は、LINEの中に保存されるため、Safariやホーム画面のアプリで開いたときに、もう一度だけ聞かれることがあります。</p></main>';}
+  const used=ukUsed(),uf=UKFOR;V.innerHTML='<main><h2>'+esc(uf&&!to?uf.disp+'の合言葉を入れてください':title)+'</h2><p class="ukwhy">合言葉で、だれとして使うかが決まります。</p><p>'+sub+'</p>'+(used.length&&!to?'<div class="lab">この端末で使った人（押すと、その人の合言葉を聞きます）</div><div class="wrap">'+used.map((u,i)=>'<button class="opt" data-ukuse="'+i+'">'+esc(u.disp)+'</button>').join('')+'</div><div class="lab">ほかの人は、合言葉を入れてください</div>':'')+(note?'<p class="note" style="color:#a0321e">'+esc(note)+'</p>':'')+'<input type="password" id="uk-in" placeholder="あなたの合言葉" autocomplete="current-password" style="width:100%;font-size:18px;padding:12px;border:1.5px solid var(--line);border-radius:12px;margin:8px 0"><button class="btn pri" data-act="ukGo" style="width:100%;min-height:52px">開く</button><p class="note">一度入れると、この端末では次から聞かれません。LINEの中で開いた場合は、LINEの中に保存されるため、Safariやホーム画面のアプリで開いたときに、もう一度だけ聞かれることがあります。</p></main>';}
 function askVKey(note){V.innerHTML='<main><h2>このアプリを開くには合言葉が必要です</h2>'+(note?'<p class="note" style="color:#a0321e">'+esc(note)+'</p>':'')+'<input type="password" id="vk-in" placeholder="合言葉" style="width:100%;font-size:18px;padding:12px;border:1.5px solid var(--line);border-radius:12px;margin:8px 0"><button class="btn pri" data-act="vkGo" style="width:100%;min-height:52px">開く</button><p class="note">管理者に確認してください。一度入れると、この端末では次から聞かれません。</p></main>';}
 function bootReport(){try{const t=TM;const f=x=>x==null?'?':x;const msg='HTML受信 '+f(t.html)+'秒／前回データ表示 '+(t.cache!=null?t.cache+'秒':'なし')+'／最新データ '+f(t.fresh)+'秒（うちサーバー処理 '+f(t.srv)+'秒：'+(t.srvT||'')+'）／通信 '+(INSIDE_GAS?'Apps Script内':'外部');
   const last=LS.get('bootLogged')||'';if(last===TODAY)return;LS.set('bootLogged',TODAY);
@@ -890,7 +1065,7 @@ function renderHead(){
    if(S.outdated)el.innerHTML+='<div class="warnb">管理者の方へ：画面側（index.html）が古いままです。新しい index.html を貼り替えて、「デプロイを管理」→「新バージョン」を行ってください。</div>';
    else if(S.needSetup&&canEdit())el.innerHTML+='<div class="warnb">管理者の方へ：シートの更新（setup）が必要な版になっています（実行済み：v'+esc(S.setupVersion||'なし')+'）。スプレッドシートのメニュー「行動予定アプリ」→「初期設定・更新」を実行してください。</div>';
    else if(big(sv)!==big(CLIENT_VERSION))el.innerHTML+='<div class="warnb">管理者の方へ：Code.gs（v'+esc(sv)+'）と画面（v'+esc(CLIENT_VERSION)+'）の版が合っていません。両方を貼り替えてから「デプロイを管理」→「新バージョン」を行ってください。</div>';}
-  document.getElementById('whoin').innerHTML=(who?'記録者：'+esc(who)+' <button class="linkbtn" data-act="who">変更</button>':'')+(who&&!canEdit()?' <span class="adm2">閲覧・記録のみ</span>':'');
+  document.getElementById('whoin').innerHTML=(S&&S.me&&S.me.auth&&who?'いま：<b>'+esc(dispName(who))+'</b>として使用中 <button class="linkbtn" data-act="ukReset">ほかの人</button>':who?'記録者：'+esc(who)+' <button class="linkbtn" data-act="who">変更</button>':'')+(who&&!canEdit()?' <span class="adm2">閲覧・記録のみ</span>':'');
 }
 
 // ---------- 活動の行 ----------
@@ -946,7 +1121,7 @@ function renderHome(){
   h+=questionCard();
   if(who==='本人'||(S.coaches||[]).indexOf(who)<0&&who)h+=tasksHtml();
   h+=videoNews();
-  if(S.me&&S.me.role!=='コーチ'||(S.coaches||[]).indexOf(who)<0)h+=extNews();
+  if(S.me&&S.me.role!=='コーチ'||(S.coaches||[]).indexOf(who)<0)h+=consultNews()+extNews();
   const tm=addD(TODAY,1);if(DIDX[tm]!==undefined)h+='<section class="today tmr"><div class="thead"><span class="tlabel">明日</span><b>'+mdw(tm)+'</b><button class="linkbtn2" data-day="'+tm+'" style="margin-left:auto">開く</button></div>'+dayBody(DAYS[DIDX[tm]],{compact:true})+'</section>';
   const a=monOf(TODAY),b=addD(a,6);let pl=0,dn=0;
   let ex=0;DAYS.forEach(d=>{if(d.d<a||d.d>b||d.d>TODAY)return;rowsOf(d).forEach(r=>{if(isSys(r.kind))return;if(r.planned)pl++;if(r.act&&r.act.st==='実施'){if(r.planned)dn++;else ex++;}});});
@@ -1059,7 +1234,7 @@ function renderRace(){
 const SH=document.getElementById('sheet');
 const val=id=>{const e=document.getElementById(id);return e?String(e.value||'').trim():'';};
 const pick=(id,arr,cur,sm)=>'<div class="wrap">'+arr.map(x=>'<button class="opt'+(sm?' sm':'')+'" data-pk="'+id+'" data-v="'+esc(x)+'" aria-pressed="'+(cur===x)+'">'+esc(x)+'</button>').join('')+'</div><input type="hidden" id="'+id+'" value="'+esc(cur||'')+'">';
-function openS(kind){sheetKind=kind;document.body.classList.add('open');}
+function openS(kind){sheetKind=kind;document.body.classList.add('open');navSync();}
 function closeSheet(){document.body.classList.remove('open');openDay=null;sheetKind='';sheetCtx=null;act=null;dplan=null;}
 function render(){if(!S)return;
   document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===tab?'page':'false'));
@@ -1461,7 +1636,7 @@ function openPlayer(id,list){const v=(S.videos||[]).find(x=>x.id===id);if(!v)ret
   list=list&&list.length?list:(S.videos||[]).filter(x=>x.d===v.d&&x.kind===v.kind).sort((a,b)=>a.title<b.title?-1:1).map(x=>x.id);
   vplay={id,list,rate:1,ui:true,panel:'',g:vGroups(v.kind)[0]||'',part:'',ev:'',t:null};drawPlayer();}
 function vpEl(){let pv=document.getElementById('vplayer');if(!pv){pv=document.createElement('div');pv.id='vplayer';pv.setAttribute('role','dialog');pv.setAttribute('aria-modal','true');document.body.appendChild(pv);}return pv;}
-function drawPlayer(){const c=vplay,v=(S.videos||[]).find(x=>x.id===c.id);if(!v){closePlayer();return;}if(v.type==='写真'){drawPhoto(v);return;}
+function drawPlayer(){setTimeout(navSync,0);const c=vplay,v=(S.videos||[]).find(x=>x.id===c.id);if(!v){closePlayer();return;}if(v.type==='写真'){drawPhoto(v);return;}
   if(who&&S.xcoms){const xs=JSON.parse(LS.get('xseen:'+who)||'{}');S.xcoms.filter(x=>x.vid===v.id).forEach(x=>xs[x.id]=1);LS.set('xseen:'+who,JSON.stringify(xs));}const i=c.list.indexOf(v.id),pv=vpEl(),cs=vComs(v.id);
   document.body.classList.add('noscroll');pv.hidden=false;
   pv.innerHTML='<div class="vp-stage" id="vp-stage"><div class="vp-load" id="vp-load">読み込み中…</div></div>'+
@@ -1552,7 +1727,7 @@ async function loadVideo(v,o){o=o||{};const c=o.c||vplay,stage=document.getEleme
   const ui=ve=>{ve.playbackRate=c.rate||1;ve.defaultPlaybackRate=c.rate||1;
     const seek=document.getElementById('vp-seek'),tm=document.getElementById('vp-time'),pp=document.getElementById('vp-pp');
     ve.addEventListener('timeupdate',()=>{if(ve.duration&&seek){seek.value=Math.round(ve.currentTime/ve.duration*1000);tm.textContent=ve.currentTime.toFixed(1)+'秒';}});
-    ve.addEventListener('play',()=>{if(pp)pp.textContent='❚❚';vpAutoHide();});ve.addEventListener('pause',()=>{if(pp)pp.textContent='▶';vpShowUI();});
+    ve.addEventListener('play',()=>{if(pp)pp.textContent='❚❚';vpAutoHide(300);});ve.addEventListener('pause',()=>{if(pp)pp.textContent='▶';vpShowUI();});
     if(seek)seek.oninput=()=>{if(ve.duration){ve.pause();ve.currentTime=seek.value/1000*ve.duration;tm.textContent=ve.currentTime.toFixed(1)+'秒';}};
     // 再生できている動画が途中で止まったときだけ反応する
     ve.addEventListener('error',()=>{if(ve!==document.getElementById('vp-video')||!c.live||!alive())return;c.live=false;log.push('再生中：'+mErr(ve));toDrive();});
@@ -1591,7 +1766,7 @@ async function loadVideo(v,o){o=o||{};const c=o.c||vplay,stage=document.getEleme
   toDrive();}
 let vpHideT=0;
 function vpShowUI(){const u=document.getElementById('vp-ui');if(u)u.classList.remove('off');clearTimeout(vpHideT);}
-function vpAutoHide(){clearTimeout(vpHideT);vpHideT=setTimeout(()=>{const ve=document.getElementById('vp-video'),u=document.getElementById('vp-ui');if(u&&ve&&!ve.paused&&!(vplay&&vplay.panel))u.classList.add('off');},3000);}
+function vpAutoHide(ms){clearTimeout(vpHideT);vpHideT=setTimeout(()=>{const ve=document.getElementById('vp-video'),u=document.getElementById('vp-ui');if(u&&ve&&!ve.paused&&!(vplay&&vplay.panel)&&!(SC&&SC.form))u.classList.add('off');},ms||3000);}
 function vpToggleUI(){const u=document.getElementById('vp-ui');if(!u)return;if(u.classList.contains('off')){vpShowUI();vpAutoHide();}else u.classList.add('off');}
 function vpGo(d){const c=vplay;if(!c)return;const i=c.list.indexOf(c.id)+d;if(i<0||i>=c.list.length)return;c.id=c.list[i];c.panel='';c.part='';c.ev='';drawPlayer();}
 function vpStep(d){const ve=document.getElementById('vp-video');if(!ve)return;ve.pause();ve.currentTime=Math.max(0,Math.min(ve.duration||0,ve.currentTime+d/60));}
@@ -1661,7 +1836,7 @@ function paneHtml(side){const p=cmp[side];if(!p)return '<div class="cp empty"><b
     '<input type="range" class="cp-seek" data-cmpseek="'+side+'" min="0" max="1000" value="0">'+
     '<div class="cp-row"><button class="vp-b sm" data-cmpmark="'+side+'">ここを合わせる</button><button class="vp-b sm" data-cmppick="'+side+'">差し替え</button></div>'+
     '<div class="cp-mk" id="cpm-'+side+'">合わせ位置 '+p.mark.toFixed(2)+'秒</div></div>';}
-function drawCompare(){const e=cmpEl(),c=cmp;document.body.classList.add('noscroll');e.hidden=false;
+function drawCompare(){setTimeout(navSync,0);const e=cmpEl(),c=cmp;document.body.classList.add('noscroll');e.hidden=false;
   e.innerHTML='<div class="vp-top"><button class="vp-close" data-act="cmpClose">✕ 閉じる</button><span class="vp-ttl">'+(c.saved?esc(c.saved.by)+'からの比較<small>'+esc(c.saved.text||'')+'</small>':'左右に並べて比べる<small>同じ場面で止めて「ここを合わせる」→ 同時に再生</small>')+'</span><button class="vp-ic" data-act="cmpDraw" aria-label="図示">✏️</button>'+(c.saved?'':'<button class="btn pri sm2" data-act="cmpSave">保存して送る</button>')+'</div>'+
     '<div class="cp-wrap">'+paneHtml('L')+paneHtml('R')+'</div>'+
     '<div class="cp-bot"><div class="vp-row"><button class="vp-b" data-act="cmpStepB">◀1コマ</button><button class="vp-b big" data-act="cmpPlay" id="cmp-pp">▶ 同時に再生</button><button class="vp-b" data-act="cmpStepF">1コマ▶</button></div>'+
@@ -1731,14 +1906,33 @@ function openSavedCompare(id){const x=(S.cmps||[]).find(c=>c.id===id);if(!x)retu
   cmp={L:{v:L,url:'',mark:x.lm},R:{v:R,url:'',mark:x.rm},rate:x.rate||1,pick:false,saved:x};drawCompare();
   if(who==='本人'&&!x.seen)call('saveCompare',{who,key,id,seen:true}).then(r=>{if(r&&r.cmps)S.cmps=r.cmps;}).catch(()=>{});}
 /* 次の課題 */
-const openTasks=()=>(S.tasks||[]).filter(t=>!(t.st==='できた'&&t.ok)).sort((a,b)=>a.at<b.at?1:-1);
+const openTasks=()=>(S.tasks||[]).filter(t=>t.ev!=='できている').sort((a,b)=>a.at<b.at?1:-1);
 function taskItem(t){const isMe=who==='本人',isC=(S.coaches||[]).indexOf(who)>=0,v=(S.videos||[]).find(x=>x.id===t.vid);
-  return '<div class="task'+(t.st==='できた'?' done':'')+'"><b>'+esc(t.text)+'</b><small>'+esc(String(t.at).slice(5,10)+' '+t.by+(t.st!=='未'?'｜本人：'+t.st:'')+(t.memo?'「'+t.memo+'」':'')+(t.ok?'｜'+t.ok:''))+'</small><div class="task-b">'+
+  return '<div class="task'+(t.st==='できた'?' done':'')+'"><b>'+esc(t.text)+'</b><small>'+esc(String(t.at).slice(5,10)+' '+t.by+(t.st!=='未'?'｜本人：'+t.st:'')+(t.memo?'「'+t.memo+'」':'')+(t.ev?'｜評価：'+t.ev+(t.evBy?'（'+t.evBy+'）':''):''))+'</small><div class="task-b">'+
     (v?'<button class="btn sm2" data-vplay="'+esc(v.id)+'">▶ 動画</button>':'')+
     (isMe?'<button class="btn sm2'+(t.st==='できた'?' on':'')+'" data-taskst="'+esc(t.id)+'|できた">できた</button><button class="btn sm2'+(t.st==='まだ'?' on':'')+'" data-taskst="'+esc(t.id)+'|まだ">まだ</button>':'')+
-    (!isMe&&t.st==='できた'&&!t.ok?'<button class="btn sm2 pri" data-taskok="'+esc(t.id)+'">確認した</button>':'')+
+    (!isMe?['できている','良くなった','まだ'].map(e=>'<button class="btn sm2'+(t.ev===e?' on':'')+'" data-taskev="'+esc(t.id)+'|'+e+'">'+e+'</button>').join(''):'')+
     (!isMe&&!isC?'<button class="linkbtn2 danger" data-taskdel="'+esc(t.id)+'">消す</button>':'')+'</div></div>';}
 function tasksHtml(title){const L=openTasks();if(!L.length)return '';return '<h2>'+(title||'次の課題')+'（'+L.length+'）</h2><div class="tasks">'+L.map(taskItem).join('')+'</div>';}
+/* ===== v4.54 アプリに入るコーチ（5章）：動画の画面・ひとこと欄・比較・課題は、リンクのページと同じ部品・同じ操作。記録も同じ表 ===== */
+/** この動画を含む、自分あてで受付中のチームの相談（いちばん新しいもの）。なければ相談に入れない普段のひとこと */
+function coachReq(vid){return (S.myreqs||[]).filter(q=>q.kind==='チーム'&&q.name===who&&q.st==='受付中'&&(!q.exp||q.exp>=TODAY)&&cVids(q).indexOf(vid)>=0).sort((a,b)=>a.at<b.at?1:-1)[0]||null;}
+/** 動画の印（見える範囲のすべての記録。本人の書き添え・質問にはこの場面で答えられる） */
+function appMarks(vid){const cs=(S.vcoms||[]).filter(c=>c.vid===vid),byId={};cs.forEach(c=>byId[c.id]=c);const ans={};
+  cs.filter(c=>c.kind==='答え'&&byId[c.rep]).forEach(a=>(ans[a.rep]=ans[a.rep]||[]).push(a));
+  return cs.filter(c=>!(c.kind==='答え'&&byId[c.rep])).map(c=>{const fam=cIsFamK(c.kind)||(!c.kind&&(S.coaches||[]).indexOf(c.by)<0);
+    return {id:c.id,t:c.t,fam,kindL:fam?dispName(c.by)+(c.kind==='本人の書き添え'?'の書き添え':c.kind==='質問'?'の質問':''):'',star:!!c.star,text:c.text,part:c.part,ev:c.ev,mine:c.by===who,img:c.img?apiImg(c.img):'',by:fam?dispName(c.by):c.by,req:c.req,answers:(ans[c.id]||[]).map(a=>({by:a.by,text:a.text,part:a.part,ev:a.ev}))};});}
+function coachOpen(id){const v=(S.videos||[]).find(x=>x.id===id);if(!v)return;if(vplay)closePlayer();const q=coachReq(id),c={rate:1,id};
+  scOpen({v,mode:'coach',c,canStar:!!q,sub:q?dispName(q.by)+'からの相談（'+String(q.at).slice(5,10)+'）':'',marks:()=>appMarks(id),words:g=>vWords(g),groups:()=>vGroups(v.kind),
+    save:p=>{const rep=p.rep&&appMarks(id).find(m=>m.id===p.rep),req=p.id?undefined:rep?rep.req:q?q.id:'';return call('videoComment',Object.assign({who,key},p,req!==undefined?{req}:{})).then(d=>applyPart(d));},
+    remove:mid=>call('videoComment',{who,key,id:mid,remove:true}).then(d=>applyPart(d)),
+    extra:[{label:'⇆ 比べる',fn:()=>coachCmp(v,q)}],onClose:()=>render(),
+    load:sc=>loadVideo(v,{c,alive:()=>SC===sc,onOk:()=>scBind()})});}
+function coachCmp(L,q){const R=q?(S.videos||[]).find(v=>v.req===q.id&&v.ref)||(S.videos||[]).find(v=>q.vids.indexOf(v.id)>=0&&v.id!==L.id):null;scClose(true);
+  cpOpen({L,R,src:(v,onp)=>vBlob(v,onp).then(url=>({url,cors:false})),lab:v=>v.ref?'参考':'本人',words:g=>vWords(g),groups:()=>vGroups(L.kind),
+    pick:()=>(S.videos||[]).filter(v=>v.id!==L.id&&v.type!=='写真').sort((a,b)=>(b.ref-a.ref)||((a.d+a.at)<(b.d+b.at)?1:-1)).slice(0,60).map(v=>Object.assign({thumbU:thumbUrl(v)},v)),
+    save:p=>call('saveCompare',Object.assign({who,key},p,q?{req:q.id}:{})).then(r=>{if(r&&r.cmps)S.cmps=r.cmps;}),onClose:()=>coachOpen(L.id)});}
+
 /* 練習前の1画面（コーチのホーム） */
 function coachBrief(){if((S.coaches||[]).indexOf(who)<0)return '';const n=S.notes[TODAY]||{},d=DAYS[DIDX[TODAY]];const rows=d?rowsOf(d):[];
   const want=(S.videos||[]).filter(v=>v.want&&v.d>=addD(TODAY,-30)&&!vComs(v.id).some(c=>(S.coaches||[]).indexOf(c.by)>=0)).length;
@@ -1910,105 +2104,397 @@ function renderVideos(){const all=S.videos||[],kinds=[...new Set(all.filter(v=>!
 // ---------- v4.44：外部への評価依頼（依頼ごとのリンク）。外部の画面と、家族が依頼を作る画面 ----------
 const XLINK=k=>location.origin+location.pathname.replace(/index\.html$/,'')+'?openExternalBrowser=1#r='+k;
 /* ===== 外部の人の画面：この依頼の動画だけ。ほかは何も見えない ===== */
+/* ================= v4.54 場面の画面：全画面の動画・＋ この場面・止まった画面に直接図（リンクのコーチ・アプリのコーチ・家族・本人の書き添えで同じ部品） =================
+ * scOpen(o)  o = {v 動画, mode 'coach'|'fam'|'note', marks()→印の一覧, load(sc)→再生の準備, save(p)→Promise, remove(id)→Promise, words(g)→言葉, canStar, draft(get/set), onClose, addLabel, askLabel}
+ * 印 = {id, t, fam 本人・家族の印か, kind, star, text, part, ev, mine 自分の, rep, img 図のアドレス, by} */
+let SC=null,SC_LAST_SENT=0;
+/** 受付番号：同じ欄で同じ中身なら同じ番号（返事が消えて押し直しても二重にならない）。中身を直せば別の番号 */
+const scBase=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+function scNonce(base,content){let h=2166136261;const s=String(content);for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}return (base+'_'+h.toString(36)).slice(0,60);}
+const SC_RATES=[1,0.5,0.25],scRateL=r=>r===1?'1倍':r===0.5?'½':'¼';
+const scT=t=>t==null?'':t.toFixed(1)+'秒';
+function scVe(){return document.getElementById('vp-video');}
+/** 開く */
+function scOpen(o){setTimeout(navSync,0);if(SC)scClose(true);SC=Object.assign({rate:1,form:null,bub:null},o);const v=o.v,pv=vpEl();document.body.classList.add('noscroll');pv.hidden=false;pv.className='sc';
+  pv.innerHTML='<div class="vp-stage" id="vp-stage"><div class="vp-load" id="vp-load">読み込み中…</div></div><canvas id="sc-cv" class="sc-cv" hidden></canvas>'+
+    '<div class="vp-ui sc-ui" id="vp-ui"><div class="sc-top"><button class="sc-x'+(o.closeLabel?' wide':'')+'" data-sc="close" aria-label="閉じる">'+esc(o.closeLabel||'✕')+'</button><span class="sc-ttl">'+(v.star?'☆ ':'')+esc(v.title||'')+(o.sub?'<small>'+esc(o.sub)+'</small>':'')+'</span>'+'<button class="sc-rate sc-xb" data-sc="list" id="sc-n">'+scCountL()+'</button>'+(o.extra||[]).map((x,i)=>'<button class="sc-rate sc-xb" data-scx="'+i+'">'+esc(x.label)+'</button>').join('')+(v.photo?'':'<button class="sc-rate" data-sc="rate" id="sc-rate">1倍</button>')+'</div>'+
+    '<div class="sc-bot">'+(v.photo?'':'<div class="sc-bar" id="sc-bar"><div class="sc-fill" id="sc-fill"></div><div id="sc-marks"></div></div>')+
+    '<div class="sc-row">'+(v.photo?'':'<button class="sc-b" data-sc="stepB" aria-label="1コマ戻る">◀|</button><button class="sc-b big" data-sc="play" id="vp-pp" aria-label="再生">▶</button><button class="sc-b" data-sc="stepF" aria-label="1コマ進む">|▶</button><span class="sc-time" id="vp-time">0.0秒</span>')+
+    '<span class="sc-sp"></span>'+(o.noAdd?'':'<button class="sc-add" data-sc="add">'+esc(o.addLabel||'＋ この場面')+'</button>')+'</div></div></div>'+
+    '<div class="sc-bub" id="sc-bub" hidden></div><div class="sc-panel" id="sc-panel" hidden></div><div class="sc-flash" id="sc-flash" hidden></div>';
+  const st=document.getElementById('vp-stage');
+  // たたくと操作が出る・消える。横になぞるとコマ送り
+  let sx=null,sy=0,moved=false,acc=0;
+  st.addEventListener('touchstart',e=>{if(SC&&SC.form)return;const t=e.touches[0];sx=t.clientX;sy=t.clientY;moved=false;acc=0;},{passive:true});
+  st.addEventListener('touchmove',e=>{if(sx==null)return;const t=e.touches[0],dx=t.clientX-sx;if(!moved&&Math.abs(dx)>12&&Math.abs(dx)>Math.abs(t.clientY-sy)){moved=true;const ve=scVe();if(ve)ve.pause();}
+    if(moved){const n=Math.trunc((dx-acc)/10);if(n){acc+=n*10;vpStep(n);scTime();}}},{passive:true});
+  st.addEventListener('touchend',()=>{if(moved)st.dataset.swiped=String(Date.now());sx=null;},{passive:true});
+  st.addEventListener('click',e=>{if(e.target.closest('.vp-alt,.vp-tap'))return;if(Date.now()-Number(st.dataset.swiped||0)<400)return;if(SC&&SC.form)return;scToggle();});
+  const bar=document.getElementById('sc-bar');if(bar)bar.addEventListener('click',e=>{if(e.target.closest('[data-scm]'))return;const ve=scVe();if(!ve||!ve.duration)return;const r=bar.getBoundingClientRect();ve.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*ve.duration;scTime();});
+  window.addEventListener('resize',scFit);
+  Promise.resolve(o.load(SC)).then(()=>{}).catch(()=>{});
+  scShow();navSync();}
+/** 動画が再生できるようになったら（loadVideo の onOk）：再生が始まったらすぐ操作を消す・止めたら出す */
+function scBind(){const ve=scVe();if(!ve||ve.dataset.sc)return;ve.dataset.sc='1';ve.loop=true;if(!LS.get('scHint')){LS.set('scHint','1');setTimeout(()=>scFlash('画面をたたくと、操作が出ます',2200),300);}
+  ve.addEventListener('play',()=>{const pp=document.getElementById('vp-pp');if(pp)pp.textContent='❚❚';const fg=document.getElementById('sc-figimg');if(fg)fg.remove();if(SC&&!SC.form){SC.hideAt=Date.now();scHide();}});
+  ve.addEventListener('pause',()=>{const pp=document.getElementById('vp-pp');if(pp)pp.textContent='▶';scShow();});
+  ve.addEventListener('timeupdate',scTime);ve.addEventListener('seeked',scTime);ve.addEventListener('loadedmetadata',()=>{scMarks();scFit();});
+  ve.playbackRate=SC?SC.rate:1;if(ve.readyState>=1){scMarks();scFit();}if(!ve.paused)scHide();}
+function scHide(){const u=document.getElementById('vp-ui');if(u&&!(SC&&SC.form))u.classList.add('off');}
+function scShow(){const u=document.getElementById('vp-ui');if(u)u.classList.remove('off');}
+function scToggle(){const u=document.getElementById('vp-ui');if(!u)return;if(u.classList.contains('off'))scShow();else{const ve=scVe();if(ve&&!ve.paused)scHide();}}
+function scTime(){const ve=scVe();if(!ve)return;const tm=document.getElementById('vp-time'),f=document.getElementById('sc-fill');if(tm)tm.textContent=ve.currentTime.toFixed(1)+'秒';if(f&&ve.duration)f.style.width=(ve.currentTime/ve.duration*100)+'%';}
+function scCountL(){if(!SC)return '';const n=SC.marks().length;return 'ひとこと '+n+'件';}
+/** 再生の帯の印（コーチの印・本人の印は色違い。☆は大きく） */
+function scMarks(){const box=document.getElementById('sc-marks'),ve=scVe(),n=document.getElementById('sc-n');if(n)n.textContent=scCountL();if(!box||!ve||!ve.duration)return;
+  box.innerHTML=SC.marks().filter(m=>m.t!=null).map(m=>'<button class="sc-m'+(m.fam?' fam':'')+(m.star?' star':'')+'" style="left:'+Math.min(100,m.t/ve.duration*100).toFixed(2)+'%" data-scm="'+esc(m.id)+'" aria-label="'+esc(scT(m.t)+' '+(m.fam?'本人':'コーチ'))+'"></button>').join('');}
+/** 印をたたく：その場面で止めて、ひとことを出す */
+function scBubble(id){const m=SC.marks().find(x=>x.id===id),b=document.getElementById('sc-bub');if(!m||!b)return;const ve=scVe();if(ve&&m.t!=null){ve.pause();ve.currentTime=m.t;scTime();}
+  SC.bub=id;b.className='sc-bub'+(m.fam?' fam':'');b.innerHTML=scItem(m,true)+'<button class="sc-bx" data-sc="bubX" aria-label="閉じる">✕</button>';b.hidden=false;}
+/** ひとこと1件の表示（帯の吹き出し・一覧で同じ） */
+function scItem(m,acts){const lab=(m.fam?'<span class="sc-who fam">'+esc(m.kindL||'本人')+'</span>':'<span class="sc-who">'+esc(m.by||'コーチ')+'</span>');
+  const body=[[m.part,m.ev].filter(Boolean).join('・'),m.text].filter(Boolean).join('：');
+  let h='<div class="sc-it"><div class="sc-ih">'+(m.star?'<b class="sc-star">☆いちばん大事</b>':'')+'<b>'+esc(scT(m.t))+'</b>'+lab+(m.isNew?'<b class="sc-new">新</b>':'')+'</div><div class="sc-ib">'+esc(body||'（図）').replace(/\n/g,'<br>')+'</div>'+(m.img?'<img class="sc-iimg" alt="図" src="'+esc(m.img)+'" data-scimg="'+esc(m.img)+'">':'')+
+    (m.answers||[]).map(a=>'<div class="sc-ans'+(a.lab==='質問'?' q':'')+'">'+esc(a.by||'')+'の'+esc(a.lab||'答え')+'：'+esc([[a.part,a.ev].filter(Boolean).join('・'),a.text].filter(Boolean).join('：'))+'</div>').join('');
+  if(acts){h+='<div class="sc-acts">';if(m.t!=null)h+='<button class="sc-b sm" data-scgo="'+esc(m.id)+'">▶ この場面から</button>';
+    if(m.mine)h+='<button class="sc-b sm" data-scedit="'+esc(m.id)+'">直す</button><button class="sc-b sm" data-scdel="'+esc(m.id)+'">取り消す</button>';
+    if(m.fam&&SC.mode==='coach')h+='<button class="sc-b sm pri" data-scans="'+esc(m.id)+'">この場面で答える</button>';
+    if(!m.fam&&SC.mode==='fam'&&SC.askLabel)h+='<button class="sc-b sm" data-scans="'+esc(m.id)+'">'+esc(SC.askLabel)+'</button>';
+    h+='</div>';}
+  return h+'</div>';}
+/** 一覧（この動画のひとこと。時刻の順） */
+function scList(){const p=document.getElementById('sc-panel'),L=SC.marks().slice().sort((a,b)=>(a.t==null?1e9:a.t)-(b.t==null?1e9:b.t));
+  p.innerHTML='<div class="vp-ph"><b>'+esc(scCountL())+'</b><button class="vp-ic" data-sc="panelX" aria-label="閉じる">✕</button></div>'+(L.length?L.map(m=>scItem(m,true)).join(''):'<p class="note">まだありません。気になった場面で「＋ この場面」を押してください。</p>');p.hidden=false;SC.listOpen=true;scShow();}
+/* ---------- ＋ この場面：止めて、動画を上の6割に縮め、下にひとこと欄 ---------- */
+function scAdd(edit,rep){navSync();const ve=scVe(),pv=document.getElementById('vplayer');if(ve)ve.pause();const L=SC.marks();
+  const m=edit?L.find(x=>x.id===edit):null,q=rep?L.find(x=>x.id===rep):null;if(m&&m.t!=null&&ve)ve.currentTime=m.t;if(q&&q.t!=null&&ve)ve.currentTime=q.t;
+  const dr=!m&&!q&&SC.draft?SC.draft.get():null;
+  SC.form={id:m?m.id:'',rep:q?q.id:'',t:ve&&!SC.v.photo?Math.round(ve.currentTime*100)/100:(m?m.t:null),part:m?m.part:(dr&&dr.part)||'',ev:m?m.ev:(dr&&dr.ev)||'',text:m?m.text:(dr&&dr.text)||'',star:m?!!m.star:false,shapes:[],tool:'arrow',ang:[],g:''};
+  SC.listOpen=false;{const fl=document.getElementById('sc-flash');if(fl)fl.hidden=true;}document.getElementById('sc-bub').hidden=true;pv.classList.remove('seqon');scFig('');pv.classList.add('shrink');document.getElementById('vp-ui').classList.remove('off');scForm();setTimeout(scFit,60);}
+function scForm(){const f=SC.form,p=document.getElementById('sc-panel'),gs=SC.groups?SC.groups():vGroups(SC.v.kind);f.g=f.g&&gs.indexOf(f.g)>=0?f.g:gs[0]||'';
+  const q=f.rep?SC.marks().find(x=>x.id===f.rep):null;
+  let h='<div class="sc-tools"><button class="sc-b sm" data-sc="stepB">◀|</button><button class="sc-b sm" data-sc="stepF">|▶</button><span class="sc-time2">'+esc(scT(f.t))+'</span><span class="sc-sp"></span>'+
+    [['line','線'],['arrow','矢印'],['angle','角度']].map(([k,l])=>'<button class="sc-b sm'+(f.tool===k?' on':'')+'" data-sctool="'+k+'">'+l+'</button>').join('')+'<button class="sc-b sm" data-sc="undo"'+(f.shapes.length?'':' disabled')+'>戻す</button></div>';
+  h+='<div class="vp-ph"><b>'+(q?esc((q.kindL||'本人')+'の'+(SC.mode==='coach'?'書き添え・質問に答える':'ひとことについて聞く')):f.id?'ひとことを直す':(SC.v.photo?'この写真へのひとこと':esc(scT(f.t))+'の場面'))+'</b><button class="sc-b sm" data-sc="formX">やめる</button></div>';
+  if(q)h+='<div class="sc-quote">「'+esc([[q.part,q.ev].filter(Boolean).join('・'),q.text].filter(Boolean).join('：'))+'」</div>';
+  if(gs.length>1)h+='<div class="wrap">'+gs.map(g=>'<button class="opt sm" data-scg="'+esc(g)+'" aria-pressed="'+(f.g===g)+'">'+esc(g)+'</button>').join('')+'</div>';
+  if(f.g&&SC.mode!=='fam')h+='<div class="vp-lab">どこ</div><div class="wrap">'+[...new Set(SC.words(f.g))].map(w=>'<button class="opt sm" data-scpart="'+esc(w)+'" aria-pressed="'+(f.part===w)+'">'+esc(w)+'</button>').join('')+'</div>';
+  if(SC.mode!=='fam')h+='<div class="vp-lab">どう</div><div class="wrap">'+[...new Set(SC.words('評価'))].map(w=>'<button class="opt sm" data-scev="'+esc(w)+'" aria-pressed="'+(f.ev===w)+'">'+esc(w)+'</button>').join('')+'</div>';
+  h+='<div class="sc-txt"><textarea id="sc-text" rows="2" maxlength="500" placeholder="'+esc(SC.mode==='coach'?'書き足す（任意）':SC.mode==='note'?'この場面で見てほしいこと・感じていること':'聞きたいこと')+'">'+esc(f.text||'')+'</textarea><button class="sc-b sm" data-sc="mic" id="sc-mic">🎤 話して書く</button></div>';
+  h+='<div class="sc-foot">'+(SC.canStar?'<button class="sc-b sm'+(f.star?' on':'')+'" data-sc="star" aria-pressed="'+f.star+'">☆ いちばん大事</button>':'')+'<span class="sc-fig" id="sc-fig"'+(f.shapes.length?'':' hidden')+'>図あり ✓</span><span class="sc-sp"></span><button class="btn pri" data-sc="send">'+(f.id?'直して送る':'送る')+'</button></div>';
+  if(!SC.v.photo)h+='<p class="note sc-hint">止まった画面に、指で直接図をかけます（線・矢印・角度）</p>';
+  p.innerHTML=h;p.hidden=false;const ta=document.getElementById('sc-text');ta.oninput=()=>{f.text=ta.value;scDraftSave();};scDraw();}
+function scDraftSave(){const f=SC.form;if(!SC.draft||!f||f.id||f.rep)return;SC.draft.set({part:f.part,ev:f.ev,text:f.text});}
+function scFormClose(){const pv=document.getElementById('vplayer');SC.form=null;if(pv)pv.classList.remove('shrink');const p=document.getElementById('sc-panel');if(p){p.hidden=true;p.innerHTML='';}const cv=document.getElementById('sc-cv');if(cv)cv.hidden=true;setTimeout(scFit,60);scShow();}
+/* ---------- 止まった画面に直接図をかく ---------- */
+/** 動画（写真）が画面に出ている四角（object-fit: contain） */
+function scRect(){const st=document.getElementById('vp-stage'),ve=scVe(),im=document.getElementById('vp-img');if(!st)return null;const r=st.getBoundingClientRect(),w=ve?ve.videoWidth:im?im.naturalWidth:0,h=ve?ve.videoHeight:im?im.naturalHeight:0;
+  if(!w||!h)return {x:r.left,y:r.top,w:r.width,h:r.height};const s=Math.min(r.width/w,r.height/h);return {x:r.left+(r.width-w*s)/2,y:r.top+(r.height-h*s)/2,w:w*s,h:h*s};}
+function scFit(){const cv=document.getElementById('sc-cv');if(!cv)return;if(!SC||!SC.form){cv.hidden=true;return;}const R=scRect();if(!R)return;cv.hidden=false;
+  Object.assign(cv.style,{left:R.x+'px',top:R.y+'px',width:R.w+'px',height:R.h+'px'});const d=window.devicePixelRatio||1;cv.width=Math.round(R.w*d);cv.height=Math.round(R.h*d);scDraw();
+  if(!cv.dataset.on){cv.dataset.on='1';let cur=null;const pt=e=>{const r=cv.getBoundingClientRect();return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height];};
+    cv.addEventListener('pointerdown',e=>{if(!SC||!SC.form)return;e.preventDefault();cv.setPointerCapture(e.pointerId);const f=SC.form,p=pt(e);
+      if(f.tool==='angle'){f.ang.push(p);if(f.ang.length===3){f.shapes.push({k:'angle',p:f.ang.slice()});f.ang=[];scFormFig();}scDraw();return;}cur={k:f.tool,a:p,b:p};f.cur=cur;});
+    cv.addEventListener('pointermove',e=>{if(!cur)return;cur.b=pt(e);scDraw();});
+    cv.addEventListener('pointerup',()=>{if(!cur)return;const f=SC.form;f.cur=null;if(Math.hypot(cur.b[0]-cur.a[0],cur.b[1]-cur.a[1])>0.02){f.shapes.push(cur);scFormFig();}cur=null;scDraw();});}}
+function scFormFig(){const f=SC.form,e=document.getElementById('sc-fig');if(e)e.hidden=!f.shapes.length;const u=document.querySelector('[data-sc="undo"]');if(u)u.disabled=!f.shapes.length;}
+/** 図をかく（W×H の大きさの絵に。画面の上でも、送る画像でも同じ処理） */
+function scPaint(ctx,W,H,shapes,ang,cur){const lw=Math.max(3,W/180),c='#FF3B30';ctx.lineWidth=lw;ctx.strokeStyle=c;ctx.fillStyle=c;ctx.lineCap='round';ctx.lineJoin='round';
+  const P=p=>[p[0]*W,p[1]*H];
+  (shapes||[]).concat(cur?[cur]:[]).forEach(s=>{if(s.k==='angle'){const [a,b,d]=s.p.map(P);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.lineTo(d[0],d[1]);ctx.stroke();
+      let g=Math.abs(Math.atan2(a[1]-b[1],a[0]-b[0])-Math.atan2(d[1]-b[1],d[0]-b[0]))*180/Math.PI;if(g>180)g=360-g;ctx.font='bold '+Math.round(lw*6)+'px sans-serif';ctx.lineWidth=lw*1.5;ctx.strokeStyle='#fff';ctx.strokeText(Math.round(g)+'°',b[0]+lw*3,b[1]-lw*3);ctx.fillText(Math.round(g)+'°',b[0]+lw*3,b[1]-lw*3);ctx.lineWidth=lw;ctx.strokeStyle=c;return;}
+    const [a,b]=[P(s.a),P(s.b)];ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();
+    if(s.k==='arrow'){const t=Math.atan2(b[1]-a[1],b[0]-a[0]),L=lw*5;ctx.beginPath();ctx.moveTo(b[0],b[1]);ctx.lineTo(b[0]-L*Math.cos(t-0.45),b[1]-L*Math.sin(t-0.45));ctx.lineTo(b[0]-L*Math.cos(t+0.45),b[1]-L*Math.sin(t+0.45));ctx.closePath();ctx.fill();}});
+  (ang||[]).forEach(p=>{const q=P(p);ctx.beginPath();ctx.arc(q[0],q[1],lw*1.6,0,7);ctx.fill();});}
+function scDraw(){const cv=document.getElementById('sc-cv');if(!cv||cv.hidden||!SC||!SC.form)return;const x=cv.getContext('2d');x.clearRect(0,0,cv.width,cv.height);const f=SC.form;scPaint(x,cv.width,cv.height,f.shapes,f.ang,f.cur);}
+/** 送る画像：止まった画面＋図（図がなければ空） */
+function scImage(){const f=SC.form;if(!f||!f.shapes.length)return '';const ve=scVe(),im=document.getElementById('vp-img');let base;
+  if(ve)base=grabFrame(ve);else if(im){base=document.createElement('canvas');base.width=im.naturalWidth;base.height=im.naturalHeight;base.getContext('2d').drawImage(im,0,0);}else return '';
+  const W=Math.min(base.width,1280),H=Math.round(base.height*W/base.width),c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.drawImage(base,0,0,W,H);scPaint(x,W,H,f.shapes,[],null);
+  return c.toDataURL('image/jpeg',0.82).split(',')[1];}
+/* ---------- 話して書く ---------- */
+function scMic(id,btn){const ta=document.getElementById(id);if(!ta)return;const R=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!R){ta.focus();toast('キーボードのマイクのボタンで、話して入力できます');return;}
+  if(scMic.cur){try{scMic.cur.stop();}catch(e){}return;}const r=new R();r.lang='ja-JP';r.interimResults=false;r.continuous=false;scMic.cur=r;const o=btn?btn.innerHTML:'';if(btn){btn.innerHTML='● 聞いています…（止める）';btn.classList.add('on');}
+  const end=()=>{scMic.cur=null;if(btn){btn.innerHTML=o;btn.classList.remove('on');}};
+  r.onresult=e=>{const t=Array.from(e.results).map(x=>x[0].transcript).join('');ta.value=(ta.value?ta.value.replace(/\s+$/,'')+(/[。、]$/.test(ta.value.trim())?'':'。'):'')+t;ta.dispatchEvent(new Event('input'));};
+  r.onerror=e=>{end();if(e.error==='not-allowed')toast('マイクが使えません。キーボードのマイクで話して入力できます');};r.onend=end;try{r.start();}catch(e){end();ta.focus();}}
+/* ---------- 送る・直す・取り消す ---------- */
+async function scSend(b){const f=SC.form;if(!f)return;const text=(document.getElementById('sc-text')||{value:''}).value.trim();
+  if(!text&&!f.part&&!f.ev&&!f.shapes.length){toast(SC.mode==='coach'?'言葉を選ぶか、書いてください':'書いてください');return;}
+  let img='';try{img=scImage();}catch(e){toast('この動画には図を残せませんでした（言葉だけ送ります）');}
+  const back=busy(b),p={vid:SC.v.id,t:f.t,part:f.part,ev:f.ev,text,img};if(SC.canStar)p.star=f.star;if(f.id)p.id=f.id;if(f.rep)p.rep=f.rep;
+  f.base=f.base||scBase();p._nonce=scNonce(f.base,JSON.stringify([p.vid,p.t,p.part,p.ev,p.text,p.star,p.id,p.rep,img.length,img.slice(-64)]));
+  try{await SC.save(p);}catch(e){back();toast(errMsg(e).replace(/^(Exception|Error):\s*/,''));return;}
+  SC.sent=(SC.sent||0)+1;
+  const tt=f.t;if(!f.id&&!f.rep&&SC.draft)SC.draft.set(null);scFormClose();scMarks();scFlash((SC.sentLabel||'送りました')+(tt!=null&&!SC.v.photo?'（'+scT(tt)+'）':''));
+  const ve=scVe();if(ve&&!SC.noResume){const pr=ve.play();if(pr&&pr.catch)pr.catch(()=>{});}}
+function scFlash(m,ms){const e=document.getElementById('sc-flash');if(!e)return;e.textContent=m;e.hidden=false;clearTimeout(scFlash.h);scFlash.h=setTimeout(()=>{e.hidden=true;},ms||1000);}
+function scClose(silent){const pv=document.getElementById('vplayer');if(SC&&SC.c&&SC.c.ac)SC.c.ac.abort();if(scMic.cur){try{scMic.cur.stop();}catch(e){}}
+  if(pv){const ve=pv.querySelector('video');if(ve){try{ve.pause();ve.removeAttribute('src');ve.load();}catch(e){}}pv.innerHTML='';pv.hidden=true;pv.className='';}
+  window.removeEventListener('resize',scFit);document.body.classList.remove('noscroll');const o=SC;SC=null;SC_LAST_SENT=o?o.sent||0:0;if(!silent&&o&&o.onClose)o.onClose();}
+/** 場面の画面のボタン */
+function scClick(ds,b){if(!SC)return false;
+  if(ds.scm){if(SC.seq){const j=SC.seq.list.findIndex(s=>s.m&&s.m.id===ds.scm);if(j>=0){SC.seq.show(j);return true;}}scBubble(ds.scm);return true;}
+  if(ds.scx!==undefined){const x=(SC.extra||[])[Number(ds.scx)];if(x)x.fn();return true;}
+  if(ds.scseq!==undefined){const j=Number(ds.scseq);if(SC.seq&&j>=0&&j<SC.seq.list.length)SC.seq.show(j);return true;}
+  if(ds.scfig!==undefined){const f=document.getElementById('sc-figimg');if(f){f.remove();b.textContent='図を見る';}else{scFig(ds.scfig);b.textContent='図を消す';}return true;}
+  if(ds.scgo){const m=SC.marks().find(x=>x.id===ds.scgo),ve=scVe();document.getElementById('sc-panel').hidden=true;SC.listOpen=false;document.getElementById('sc-bub').hidden=true;if(ve&&m&&m.t!=null){ve.currentTime=m.t;const p=ve.play();if(p&&p.catch)p.catch(()=>{});}return true;}
+  if(ds.scedit){scAdd(ds.scedit,'');return true;}
+  if(ds.scans){scAdd('',ds.scans);return true;}
+  if(ds.scdel){if(!confirm('このひとことを取り消しますか？'))return true;const back=busy(b,'取り消しています…');Promise.resolve(SC.remove(ds.scdel)).then(()=>{if(!SC)return;document.getElementById('sc-bub').hidden=true;scMarks();if(SC.listOpen)scList();scFlash('取り消しました');}).catch(e=>{back();toast(errMsg(e));});return true;}
+  if(ds.scimg){const w=document.createElement('div');w.className='vp-imgfull';w.innerHTML='<img alt="図" src="'+esc(ds.scimg)+'"><span>たたくと閉じます</span>';w.onclick=()=>w.remove();document.body.appendChild(w);return true;}
+  if(ds.sctool){SC.form.tool=ds.sctool;SC.form.ang=[];scForm();return true;}
+  if(ds.scg!==undefined){SC.form.g=ds.scg;scForm();return true;}
+  if(ds.scpart!==undefined){SC.form.part=SC.form.part===ds.scpart?'':ds.scpart;scDraftSave();scForm();return true;}
+  if(ds.scev!==undefined){SC.form.ev=SC.form.ev===ds.scev?'':ds.scev;scDraftSave();scForm();return true;}
+  const a=ds.sc;if(!a)return false;const ve=scVe();
+  if(a==='close'){scClose();return true;}
+  if(a==='play'){if(!ve)return true;if(ve.paused){const p=ve.play();if(p&&p.catch)p.catch(()=>{});}else ve.pause();return true;}
+  if(a==='stepB'||a==='stepF'){vpStep(a==='stepB'?-1:1);scTime();if(SC.form&&ve){SC.form.t=Math.round(ve.currentTime*100)/100;const e=document.querySelector('.sc-time2');if(e)e.textContent=scT(SC.form.t);const h=document.querySelector('#sc-panel .vp-ph b');if(h&&!SC.form.id&&!SC.form.rep)h.textContent=scT(SC.form.t)+'の場面';}return true;}
+  if(a==='rate'){const i=(SC_RATES.indexOf(SC.rate)+1)%SC_RATES.length;SC.rate=SC_RATES[i];if(SC.c)SC.c.rate=SC.rate;if(ve){ve.playbackRate=SC.rate;ve.defaultPlaybackRate=SC.rate;}b.textContent=scRateL(SC.rate);return true;}
+  if(a==='add'){scAdd('','');return true;}
+  if(a==='list'){if(SC.listOpen){document.getElementById('sc-panel').hidden=true;SC.listOpen=false;}else{if(ve)ve.pause();scList();}return true;}
+  if(a==='panelX'){document.getElementById('sc-panel').hidden=true;SC.listOpen=false;return true;}
+  if(a==='bubX'){document.getElementById('sc-bub').hidden=true;return true;}
+  if(a==='fromHere'){if(!ve)return true;SC.rate=0.5;ve.playbackRate=0.5;const rb=document.getElementById('sc-rate');if(rb)rb.textContent='½';document.getElementById('sc-bub').hidden=true;document.getElementById('vplayer').classList.remove('seqon');scFig('');const p=ve.play();if(p&&p.catch)p.catch(()=>{});return true;}
+  if(a==='formX'){scFormClose();return true;}
+  if(a==='undo'){const f=SC.form;if(f.ang.length)f.ang=[];else f.shapes.pop();scFormFig();scDraw();return true;}
+  if(a==='star'){SC.form.star=!SC.form.star;b.classList.toggle('on',SC.form.star);b.setAttribute('aria-pressed',SC.form.star);return true;}
+  if(a==='mic'){scMic('sc-text',b);return true;}
+  if(a==='send'){scSend(b);return true;}
+  return true;}
+
+/* ================= v4.54 比べる（リンクのコーチ・アプリ・家族で同じ部品）：並べる／重ねる・それぞれ同じ瞬間で「ここで合わせる」・同時に再生・コマ送り・½／¼ =================
+ * cpOpen(o)  o = {L, R 動画, src(v)→Promise<{url, cors}>, pick()→右に入れられる動画の一覧, view 届いた比較を見るとき（{by,part,text,limg,rimg,lm,rm,rate}）, save(p)→Promise, words(g), groups(), onClose, lab(v)} */
+let CP=null;
+function cpEl(){let e=document.getElementById('vcmp2');if(!e){e=document.createElement('div');e.id='vcmp2';e.setAttribute('role','dialog');document.body.appendChild(e);}return e;}
+function cpOpen(o){setTimeout(navSync,0);CP=Object.assign({mode:'side',rate:o.slow?0.5:o.view?(o.view.rate||1):1,lm:o.view?o.view.lm||0:0,rm:o.view?o.view.rm||0:0,url:{},op:0.5,form:null,img:{}},o);document.body.classList.add('noscroll');cpDraw();navSync();}
+function cpLab(v){return CP.lab?CP.lab(v):(v.ref?'参考':'本人');}
+function cpDraw(){const c=CP,e=cpEl();e.hidden=false;const pane=s=>{const v=c[s];if(!v)return '<div class="cp2-p empty"><button class="btn" data-cp="pick">＋ 比べる動画を選ぶ</button></div>';
+    return '<div class="cp2-p" id="cp2-'+s+'"><div class="cp2-st" id="cp2st-'+s+'"><div class="vp-load">読み込み中…</div></div><div class="cp2-lab"><b>'+esc(cpLab(v))+'</b> '+esc(v.title||'')+'</div>'+
+      (c.view?'':'<div class="cp2-mk"><span id="cp2m-'+s+'">合わせる位置 '+(s==='L'?c.lm:c.rm).toFixed(1)+'秒</span><button class="vp-b sm" data-cpmark="'+s+'">'+(s==='L'?'左':'右')+'をここで合わせる</button></div>')+'</div>';};
+  e.innerHTML='<div class="vp-top"><button class="vp-close" data-cp="close">'+(c.view?'← 戻る':'← 戻る')+'</button><span class="vp-ttl">'+(c.view?esc((c.view.by||'コーチ')+'・比較'+(c.view.part?'（'+c.view.part+'で合わせています）':'')):'比べる')+'</span>'+
+    '<span class="cp2-seg"><button class="vp-b sm'+(c.mode==='side'?' on':'')+'" data-cpmode="side">並べる</button><button class="vp-b sm'+(c.mode==='over'?' on':'')+'" data-cpmode="over">重ねる</button></span></div>'+
+    '<div class="cp2-wrap '+c.mode+'">'+pane('L')+pane('R')+'</div>'+(c.mode==='over'?'<div class="cp2-op"><span>左</span><input type="range" id="cp2-op" min="0" max="100" value="'+Math.round(c.op*100)+'"><span>右</span></div>':'')+
+    (c.view||c.noSave||c.lm||c.rm?'':'<p class="note cp2-how"><b>合わせ方</b>：左右それぞれを同じ瞬間（例：踏み切り）で止めて「ここで合わせる」。あとは同時に動きます。</p>')+
+    '<div class="cp-bot"><div class="vp-row"><button class="vp-b" data-cp="stepB">◀ 1コマ</button><button class="vp-b big" data-cp="play" id="cp2-pp">'+cpPlayL()+'</button><button class="vp-b" data-cp="stepF">1コマ ▶</button>'+
+    '<button class="vp-b sm" data-cp="rate" id="cp2-rate">'+scRateL(c.rate)+'</button></div>'+
+    (c.view?cpViewHtml():c.noSave?'':'<div class="vp-row"><button class="vp-b com" data-cp="com"'+(c.L&&c.R?'':' disabled')+'>この比較にひとこと</button></div>')+(c.nav?'<div class="vp-row"><button class="vp-b sm" data-cp="prev"'+(c.nav.prev?'':' disabled')+'>◀ 前</button><span class="cp2-n">'+c.nav.n+'／'+c.nav.of+'</span><button class="vp-b sm" data-cp="next"'+(c.nav.next?'':' disabled')+'>次のひとこと ▶</button></div>':'')+'</div>'+
+    (c.form?'<div class="vp-panel" id="cp2-panel">'+cpFormHtml()+'</div>':'')+(c.picking?'<div class="vp-panel">'+cpPickHtml()+'</div>':'');
+  ['L','R'].forEach(s=>{if(c[s])cpMount(s);});const op=document.getElementById('cp2-op');if(op)op.oninput=()=>{c.op=op.value/100;const r=document.getElementById('cp2v-R');if(r)r.style.opacity=c.op;};
+  const ta=document.getElementById('cp2-text');if(ta)ta.oninput=()=>{c.form.text=ta.value;};}
+function cpViewHtml(){const x=CP.view;return '<div class="cp2-card"><div class="sc-ih"><b>'+esc(x.by||'コーチ')+'</b>'+(x.part?'<span class="sc-who">'+esc(x.part)+'</span>':'')+'</div><div>'+esc(x.text||'').replace(/\n/g,'<br>')+'</div>'+
+  ((x.limgU||x.rimgU)?'<div class="cp2-imgs">'+(x.limgU?'<img alt="左の図" src="'+esc(x.limgU)+'" data-scimg="'+esc(x.limgU)+'">':'')+(x.rimgU?'<img alt="右の図" src="'+esc(x.rimgU)+'" data-scimg="'+esc(x.rimgU)+'">':'')+'</div>':'')+
+  (CP.only?'<div class="vp-row"><button class="vp-b sm" data-cponly="L">'+esc(CP.L.title)+' だけで見る</button><button class="vp-b sm" data-cponly="R">'+esc(CP.R.title)+' だけで見る</button></div>':'')+'</div>';}
+async function cpMount(s){const c=CP,v=c[s],st=document.getElementById('cp2st-'+s);if(!v||!st)return;let u=c.url[s];
+  if(!u){try{u=await c.src(v,r=>{const l=st.querySelector('.vp-load');if(l)l.textContent='読み込み中 '+Math.round(r*100)+'%';});c.url[s]=u;}catch(e){st.innerHTML='<div class="vp-load">読み込めませんでした</div>';return;}}
+  if(CP!==c||c[s]!==v)return;st.innerHTML='<video id="cp2v-'+s+'" playsinline muted preload="auto"'+(u.cors?' crossorigin="anonymous"':'')+' src="'+esc(u.url)+'"'+(s==='R'&&c.mode==='over'?' style="opacity:'+c.op+'"':'')+'></video>';
+  const ve=document.getElementById('cp2v-'+s);ve.playbackRate=c.rate;ve.addEventListener('loadedmetadata',()=>{try{ve.currentTime=s==='L'?c.lm:c.rm;}catch(e){}});ve.addEventListener('ended',()=>{if(c.playing)cpSync(true);});}
+const cpPlayL=()=>CP&&CP.slow?'▶ 並べて再生（'+scRateL(CP.rate)+'）':'▶ 同時に再生';
+const cpVs=()=>['L','R'].map(s=>document.getElementById('cp2v-'+s)).filter(Boolean);
+function cpPause(){CP.playing=false;cpVs().forEach(v=>{try{v.pause();}catch(e){}});const b=document.getElementById('cp2-pp');if(b)b.textContent=cpPlayL();}
+/** 左を基準に、右を合わせる位置の差だけずらす */
+function cpSync(restart){const L=document.getElementById('cp2v-L'),R=document.getElementById('cp2v-R');if(!L)return;if(restart){L.currentTime=CP.lm;}if(R)R.currentTime=Math.max(0,CP.rm+(L.currentTime-CP.lm));if(CP.playing)cpVs().forEach(v=>{const p=v.play();if(p&&p.catch)p.catch(()=>{});});}
+function cpPlay(){if(CP.playing){cpPause();return;}CP.playing=true;cpSync(false);cpVs().forEach(v=>{v.playbackRate=CP.rate;const p=v.play();if(p&&p.catch)p.catch(()=>{});});const b=document.getElementById('cp2-pp');if(b)b.textContent='❚❚ 止める';}
+function cpStep(d){cpPause();cpVs().forEach(v=>{v.currentTime=Math.max(0,Math.min(v.duration||0,v.currentTime+d/60));});}
+function cpFormHtml(){const f=CP.form,gs=CP.groups?CP.groups():[];f.g=f.g&&gs.indexOf(f.g)>=0?f.g:gs[0]||'';
+  return '<div class="vp-ph"><b>比較へのひとこと</b><button class="vp-ic" data-cp="formX" aria-label="閉じる">✕</button></div><p class="note">合わせた位置で、左右を並べて見せます</p>'+
+    '<div class="vp-lab">① どこ</div>'+(gs.length>1?'<div class="wrap">'+gs.map(g=>'<button class="opt sm" data-cpg="'+esc(g)+'" aria-pressed="'+(f.g===g)+'">'+esc(g)+'</button>').join('')+'</div>':'')+
+    '<div class="wrap">'+[...new Set(f.g?CP.words(f.g):[])].map(w=>'<button class="opt sm" data-cppart="'+esc(w)+'" aria-pressed="'+(f.part===w)+'">'+esc(w)+'</button>').join('')+'</div>'+
+    '<div class="vp-lab">② 違い・直すところ</div><div class="sc-txt"><textarea id="cp2-text" rows="2" maxlength="500" placeholder="（マイクで話して入力できます）">'+esc(f.text||'')+'</textarea><button class="sc-b sm" data-cp="mic">🎤 話して書く</button></div>'+
+    '<div class="vp-lab">③ 図をかく（任意・左右どちらにも）</div><div class="vp-row"><button class="vp-b sm" data-cpdraw="L">左にかく'+(f.limg?'（図あり ✓）':'')+'</button><button class="vp-b sm" data-cpdraw="R">右にかく'+(f.rimg?'（図あり ✓）':'')+'</button></div>'+
+    '<div class="acts"><button class="btn pri" data-cp="send">この比較を送る</button></div>';}
+function cpPickHtml(){const L=CP.pick();return '<div class="vp-ph"><b>比べる動画を選ぶ</b><button class="vp-ic" data-cp="pickX">✕</button></div><div class="vgrid sm">'+L.map(v=>'<button class="vcard" data-cpset="'+esc(v.id)+'"><span class="vth">'+(v.thumbU?'<img loading="lazy" alt="" src="'+esc(v.thumbU)+'" onerror="this.remove()">':'')+'<i>▶</i></span><span class="vt">'+esc(v.title)+'</span><small>'+esc(cpLab(v))+'</small></button>').join('')+'</div>';}
+function cpClose(){const e=document.getElementById('vcmp2');cpVs().forEach(v=>{try{v.pause();v.removeAttribute('src');v.load();}catch(x){}});if(e){e.innerHTML='';e.hidden=true;}const o=CP;CP=null;if(!SC)document.body.classList.remove('noscroll');if(o&&o.onClose)o.onClose();}
+function cpClick(ds,b){if(!CP)return false;const c=CP;
+  if(ds.cpmode){c.mode=ds.cpmode;cpPause();c.url=Object.assign({},c.url);cpDraw();return true;}
+  if(ds.cpmark){const v=document.getElementById('cp2v-'+ds.cpmark);if(!v)return true;cpPause();const t=Math.round(v.currentTime*100)/100;if(ds.cpmark==='L')c.lm=t;else c.rm=t;const m=document.getElementById('cp2m-'+ds.cpmark);if(m)m.textContent='合わせる位置 '+t.toFixed(1)+'秒';toast((ds.cpmark==='L'?'左':'右')+'を '+t.toFixed(1)+'秒で合わせました');return true;}
+  if(ds.cponly){const v=c[ds.cponly];cpClose();if(c.openOne)c.openOne(v);return true;}
+  if(ds.cpset){const v=c.pick().find(x=>x.id===ds.cpset);if(v){c.R=v;c.rm=0;delete c.url.R;}c.picking=false;cpDraw();return true;}
+  if(ds.cpg!==undefined){c.form.g=ds.cpg;cpDraw();return true;}
+  if(ds.cppart!==undefined){c.form.part=c.form.part===ds.cppart?'':ds.cppart;cpDraw();return true;}
+  if(ds.cpdraw){const v=document.getElementById('cp2v-'+ds.cpdraw);if(!v)return true;cpPause();let base;try{base=grabFrame(v);base.getContext('2d').getImageData(0,0,1,1);}catch(e){toast('この動画には図をかけません（読み込みが終わってから押してください）');return true;}
+    const side=ds.cpdraw;openDraw(base,b64=>{c.form[side==='L'?'limg':'rimg']=b64;cpDraw();});return true;}
+  const a=ds.cp;if(!a)return false;
+  if(a==='close'){cpClose();return true;}
+  if(a==='prev'&&c.nav&&c.nav.prev){c.nav.prev();return true;}
+  if(a==='next'&&c.nav&&c.nav.next){c.nav.next();return true;}
+  if(a==='play'){cpPlay();return true;}
+  if(a==='stepB'||a==='stepF'){cpStep(a==='stepB'?-1:1);return true;}
+  if(a==='rate'){c.rate=SC_RATES[(SC_RATES.indexOf(c.rate)+1)%SC_RATES.length];cpVs().forEach(v=>{v.playbackRate=c.rate;});b.textContent=scRateL(c.rate);const pp=document.getElementById('cp2-pp');if(pp&&!c.playing)pp.textContent=cpPlayL();return true;}
+  if(a==='pick'){c.picking=true;cpDraw();return true;}
+  if(a==='pickX'){c.picking=false;cpDraw();return true;}
+  if(a==='com'){cpPause();c.form=c.form||{part:'',text:'',g:''};cpDraw();return true;}
+  if(a==='formX'){c.form=null;cpDraw();return true;}
+  if(a==='mic'){scMic('cp2-text',b);return true;}
+  if(a==='send'){const f=c.form,t=(document.getElementById('cp2-text')||{value:''}).value.trim();if(!t&&!f.part&&!f.limg&&!f.rimg){toast('違いを書くか、図をかいてください');return true;}
+    const sp={l:c.L.id,r:c.R.id,lm:c.lm,rm:c.rm,rate:c.rate,part:f.part,text:t,limg:f.limg||'',rimg:f.rimg||''};f.base=f.base||scBase();sp._nonce=scNonce(f.base,JSON.stringify([sp.l,sp.r,sp.lm,sp.rm,sp.rate,sp.part,sp.text,sp.limg.length,sp.rimg.length]));
+    const back=busy(b);Promise.resolve(c.save(sp)).then(()=>{c.form=null;cpDraw();toast('比較を送りました');}).catch(e=>{back();toast(errMsg(e).replace(/^(Exception|Error):\s*/,''));});return true;}
+  return true;}
+
+/* ================= v4.54 コーチのリンクのページ（その相談の分だけを切り出したアプリ） ================= */
 let XR=null;
-function extMain(key){XR={key,data:null,vid:null,url:{},t:null,part:'',ev:'',img:'',gat:{}};document.body.classList.add('extmode');
+const xErr=e=>errMsg(e).replace(/^(Exception|Error):\s*/,'');
+/** 書いている途中で受付が終わっていた：動画などを閉じて、お礼の文に切り替える（以後の処理は止める） */
+function xEndChk(e){const m=xErr(e);if(/受付を終え|使えなくなって/.test(m)){xEnded(m);return new Promise(()=>{});}throw e;}
+function extMain(key){XR={key,data:null,view:'main',gat:{}};document.body.classList.add('extmode');
   V.innerHTML='<main><p class="note">読み込み中…</p></main>';
-  const E0=window.__xr&&window.__xr.key===key?window.__xr:null,tMain=performance.now(),tReq=E0?E0.t0:tMain;let early=!!E0;
-  // 2回目以降：前回の内容をこの端末からすぐ表示し、裏で最新の内容に取り直す（受付が終わっていたら消す）
-  const C0=xCacheGet(key);let tCache=null;if(C0){xSet(C0.d,C0.at);XR.cached=true;extList();tCache=performance.now();}
-  (E0?E0.p.catch(()=>{early=false;return call('reqOpen',{key});}):call('reqOpen',{key})).then(d=>{const tRes=E0&&early&&E0.t1?E0.t1:performance.now();XR.cached=false;xSet(d);xCachePut(key,d);xRender();xOpenTime(tReq,tMain,tRes,d,early,tCache);})
-    .catch(e=>{const m=errMsg(e).replace(/^(Exception|Error):\s*/,'');if(/受付を終え|使えなくなって/.test(m)){xEnded(m);return;}
-      if(C0){XR.cached=false;XR.stale=true;xRender();return;}   // 通信できないときは前回の内容のまま（「確かめています」を「取れませんでした」に）
-      V.innerHTML='<main><div class="xmsg">'+esc(m)+'</div></main>';});
-  // 戻ってきたとき（30分以上たっていれば）：返事・見た・置き場のアドレスを裏で取り直す。動画を開いている間はしない
-  const back=()=>{if(!XR||!XR.data||XR.ended||Date.now()-XR.loadedAt<1800000)return;const pv=document.getElementById('vplayer');if(pv&&!pv.hidden)return;
-    call('reqOpen',{key:XR.key}).then(d=>{xCachePut(XR.key,d);const pv2=document.getElementById('vplayer');if(pv2&&!pv2.hidden)return;xSet(d);xRender();}).catch(e=>{const m=errMsg(e).replace(/^(Exception|Error):\s*/,'');if(/受付を終え|使えなくなって/.test(m))xEnded(m);});};
+  const E0=window.__xr&&window.__xr.key===key?window.__xr:null,C1=window.__xc&&window.__xc.key===key?window.__xc:null,tMain=performance.now(),tReq=E0?E0.t0:tMain;let early=!!E0,got=false,tCache=null,tCopy=null;
+  // 1) この端末に残っている前回の内容 2) 写し専用の置き場の写し（初回も約1秒） 3) サーバーの最新、の順に表示する
+  const C0=xCacheGet(key);if(C0){xSet(C0.d,C0.at);XR.cached=true;extList();tCache=performance.now();}
+  if(C1)C1.p.then(d=>{if(got||!XR||XR.ended||!d||!d.copy)return;if(XR.data&&XR.data.copyAt&&XR.data.copyAt>=d.copyAt)return;xSet(d,d.copyAt);XR.cached=true;extList();tCopy=performance.now();}).catch(()=>{});
+  const fresh=()=>call('reqOpen',{key});
+  const done=d=>{got=true;const tRes=E0&&early&&E0.t1?E0.t1:performance.now();XR.cached=false;xSet(d);xCachePut(key,d);xRender();xOpenTime(tReq,tMain,tRes,d,early,tCache,tCopy,E0&&E0.retry);};
+  const fail=e=>{const m=xErr(e);if(/受付を終え|使えなくなって/.test(m)){xEnded(m);return;}if(XR.data){XR.cached=false;XR.stale=true;xRender();return;}V.innerHTML='<main><div class="xmsg">'+esc(m)+'</div></main>';};
+  XR.loading=true;(E0?E0.p.catch(()=>{early=false;return fresh();}):fresh()).then(done).catch(fail).then(()=>{XR.loading=false;});
+  // LINE→Safari の切り替えなどで、読み込みの途中で裏に回って止まったとき：前面に戻ったら、読み込み中ならやり直す。30分以上たっていれば取り直す
+  const back=()=>{if(!XR||XR.ended)return;if(SC||CP)return;
+    if(XR.loading&&!got){XR.retryN=(XR.retryN||0)+1;early=false;fresh().then(done).catch(fail);return;}
+    if(!XR.data||Date.now()-XR.loadedAt<1800000)return;
+    call('reqOpen',{key:XR.key}).then(d=>{xCachePut(XR.key,d);if(SC||CP)return;xSet(d);xRender();}).catch(e=>{const m=xErr(e);if(/受付を終え|使えなくなって/.test(m))xEnded(m);});};
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)back();});
-  window.addEventListener('pageshow',e=>{if(e.persisted)back();});}   // 「戻る」でページがそのまま復元されたときも
-/** 受付が終わっていたとき：動画を閉じて、そう表示し、書きかけを片付ける */
-function xEnded(m){XR.ended=true;XR.id=null;if(XR.ac)XR.ac.abort();const pv=document.getElementById('vplayer');if(pv){const ve=pv.querySelector('video');if(ve){try{ve.pause();ve.removeAttribute('src');ve.load();}catch(e){}}pv.innerHTML='';pv.hidden=true;}
-  document.body.classList.remove('noscroll');try{localStorage.removeItem(xDraftKey());localStorage.removeItem(xCacheKey(XR.key));}catch(e){}V.innerHTML='<main><div class="xmsg">'+esc(m)+'</div></main>';}
-/** 前回の内容（この端末だけに保存。受付が終わったら消す。30日より古いものは使わない） */
+  window.addEventListener('pageshow',e=>{if(e.persisted)back();});}
+function xEnded(m){XR.ended=true;if(SC)scClose(true);if(CP)cpClose();document.body.classList.remove('noscroll');try{localStorage.removeItem(xDraftKey());localStorage.removeItem(xCacheKey(XR.key));}catch(e){}V.innerHTML='<main><div class="xmsg">'+esc(m)+'</div></main>';}
 const xCacheKey=k=>'xcache:'+k;
 function xCacheGet(k){try{const c=JSON.parse(LS.get(xCacheKey(k))||'null');if(!c||!c.d||!c.at||Date.now()-c.at>30*864e5)return null;return c;}catch(e){return null;}}
 function xCachePut(k,d){try{LS.set(xCacheKey(k),JSON.stringify({at:Date.now(),d}));}catch(e){}}
-/** 一覧を描き直す。返事を書いている途中なら、書き終えて欄を離れたときに描き直す（書いている文字や位置を崩さない） */
-function xRender(){const a=document.activeElement;if(a&&(a.id==='xr-text')){if(!XR.pendRender){XR.pendRender=true;a.addEventListener('blur',()=>{XR.pendRender=false;if(!XR.ended)extList();},{once:true});}return;}extList();}
-/** リンクを開いてから一覧が出るまでの時間と内訳を、エラーシートに「情報」として1行残す（どこに時間がかかっているかを測るため） */
-function xOpenTime(tReq,tMain,tRes,d,early,tCache){try{const tShow=performance.now(),T=performance.timing||{},nav=T.navigationStart||0,html=T.responseEnd&&nav?T.responseEnd-nav:null,s=x=>(Math.round(x/100)/10)+'秒';
-  const msg=(tCache!=null?'前回の内容を表示 '+s(tCache)+'／最新の':'')+'一覧が出るまで '+s(tShow)+'（ページ受信 '+(html!=null?s(html):'?')+'・問い合わせ開始 '+s(tReq)+(early?'（先頭で）':'（本体のあと）')+'・本体の準備 '+s(tMain)+'・応答 '+s(tRes)+'（往復 '+s(tRes-tReq)+'、うちサーバー処理 '+s(d.srvMs||0)+'：'+(d.srvT||'内訳なし')+'）・表示 '+s(tShow-Math.max(tRes,tMain))+'）'+(inAppBrowser()?'｜アプリ内ブラウザ':'');
+function xRender(){if(SC||CP)return;const a=document.activeElement;if(a&&/^xr-|^xf-/.test(a.id||'')){if(!XR.pendRender){XR.pendRender=true;a.addEventListener('blur',()=>{XR.pendRender=false;if(!XR.ended&&!SC&&!CP)extList();},{once:true});}return;}extList();}
+function xOpenTime(tReq,tMain,tRes,d,early,tCache,tCopy,retry){try{const tShow=performance.now(),T=performance.timing||{},nav=T.navigationStart||0,html=T.responseEnd&&nav?T.responseEnd-nav:null,s=x=>(Math.round(x/100)/10)+'秒';
+  const msg=(tCopy!=null?'写しを表示 '+s(tCopy)+'／':'')+(tCache!=null?'前回の内容を表示 '+s(tCache)+'／最新の':'')+'一覧が出るまで '+s(tShow)+'（ページ受信 '+(html!=null?s(html):'?')+'・問い合わせ開始 '+s(tReq)+(early?'（先頭で）':'（本体のあと）')+'・本体の準備 '+s(tMain)+'・応答 '+s(tRes)+'（往復 '+s(tRes-tReq)+'、うちサーバー処理 '+s(d.srvMs||0)+'：'+(d.srvT||'内訳なし')+'）・表示 '+s(tShow-Math.max(tRes,tMain))+'）'+
+    (retry?'｜1回目が返らずやり直し（'+retry+'）':'')+(XR.retryN?'｜前面に戻ってやり直し '+XR.retryN+'回':'')+(inAppBrowser()?'｜アプリ内ブラウザ':'');
   call('logError',{who:'リンク：'+(d.name||''),ver:CLIENT_VERSION,screen:'リンク',action:'リンクを開く時間（情報）',msg:msg.slice(0,500),ua:(navigator.userAgent||'').slice(0,120)}).catch(()=>{});}catch(e){}}
-/** 受け取った内容を入れる（置き場のアドレスを受け取った時刻も） */
-function xSet(d,at){XR.data=d;XR.loadedAt=at||Date.now();XR.stale=false;XR.gat={};(d.videos||[]).forEach(v=>{if(v.gurl)XR.gat[v.id]=d.gurlAt||Date.now();});}
-/** 書きかけ（返事と、動画ごとのひとこと）を、送るまでこの端末に残す */
+function xSet(d,at){XR.data=d;XR.loadedAt=at||Date.now();XR.stale=false;XR.gat={};(d.videos||[]).concat(d.refs||[]).forEach(v=>{if(v.gurl)XR.gat[v.id]=d.gurlAt||Date.now();});}
+/** 書いたあと：サーバーが返した、変わる部分（やりとり・比較・課題）を入れる */
+function xApply(r){if(!r||!XR||!XR.data)return r;['coms','done','cmps','tasks','prev'].forEach(k=>{if(r[k]!==undefined)XR.data[k]=r[k];});if(r.refs)XR.data.refs=r.refs;xCachePut(XR.key,XR.data);return r;}
 const xDraftKey=()=>'xdraft:'+XR.key;
 function xDraft(){try{return JSON.parse(LS.get(xDraftKey())||'{}');}catch(e){return {};}}
-function xDraftSet(f){const d=xDraft();f(d);d.c=d.c||{};Object.keys(d.c).forEach(k=>{if(!d.c[k])delete d.c[k];});if(!d.r&&!Object.keys(d.c).length){try{localStorage.removeItem(xDraftKey());}catch(e){}}else LS.set(xDraftKey(),JSON.stringify(d));}
-/** リンクのページ：誰から・相談の文・動画（☆が先頭）・見た本数・返事（言葉だけで可） */
-const xThumb=v=>v.thumb&&XR.data.vkey?'https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(v.thumb)+'?alt=media&key='+encodeURIComponent(XR.data.vkey):'';
-const xSrc=v=>v.fileId&&XR.data.vkey?'https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(v.fileId)+'?alt=media&key='+encodeURIComponent(XR.data.vkey):'';
-function extList(){const d=XR.data,f=d.from||{},seen=d.seen||[],vs=d.videos.slice().sort((a,b)=>(b.star?1:0)-(a.star?1:0)),ns=vs.filter(v=>seen.indexOf(v.id)>=0).length,all=d.coms.filter(c=>!c.vid);
-  V.innerHTML='<main>'+(XR.cached?'<p class="note xstate">前回の内容を表示しています。最新の内容を確かめています…</p>':XR.stale?'<p class="note xstate">最新の内容を取れませんでした（前回の内容を表示しています）。電波のよいところで開き直してください。</p>':'')+'<p class="xfrom">'+esc([f.sport,f.athlete].filter(Boolean).join('　'))+(f.org?'（'+esc(f.org)+'）':'')+' より'+(f.sender?'<br><small>送った人：'+esc(f.sender)+'</small>':'')+'</p><h2>'+esc(d.name)+'へ</h2>'+(d.text?'<div class="xmsg">'+esc(d.text).replace(/\n/g,'<br>')+'</div>':'')+
-    '<p class="xprog">見た動画 <b>'+ns+'／'+vs.length+'本</b>'+((d.star||[]).length?'　☆は特に見てほしい動画です':'')+'</p><div class="vgrid">'+
-    vs.map(v=>{const n=d.coms.filter(c=>c.vid===v.id).length,tu=xThumb(v);return '<button class="vcard" data-xopen="'+esc(v.id)+'"><span class="vth">'+(tu?'<img loading="lazy" alt="" src="'+esc(tu)+'" onerror="this.remove()">':'')+'<i>'+(v.photo?'📷':'▶')+'</i>'+(v.star?'<b class="vb">☆</b>':'')+(seen.indexOf(v.id)>=0?'<b class="xseen">見た</b>':'')+'</span><span class="vt">'+esc(v.title)+'</span><small>'+(n?'ひとこと '+n+'件':'')+'</small></button>';}).join('')+'</div>'+
-    '<h2>返事</h2>'+(all.length?'<div class="xthr">'+all.map(c=>'<div class="xc"><small>'+esc(String(c.at||'').slice(5,16))+'</small><div>'+esc(c.text).replace(/\n/g,'<br>')+'</div>'+(c.reply?'<div class="grr">'+esc(c.rby||'')+'より：'+esc(c.reply)+'</div>':'')+'</div>').join('')+'</div>':'')+
-    (d.done?'<p class="note">「こちらからは以上です」をいただきました。ありがとうございました。追加があれば、下から書けます。</p>':'')+
-    '<p class="note">言葉だけの返事で十分です。途中まで見たところで送っても大丈夫です。動画ごとに、止めた場面へのひとことや図も残せます（任意）。いただいた内容は、本人と家族で大切に読ませていただきます。</p>'+
-    '<textarea id="xr-text" rows="4" maxlength="1000" class="ta2" placeholder="例：☆の2本では、②の方が踏み切りのタイミングが合っています。">'+esc(XR.rtxt!=null?XR.rtxt:(xDraft().r||''))+'</textarea><p class="note mic">🎤 キーボードのマイクで、話して入力できます。書きかけは、送るまでこの端末に残ります。</p>'+
-    '<div class="acts" style="flex-wrap:wrap"><button class="btn pri" data-act="xReply">返事を送る</button>'+(d.done?'':'<button class="btn" data-act="xDone">こちらからは以上です</button>')+'</div></main>';
-  const ta=document.getElementById('xr-text');if(ta){XR.rtxt=ta.value;ta.oninput=()=>{XR.rtxt=ta.value;xDraftSet(d=>{d.r=ta.value;});};}}
-async function extOpen(id){const d=XR.data,v=d.videos.find(x=>x.id===id);if(!v||XR.ended)return;XR.vid=v;XR.id=id;XR.t=null;XR.part='';XR.ev='';XR.img='';XR.rate=1;XR.txt=(xDraft().c||{})[id]||'';
-  const pv=vpEl();document.body.classList.add('noscroll');pv.hidden=false;
-  pv.innerHTML='<div class="vp-stage" id="vp-stage"><div class="vp-load" id="vp-load">読み込み中…</div></div><div class="vp-ui" id="vp-ui"><div class="vp-top"><button class="vp-close" data-act="xClose">✕ 閉じる</button><span class="vp-ttl">'+(v.star?'☆ ':'')+esc(v.title)+'</span></div>'+
-    (v.photo?'':'<div class="vp-bot"><input type="range" id="vp-seek" min="0" max="1000" value="0"><span class="vp-time" id="vp-time">0.0秒</span>'+
-    '<div class="vp-row"><button class="vp-b" data-act="vpStepB">◀1コマ</button><button class="vp-b big" data-act="vpPlay" id="vp-pp">▶</button><button class="vp-b" data-act="vpStepF">1コマ▶</button></div>'+
-    '<div class="vp-row">'+[1,0.5,0.25].map(r=>'<button class="vp-b sm'+(r===1?' on':'')+'" data-xrate="'+r+'">'+(r===1?'1倍':r===0.5?'½':'¼')+'</button>').join('')+'</div>')+
-    (v.photo?'<div class="vp-bot">':'')+'<div class="vp-row"><button class="vp-b com" data-act="xCom">💬 この場面にひとこと</button><button class="vp-b" data-act="xDraw">✏️ 図示</button></div></div></div><div class="vp-panel" id="vp-panel" hidden></div>';
-  const st=document.getElementById('vp-stage');
-  st.addEventListener('click',e=>{if(e.target.closest('.vp-alt'))return;const u=document.getElementById('vp-ui');if(u){u.classList.toggle('off');if(!u.classList.contains('off'))vpAutoHide();}});
-  const alive=()=>XR&&XR.id===id&&!!document.getElementById('vplayer')&&!document.getElementById('vplayer').hidden;
+function xDraftSet(f){const d=xDraft();f(d);d.c=d.c||{};Object.keys(d.c).forEach(k=>{const x=d.c[k];if(!x||(typeof x==='object'&&!x.text&&!x.part&&!x.ev))delete d.c[k];});
+  if(!d.r&&!Object.keys(d.c).length&&!d.fin){try{localStorage.removeItem(xDraftKey());}catch(e){}}else LS.set(xDraftKey(),JSON.stringify(d));}
+const xFile=id=>id&&XR.data.vkey?'https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(id)+'?alt=media&key='+encodeURIComponent(XR.data.vkey):'';
+const xThumb=v=>xFile(v.thumb),xSrc=v=>xFile(v.fileId);
+const xAllV=()=>(XR.data.videos||[]).concat(XR.data.refs||[]);
+/** よく使う順の言葉（この端末でコーチが選んだ回数の多い順） */
+function xWords(g){const L=(XR.data.words||[]).filter(x=>x.g===g).map((x,i)=>({w:x.w,i}));let n={};try{n=JSON.parse(LS.get('xwc')||'{}');}catch(e){}
+  (XR.data.coms||[]).forEach(c=>{if(c.mine){if(c.part)n[c.part]=(n[c.part]||0)+1;if(c.ev)n[c.ev]=(n[c.ev]||0)+1;}});return L.sort((a,b)=>(n[b.w]||0)-(n[a.w]||0)||a.i-b.i).map(x=>x.w);}
+function xWordUsed(p){try{const n=JSON.parse(LS.get('xwc')||'{}');[p.part,p.ev].filter(Boolean).forEach(w=>n[w]=(n[w]||0)+1);LS.set('xwc',JSON.stringify(n));}catch(e){}}
+/** 動画の印（場面へのひとこと。本人の書き添え・質問には、コーチの答えをその下に） */
+function xMarks(vid){const cs=(XR.data.coms||[]).filter(c=>c.scene&&c.vid===vid),ids={},ans={};cs.forEach(c=>{ids[c.id]=1;});cs.filter(c=>c.kind==='答え'&&ids[c.rep]).forEach(a=>(ans[a.rep]=ans[a.rep]||[]).push(a));
+  return cs.filter(c=>!(c.kind==='答え'&&ids[c.rep])).map(c=>({id:c.id,t:c.t,fam:!!c.fam,kindL:c.fam?(c.by||'本人')+(c.kind==='本人の書き添え'?'の書き添え':'の質問'):'',star:!!c.star,text:c.text,part:c.part,ev:c.ev,mine:!!c.mine,img:c.imgId?xFile(c.imgId):'',by:c.by,
+    answers:(ans[c.id]||[]).map(a=>({by:a.by,text:a.text,part:a.part,ev:a.ev}))}));}
+/** 答えていない質問（本人・家族が場面について聞いて、まだコーチが答えていないもの。全体に向けた追加の質問も） */
+function xOpenQs(){const d=XR.data,out=[];xAllV().forEach(v=>xMarks(v.id).forEach(m=>{if(m.fam&&/の質問$/.test(m.kindL)&&!(m.answers||[]).length)out.push({vid:v.id,title:v.title});}));
+  const all=(d.coms||[]).filter(c=>!c.scene),last=all.slice(-1)[0];if(last&&last.ev==='家族')out.push({vid:'',title:'全体へのひとこと'});return out;}
+const xMineN=()=>(XR.data.coms||[]).filter(c=>c.scene&&c.mine).length;
+const xFmtReq=t=>esc(t||'').replace(/【([^】]+)】/g,'<b class="xhd">$1</b>').replace(/\n/g,'<br>');
+const xMd=s=>{const m=String(s||'').match(/(\d{4})[-\/](\d{2})[-\/](\d{2})/);return m?(+m[2])+'/'+(+m[3]):'';};
+/* ---------- 開いた画面（C3・C4） ---------- */
+function extList(){if(!XR||!XR.data)return;setTimeout(navSync,0);if(XR.view==='finish')return xFinish();if(XR.view==='thanks')return xThanks();if(XR.view==='ref')return xRefView();if(XR.view==='cmpPick')return xCmpPick();
+  const d=XR.data,f=d.from||{},seen=d.seen||[],vs=(d.videos||[]).slice().sort((a,b)=>(b.star?1:0)-(a.star?1:0)),refs=d.refs||[],ns=vs.filter(v=>seen.indexOf(v.id)>=0).length,all=(d.coms||[]).filter(c=>!c.scene);
+  const qs=xOpenQs(),card=v=>{const m=xMarks(v.id),n=m.filter(x=>!x.fam).length,fam=m.filter(x=>x.fam&&!/の質問$/.test(x.kindL)).length,oq=qs.filter(x=>x.vid===v.id).length,tu=xThumb(v);return '<button class="vcard" data-xopen="'+esc(v.id)+'"><span class="vth">'+(tu?'<img loading="lazy" alt="" src="'+esc(tu)+'" onerror="this.remove()">':'')+'<i>'+(v.photo?'📷':'▶')+'</i>'+(v.star?'<b class="vb">☆</b>':'')+(seen.indexOf(v.id)>=0?'<b class="xseen">見た</b>':'')+'</span><span class="vt">'+esc(v.title)+'</span><small>'+(n?'ひとこと '+n+'件':seen.indexOf(v.id)>=0||v.ref?'':'まだ見ていません')+(fam?'<span class="xfam">本人の書き添え '+fam+'</span>':'')+(oq?'<span class="xoq">答えていない質問 '+oq+'</span>':'')+'</small></button>';};
+  let h='<main class="xmain">'+(XR.cached?'<p class="note xstate">前回の内容を表示しています。最新の内容を確かめています…</p>':XR.stale?'<p class="note xstate">最新の内容を取れませんでした（前回の内容を表示しています）。電波のよいところで開き直してください。</p>':'')+
+    '<p class="xfrom">'+esc([f.sport,f.athlete].filter(Boolean).join('　'))+(f.org?'（'+esc(f.org)+'）':'')+' より'+(f.sender?'<br><small>送った人：'+esc(f.sender)+'</small>':'')+'</p><h2>'+esc(d.name)+'へ</h2>'+(d.text?'<div class="xmsg">'+xFmtReq(d.text)+'</div>':'');
+  if((d.prev||[]).length){h+='<div class="xpv"><b>前回（'+esc(xMd(d.prev[0].at))+'）の課題</b>'+d.prev.map(t=>'<div class="xpt"><div>'+esc(t.text)+'</div><small>今回の動画で、どうでしたか？</small><div class="wrap">'+['できている','良くなった','まだ'].map(e=>'<button class="opt sm" data-xev="'+esc(t.id)+'|'+e+'" aria-pressed="'+(t.ev===e)+'">'+e+'</button>').join('')+'</div></div>').join('')+'</div>';}
+  if(qs.length)h+='<div class="xqs">本人・家族から質問が'+qs.length+'件あります（'+esc([...new Set(qs.map(x=>x.title))].join('・'))+'）</div>';
+  h+='<p class="xhow">動画を開いて、気になる場面で <b>＋ この場面</b> を押すと、その場面にひとことや図を残せます。言葉だけの「全体へのひとこと」でも十分です。</p>'+((d.star||[]).length?'<p class="note">☆は特に見てほしい動画です</p>':'')+'<div class="vgrid">'+vs.map(card).join('')+'</div>';
+  h+='<h3 class="xh3">参考動画</h3>'+(refs.length?'<div class="vgrid">'+refs.map(card).join('')+'</div>':'<p class="note">お手本や、目指す動きの動画を添えると、本人の動画と並べて比べられます。</p>')+'<div class="acts" style="flex-wrap:wrap"><button class="btn" data-act="xRef">＋ 参考動画を添える</button>'+(xAllV().length>1?'<button class="btn" data-act="xCmp">動画を比べる</button>':'')+'</div>';
+  const cm=d.cmps||[];if(cm.length){const t=id=>(xAllV().find(v=>v.id===id)||{}).title||'';h+='<h3 class="xh3">送った比較</h3>'+cm.map(c=>'<button class="xcmpi" data-xcmpv="'+esc(c.id)+'"><b>'+esc(t(c.l))+' と '+esc(t(c.r))+'</b>'+(c.part?'<span class="sc-who">'+esc(c.part)+'</span>':'')+'<small>'+esc(c.text||'（図）')+'</small></button>').join('');}
+  h+='<h3 class="xh3">全体へのひとこと</h3>'+(all.length?'<div class="xthr">'+all.map(c=>'<div class="xc'+(c.fam?' fam':'')+'"><small>'+esc((c.by||'')+(c.ev==='LINE'?'（LINEより）':''))+'・'+esc(String(c.at||'').slice(5,16))+'</small><div>'+esc(c.text).replace(/\n/g,'<br>')+'</div>'+(c.reply?'<div class="grr">'+esc(c.rby||'')+'より：'+esc(c.reply)+'</div>':'')+'</div>').join('')+'</div>':'')+
+    '<textarea id="xr-text" rows="3" maxlength="1000" class="ta2" placeholder="言葉だけの返事でも十分です（任意）">'+esc(XR.rtxt!=null?XR.rtxt:(xDraft().r||''))+'</textarea><div class="acts"><button class="btn sm2" data-act="xMic">🎤 話して書く</button><button class="btn pri" data-act="xReply">全体へのひとことを送る</button></div>'+
+    (d.done?'<p class="note">「以上です」をいただきました。ありがとうございました。あとから気づいたことがあれば、このまま書けます。</p>':'')+'</main>'+
+    '<div class="xbar"><div><b>見た '+ns+'／'+vs.length+'本・ひとこと '+xMineN()+'件</b><small>途中で閉じても、書きかけは残ります</small></div><button class="btn pri" data-act="xFin">'+(d.done?'もう一度終わる':'終わる')+'</button></div>';
+  V.innerHTML=h;const ta=document.getElementById('xr-text');if(ta){XR.rtxt=ta.value;ta.oninput=()=>{XR.rtxt=ta.value;xDraftSet(x=>{x.r=ta.value;});};}}
+/* ---------- 動画を開く（全画面・＋ この場面） ---------- */
+function extOpen(id){const d=XR.data,v=xAllV().find(x=>x.id===id);if(!v||XR.ended)return;const c={rate:1,id};
   const seen=()=>{if((d.seen||[]).indexOf(id)>=0)return;d.seen=(d.seen||[]).concat(id);call('reqSeen',{key:XR.key,vid:id}).catch(()=>{});};
-  const vv={id:v.id,fileId:v.fileId,mb:v.mb,title:v.title},relay=onp=>relayFetch(vv,'reqVideo',{key:XR.key,vid:id},onp,XR.ac);
-  const src=xSrc(v);
-  if(v.photo){const show=(u,cors)=>{if(alive()){st.innerHTML='<img id="vp-img" alt=""'+(cors?' crossorigin="anonymous"':'')+' src="'+esc(u)+'">';seen();}};
-    const viaRelay=()=>{XR.ac=new AbortController();relay(r=>{const ld=document.getElementById('vp-load');if(ld)ld.textContent='読み込み中 '+Math.min(99,Math.round(r*100))+'%';}).then(ob=>show(vUrlOf(ob,ob.type))).catch(e=>{if(e&&e.name==='AbortError')return;const ld=document.getElementById('vp-load');if(ld)ld.textContent='写真を読み込めませんでした：'+errMsg(e).replace(/^(Exception|Error):\s*/,'');});};
-    const isrc=v.gurl||src;if(!isrc){viaRelay();return;}const im=new Image();im.crossOrigin='anonymous';im.onload=()=>show(isrc,true);im.onerror=viaRelay;im.src=isrc;return;}
-  const refresh=async()=>{let r;try{r=await call('reqUrls',{key:XR.key});}catch(e){const m=errMsg(e).replace(/^(Exception|Error):\s*/,'');if(/受付を終え|使えなくなって/.test(m))xEnded(m);throw e;}
-    (XR.data.videos||[]).forEach(x=>{if(r.urls[x.id]){x.gurl=r.urls[x.id];XR.gat[x.id]=r.gurlAt;}});return r.urls[id]||'';};
-  const fresh=!!(XR.gat[id]&&Date.now()-XR.gat[id]<((d.gurlTtl||21600)-900)*1000),mayHave=!v.gurl&&Date.now()-XR.loadedAt>60000;   // 開いてから1分以上たっていれば、あとから写し終わっているかもしれない
-  await loadVideo(vv,{c:XR,gurl:v.gurl||'',gurlFresh:fresh,mayHave,refresh,stopped:()=>!!XR.ended,src,ext:true,tag:'リンク：'+d.name,alive,relay,onOk:seen});}
-function xWords(g){return (XR.data.words||[]).filter(x=>x.g===g).map(x=>x.w);}
-function xPanel(){const v=XR.vid,p=document.getElementById('vp-panel');if(!p)return;const gs=vGroups(v.kind),cs=XR.data.coms.filter(c=>c.vid===v.id);XR.g=XR.g&&gs.indexOf(XR.g)>=0?XR.g:gs[0]||'';
-  let h='<div class="vp-ph"><b>ひとこと・アドバイス</b><button class="vp-ic" data-act="xComClose">✕</button></div>'+(cs.length?'<div class="vp-cl">'+cs.map(c=>'<div class="vc"><b>'+(c.t!=null?fmtT(c.t):'')+'</b><span>'+esc(c.text)+(c.img?'（図あり）':'')+'</span>'+(c.reply?'<div class="grr">'+esc(c.rby||'')+'より：'+esc(c.reply)+'</div>':'')+'</div>').join('')+'</div>':'');
-  h+='<div class="vp-new"><div class="vp-at">'+(XR.t!=null?'<b>'+fmtT(XR.t)+'</b> の場面に':'この'+(v.photo?'写真':'動画')+'に')+'</div>';
-  if(XR.img)h+='<div class="vp-img"><img alt="図" src="data:image/jpeg;base64,'+XR.img+'"><button class="linkbtn2" data-act="xImgDel">図を外す</button><p class="note" style="margin:4px 0 0">この図は、下の「送る」で、ひとことと一緒に送ります（言葉はなくても送れます）。</p></div>';
-  if(gs.length>1)h+='<div class="wrap">'+gs.map(g=>'<button class="opt sm" data-xg="'+esc(g)+'" aria-pressed="'+(XR.g===g)+'">'+esc(g)+'</button>').join('')+'</div>';
-  if(XR.g)h+='<div class="vp-lab">どこ</div><div class="wrap">'+xWords(XR.g).map(w=>'<button class="opt sm" data-xpart="'+esc(w)+'" aria-pressed="'+(XR.part===w)+'">'+esc(w)+'</button>').join('')+'</div>';
-  h+='<div class="vp-lab">どう</div><div class="wrap">'+xWords('評価').map(w=>'<button class="opt sm" data-xev="'+esc(w)+'" aria-pressed="'+(XR.ev===w)+'">'+esc(w)+'</button>').join('')+'</div>'+
-    '<div class="qrow"><input type="text" id="vp-text" maxlength="500" placeholder="書き足す（任意）" value="'+esc(XR.txt||'')+'"><button class="btn pri sm2" data-act="xSend">送る</button></div><p class="note mic">🎤 キーボードのマイクで、話して入力できます</p></div>';
-  p.innerHTML=h;p.hidden=false;const ti=document.getElementById('vp-text');if(ti)ti.oninput=()=>{XR.txt=ti.value;const id=XR.vid&&XR.vid.id;if(id)xDraftSet(d=>{d.c=d.c||{};d.c[id]=ti.value;});};}
-function xClick(ds,b){
+  scOpen({v,mode:'coach',canStar:true,c,marks:()=>xMarks(id),words:g=>xWords(g),groups:()=>vGroups(v.kind),
+    draft:{get:()=>{const x=(xDraft().c||{})[id];return typeof x==='string'?{text:x}:x||null;},set:x=>xDraftSet(dd=>{dd.c=dd.c||{};dd.c[id]=x;})},
+    save:p=>call('reqComment',Object.assign({key:XR.key},p)).then(r=>{xApply(r);xWordUsed(p);},xEndChk),
+    remove:mid=>call('reqComment',{key:XR.key,id:mid,remove:true}).then(xApply,xEndChk),
+    onClose:()=>{XR.view='main';extList();},
+    load:sc=>{const alive=()=>SC===sc&&!!document.getElementById('vplayer')&&!document.getElementById('vplayer').hidden,st=document.getElementById('vp-stage');
+      const vv={id:v.id,fileId:v.fileId,mb:v.mb,title:v.title},relay=onp=>relayFetch(vv,'reqVideo',{key:XR.key,vid:id},onp,c.ac);
+      if(v.photo){const show=(u,cors)=>{if(alive()){st.innerHTML='<img id="vp-img" alt=""'+(cors?' crossorigin="anonymous"':'')+' src="'+esc(u)+'">';seen();}};
+        const viaRelay=()=>{c.ac=new AbortController();relay(r=>{const ld=document.getElementById('vp-load');if(ld)ld.textContent='読み込み中 '+Math.min(99,Math.round(r*100))+'%';}).then(ob=>show(vUrlOf(ob,ob.type))).catch(e=>{if(e&&e.name==='AbortError')return;const ld=document.getElementById('vp-load');if(ld)ld.textContent='写真を読み込めませんでした：'+xErr(e);});};
+        const isrc=v.gurl||xSrc(v);if(!isrc){viaRelay();return;}const im=new Image();im.crossOrigin='anonymous';im.onload=()=>show(isrc,true);im.onerror=viaRelay;im.src=isrc;return;}
+      const refresh=async()=>{let r;try{r=await call('reqUrls',{key:XR.key});}catch(e){const m=xErr(e);if(/受付を終え|使えなくなって/.test(m))xEnded(m);throw e;}xAllV().forEach(x=>{if(r.urls[x.id]){x.gurl=r.urls[x.id];XR.gat[x.id]=r.gurlAt;}});return r.urls[id]||'';};
+      const fresh=!!(XR.gat[id]&&Date.now()-XR.gat[id]<((d.gurlTtl||21600)-900)*1000),mayHave=!v.gurl&&Date.now()-XR.loadedAt>60000;
+      return loadVideo(vv,{c,gurl:v.gurl||'',gurlFresh:fresh,mayHave,refresh,stopped:()=>!!XR.ended,src:xSrc(v),ext:true,tag:'リンク：'+d.name,alive,relay,onOk:()=>{seen();scBind();}});}});}
+/* ---------- 比べる（C11・C12） ---------- */
+function xCmpPick(){navSync();const vs=XR.data.videos||[];V.innerHTML='<main class="xmain"><button class="linkbtn2" data-act="xBack">← 戻る</button><h2>どの動画と比べますか</h2><p class="note">左に置く本人の動画を選んでください。右は、参考動画やほかの動画から選べます。</p><div class="vgrid">'+
+  vs.map(v=>{const tu=xThumb(v);return '<button class="vcard" data-xcmpl="'+esc(v.id)+'"><span class="vth">'+(tu?'<img loading="lazy" alt="" src="'+esc(tu)+'" onerror="this.remove()">':'')+'<i>▶</i>'+(v.star?'<b class="vb">☆</b>':'')+'</span><span class="vt">'+esc(v.title)+'</span></button>';}).join('')+'</div></main>';}
+function xCmpOpen(L,R,view){const src=v=>Promise.resolve(v.gurl?{url:v.gurl,cors:true}:{url:xSrc(v),cors:false});
+  cpOpen({L,R,src,view,lab:v=>v.ref?'参考':'本人',pick:()=>xAllV().filter(v=>v.id!==L.id&&!v.photo).map(v=>Object.assign({thumbU:xThumb(v)},v)),words:g=>xWords(g),groups:()=>vGroups(L.kind),
+    save:p=>call('reqCompare',Object.assign({key:XR.key},p)).then(xApply,xEndChk),onClose:()=>{XR.view='main';extList();},openOne:v=>extOpen(v.id)});}
+/* ---------- 参考動画を添える（C10） ---------- */
+function xRefView(){navSync();const d=XR.data,refs=d.refs||[],max=d.refMax||3;V.innerHTML='<main class="xmain"><button class="linkbtn2" data-act="xBack">← 戻る</button><h2>参考動画を添える</h2><p class="note">お手本や、目指す動きの動画を添えると、本人の動画と並べて比べられます。本人と家族だけが見られます。</p>'+
+  (refs.length<max?'<label class="lab">名前（何のお手本か）<input type="text" id="xf-rname" maxlength="50" placeholder="例：お手本：踏み切りのひざ"></label><label class="btn pri xfile">スマホの動画を選ぶ<input type="file" id="xf-rfile" accept="video/*" hidden></label><p class="note">1回の相談で'+max+'本まで（あと'+(max-refs.length)+'本）。1本'+(d.refMB||500)+'MBまで。大きい動画も送れます（送るあいだ％が出ます）。</p><p class="note" id="xf-rst"></p>':'<p class="note">この相談には、もう'+max+'本添えています。</p>')+
+  (refs.length?'<h3 class="xh3">添えた参考動画</h3>'+refs.map(v=>'<div class="xrefi"><b>'+esc(v.title)+'</b><div class="acts"><button class="btn sm2" data-xopen="'+esc(v.id)+'">▶ 見る</button><button class="btn sm2" data-xrefcmp="'+esc(v.id)+'">本人の動画と比べる</button></div></div>').join(''):'')+'</main>';
+  const fi=document.getElementById('xf-rfile');if(fi)fi.onchange=()=>{const f=fi.files[0];if(f)xRefSend(f,(document.getElementById('xf-rname')||{value:''}).value.trim());};}
+async function xRefSend(f,name){const st=document.getElementById('xf-rst'),stat=m=>{if(st)st.textContent=m;};if(XR.upBusy)return;if(!/^video\//.test(f.type||'video/')){toast('スマホの動画を選んでください');return;}XR.upBusy=true;
+  try{stat('送る準備をしています…');const s=await call('reqRefStart',{key:XR.key,size:f.size,mime:f.type||'video/mp4',name:f.name,origin:location.origin});
+    const fileId=await putDirect(s.loc,f,r=>stat('送っています '+Math.min(99,Math.round(r*100))+'%'));stat('見出し画像を作っています…');let th='';try{const u=URL.createObjectURL(f);th=await makeThumb(u);URL.revokeObjectURL(u);}catch(e){}
+    stat('登録しています…');const r=await call('reqRefDone',{key:XR.key,uid:s.uid,_nonce:String(s.uid).replace(/[^A-Za-z0-9]/g,'').slice(0,40),fileId,title:name||f.name.replace(/\.[^.]+$/,''),thumb:th||''});xApply(r);XR.upBusy=false;toast('参考動画を添えました');xRefView();}
+  catch(e){XR.upBusy=false;stat('');toast('送れませんでした：'+xErr(e));}}
+/* ---------- 終わる（C13）・終えたあと（C14） ---------- */
+const X_ALL=['良くなっています','次の練習で確かめましょう','LINEで話しましょう','見ました'];
+function xFinState(){const d=xDraft();if(d.fin)return d.fin;const st=(XR.data.coms||[]).find(c=>c.scene&&c.mine&&c.star);
+  return {tasks:st?[{text:[st.part,st.ev].filter(Boolean).join('・')+(st.text?'：'+st.text:''),vid:st.vid,auto:true}]:[{text:'',vid:''}],all:XR.rtxt||''};}
+function xFinish(){navSync();const d=XR.data,F=XR.fin||(XR.fin=xFinState()),vs=d.videos||[],ns=vs.filter(v=>(d.seen||[]).indexOf(v.id)>=0).length;
+  V.innerHTML='<main class="xmain"><h2>終わる</h2><p class="note">'+esc(d.name)+'へ</p><div class="xcnt"><div>見た動画 <b>'+ns+'／'+vs.length+'本</b></div><div>送ったひとこと <b>'+xMineN()+'件</b></div></div>'+
+    '<h3 class="xh3">全体へのひとこと <small>（任意・選ぶだけでもOK）</small></h3><div class="wrap">'+X_ALL.map(w=>'<button class="opt sm" data-xall="'+esc(w)+'" aria-pressed="'+(F.all.indexOf(w)>=0)+'">'+esc(w)+'</button>').join('')+'</div>'+
+    '<textarea id="xf-all" rows="3" maxlength="1000" class="ta2" placeholder="書き足す（マイクで話して入力できます）">'+esc(F.all)+'</textarea><button class="btn sm2" data-act="xMicAll">🎤 話して書く</button>'+
+    '<h3 class="xh3">次の練習の課題 <small>（1〜3個・任意。本人のアプリの課題に入ります）</small></h3>'+F.tasks.map((t,i)=>'<div class="xtk"><input type="text" id="xf-t'+i+'" maxlength="200" value="'+esc(t.text)+'" placeholder="例：踏み切りで目線を上げる">'+(t.auto?'<small>☆の指摘から</small>':'')+'</div>').join('')+
+    (F.tasks.length<3?'<button class="linkbtn2" data-act="xTaskAdd">＋ 課題を足す</button>':'')+
+    '<div class="acts xfin"><button class="btn pri" data-act="xFinGo">送って終わる</button><button class="btn" data-act="xFinNone">何も書かずに終わる</button><button class="btn" data-act="xFinBack">まだ続ける</button></div></main>';
+  const sync=()=>{F.all=(document.getElementById('xf-all')||{value:F.all}).value;F.tasks.forEach((t,i)=>{const e=document.getElementById('xf-t'+i);if(e)t.text=e.value;});xDraftSet(x=>{x.fin=F;});};
+  V.querySelectorAll('textarea,input').forEach(e=>e.oninput=sync);XR.finSync=sync;}
+function xThanks(){navSync();const d=XR.data,n=xMineN(),hasAll=(d.coms||[]).some(c=>!c.scene&&!c.fam&&c.ev!=='LINE');
+  V.innerHTML='<main class="xmain xthx"><h2>ありがとうございました</h2><p>お忙しいところ、見ていただき<br>ありがとうございました。</p><div class="xmsg">'+(n?'場面へのひとこと <b>'+n+'件</b>'+(hasAll?' と 全体へのひとこと':''):hasAll?'全体へのひとこと':'お返事')+' が、本人と家族に届きました。</div>'+
+    '<p>本人が読んで、追加で聞きたいことやお礼があれば、このページと LINE でお知らせします。</p><p class="note">あとから気づいたことがあれば、このリンクからまた書けます。</p><div class="acts"><button class="btn" data-act="xBack">送ったひとことを見る</button></div></main>';}
+/* ---------- ボタン ---------- */
+function xClick(ds,b){if(!XR)return false;if(SC&&scClick(ds,b))return true;if(CP&&cpClick(ds,b))return true;
   if(ds.xopen){extOpen(ds.xopen);return true;}
-  if(ds.act==='xReply'||ds.act==='xDone'){const t=(document.getElementById('xr-text')||{value:''}).value.trim(),done=ds.act==='xDone';if(!t&&!done){toast('返事を書いてください');return true;}
-    const back=busy(b);call('reqComment',{key:XR.key,vid:'',text:t,done}).then(r=>{XR.data.coms=r.coms;XR.data.done=!!r.done;XR.rtxt='';xDraftSet(d=>{d.r='';});extList();toast(done?'ありがとうございました':'送りました。ありがとうございます');}).catch(e=>{back();toast(errMsg(e).replace(/^(Exception|Error):\s*/,''));});return true;}
-  if(ds.act==='vpRetry'){const v=XR.vid;if(v){const o=vCache[v.fileId];if(o){Object.keys(o.urls).forEach(t=>{try{URL.revokeObjectURL(o.urls[t]);}catch(e){}});delete vCache[v.fileId];}extOpen(v.id);}return true;}
-  if(ds.act==='xClose'){XR.id=null;if(XR.ac)XR.ac.abort();const pv=document.getElementById('vplayer');if(pv){pv.innerHTML='';pv.hidden=true;}document.body.classList.remove('noscroll');extList();return true;}
-  if(ds.act==='vpPlay'){const ve=document.getElementById('vp-video');if(ve){if(ve.paused){ve.muted=false;ve.play();}else ve.pause();}return true;}
-  if(ds.act==='vpStepB'||ds.act==='vpStepF'){const ve=document.getElementById('vp-video');if(ve){ve.pause();ve.currentTime=Math.max(0,ve.currentTime+(ds.act==='vpStepF'?1:-1)/60);}return true;}
-  if(ds.xrate){const ve=document.getElementById('vp-video');XR.rate=+ds.xrate;if(ve)ve.playbackRate=+ds.xrate;document.querySelectorAll('[data-xrate]').forEach(x=>x.classList.toggle('on',x===b));return true;}
-  if(ds.act==='xCom'){const ve=document.getElementById('vp-video');if(ve){ve.pause();XR.t=ve.duration?Math.round(ve.currentTime*10)/10:null;}xPanel();return true;}
-  if(ds.act==='xComClose'){const p=document.getElementById('vp-panel');if(p){p.hidden=true;p.innerHTML='';}return true;}
-  if(ds.xg){XR.g=ds.xg;XR.part='';xPanel();return true;}
-  if(ds.xpart!==undefined){XR.part=XR.part===ds.xpart?'':ds.xpart;xPanel();return true;}
-  if(ds.xev!==undefined){XR.ev=XR.ev===ds.xev?'':ds.xev;xPanel();return true;}
-  if(ds.act==='xImgDel'){XR.img='';xPanel();return true;}
-  if(ds.act==='xDraw'){const ve=document.getElementById('vp-video'),im=document.getElementById('vp-img');let base;try{if(ve){ve.pause();XR.t=Math.round(ve.currentTime*10)/10;base=grabFrame(ve);}else if(im){base=document.createElement('canvas');base.width=im.naturalWidth;base.height=im.naturalHeight;base.getContext('2d').drawImage(im,0,0);}else return true;base.getContext('2d').getImageData(0,0,1,1);}catch(e){toast('読み込みが終わってから押してください');return true;}
-    openDraw(base,b64=>{XR.img=b64;xPanel();});return true;}
-  if(ds.act==='xSend'){const extra=(document.getElementById('vp-text')||{value:''}).value.trim(),body=[XR.part,XR.ev].filter(Boolean).join('・')+(extra?([XR.part,XR.ev].some(Boolean)?'：':'')+extra:'');
-    if(!body&&!XR.img){toast('言葉を選ぶか、書いてください');return true;}const back=busy(b);
-    call('reqComment',{key:XR.key,vid:XR.vid.id,text:(XR.t!=null?fmtT(XR.t)+'：':'')+body,t:XR.t,part:XR.part,ev:XR.ev,img:XR.img}).then(r=>{XR.data.coms=r.coms;const sid=XR.vid&&XR.vid.id;XR.part='';XR.ev='';XR.txt='';XR.img='';if(sid)xDraftSet(d=>{d.c=d.c||{};delete d.c[sid];});xPanel();toast('送りました');}).catch(e=>{back();toast(errMsg(e).replace(/^(Exception|Error):\s*/,''));});return true;}
-  if(ds.act==='drwClose'||ds.act==='drwSave'||ds.drwtool||ds.drwcol||ds.act==='drwUndo'||ds.act==='drwClear')return false;   // 図示は共通の処理へ
-  return true;}
+  if(ds.xev){const [id,ev]=kp(ds.xev),t=(XR.data.prev||[]).find(x=>x.id===id),nv=t&&t.ev===ev?'':ev;const back=busy(b,'…');call('reqEval',{key:XR.key,id,ev:nv}).then(r=>{xApply(r);extList();toast(nv?'「'+nv+'」を残しました':'取り消しました');},xEndChk).catch(e=>{back();toast(xErr(e));});return true;}
+  if(ds.xcmpl){const L=(XR.data.videos||[]).find(v=>v.id===ds.xcmpl),R=(XR.data.refs||[])[0]||(XR.data.videos||[]).find(v=>v.id!==ds.xcmpl&&!v.photo)||null;XR.view='main';xCmpOpen(L,R);return true;}
+  if(ds.xrefcmp){const R=(XR.data.refs||[]).find(v=>v.id===ds.xrefcmp),L=(XR.data.videos||[]).filter(v=>!v.photo).sort((a,b)=>(b.star?1:0)-(a.star?1:0))[0];if(L&&R){XR.view='main';xCmpOpen(L,R);}return true;}
+  if(ds.xcmpv){const c=(XR.data.cmps||[]).find(x=>x.id===ds.xcmpv),L=xAllV().find(v=>v.id===c.l),R=xAllV().find(v=>v.id===c.r);if(L&&R)xCmpOpen(L,R,Object.assign({by:XR.data.name,limgU:xFile(c.limg),rimgU:xFile(c.rimg)},c));return true;}
+  if(ds.xall){XR.finSync&&XR.finSync();const F=XR.fin,w=ds.xall;F.all=F.all.indexOf(w)>=0?F.all.replace(w+'。','').replace(w,'').trim():(F.all?F.all.replace(/\s+$/,'')+(/[。！]$/.test(F.all.trim())?'':'。'):'')+w+'。';xDraftSet(x=>{x.fin=F;});xFinish();return true;}
+  const a=ds.act;if(!a)return false;
+  if(a==='xBack'){XR.view='main';extList();return true;}
+  if(a==='xRef'){XR.view='ref';xRefView();return true;}
+  if(a==='xCmp'){const vs=(XR.data.videos||[]).filter(v=>!v.photo);if(vs.length===1){const R=(XR.data.refs||[])[0]||null;xCmpOpen(vs[0],R);}else{XR.view='cmpPick';xCmpPick();}return true;}
+  if(a==='xMic'){scMic('xr-text',b);return true;}
+  if(a==='xMicAll'){scMic('xf-all',b);return true;}
+  if(a==='xReply'){const t=(document.getElementById('xr-text')||{value:''}).value.trim();if(!t){toast('書いてください');return true;}const back=busy(b);
+    XR.rbase=XR.rbase||scBase();call('reqComment',{key:XR.key,vid:'',text:t,_nonce:scNonce(XR.rbase,t)}).then(r=>{xApply(r);XR.rtxt='';XR.rbase='';xDraftSet(d=>{d.r='';});extList();toast('送りました。ありがとうございます');},xEndChk).catch(e=>{back();toast(xErr(e));});return true;}
+  if(a==='xFin'){XR.view='finish';XR.fin=null;xFinish();return true;}
+  if(a==='xFinBack'){XR.finSync&&XR.finSync();XR.view='main';extList();return true;}
+  if(a==='xTaskAdd'){XR.finSync&&XR.finSync();if(XR.fin.tasks.length<3)XR.fin.tasks.push({text:'',vid:''});xFinish();return true;}
+  if(a==='xFinGo'||a==='xFinNone'){XR.finSync&&XR.finSync();const F=XR.fin,none=a==='xFinNone',back=busy(b);
+    const fp={key:XR.key,tasks:none?[]:F.tasks.filter(t=>t.text.trim()).map(t=>({text:t.text.trim(),vid:t.vid||''})),text:none?'':F.all.trim()};F.base=F.base||scBase();fp._nonce=scNonce(F.base,JSON.stringify([fp.tasks,fp.text]));xDraftSet(x=>{x.fin=F;});
+    call('reqFinish',fp).catch(e=>{if(!/呼べません/.test(xErr(e)))throw e;return call('reqComment',{key:XR.key,vid:'',done:true,text:[fp.text,fp.tasks.length?'次の練習の課題：'+fp.tasks.map(t=>t.text).join('／'):''].filter(Boolean).join('\n')});}).then(r=>{xApply(r);XR.fin=null;XR.rtxt='';xDraftSet(x=>{delete x.fin;x.r='';});XR.view='thanks';xThanks();},xEndChk).catch(e=>{back();toast(xErr(e));});return true;}
+  return !(/^drw/.test(a));}
+
+/* ===== v4.54 「戻る」（アンドロイドの戻るボタン・iPhone の左端スワイプ）：いちばん上の画面だけを閉じる =====
+ * 何かを開いている間は、履歴に「見張り」を1つ積んでおく。戻るで見張りが消えたら、いちばん上を閉じ、まだ開いていれば見張りを積み直す。
+ * 何も開いていないときに見張りが消えたら（✕で閉じたあとに戻るを押した）、そのまま本当に前のページへ戻る */
+let NAVG=false;
+function navTop(){const pv=document.getElementById('vplayer'),dr=document.getElementById('vdraw');
+  return !!((dr&&!dr.hidden&&dr.innerHTML)||SC||CP||(typeof cmp!=='undefined'&&cmp)||(pv&&!pv.hidden)||(XR&&XR.view&&XR.view!=='main')||(sheetKind&&sheetKind!=='who'));}
+function navGuard(){if(NAVG)return;try{history.pushState({navg:1},'');NAVG=true;}catch(e){}}
+function navCloseTop(){const dr=document.getElementById('vdraw');
+  if(dr&&!dr.hidden&&dr.innerHTML){const b=dr.querySelector('[data-act="drwClose"]');if(b){b.click();return;}}
+  if(SC){if(SC.form){scFormClose();return;}const p=document.getElementById('sc-panel');if(p&&!p.hidden){p.hidden=true;SC.listOpen=false;return;}scClose();return;}
+  if(CP){if(CP.form||CP.picking){CP.form=null;CP.picking=false;cpDraw();return;}cpClose();return;}
+  if(typeof cmp!=='undefined'&&cmp){closeCompare();return;}
+  const pv=document.getElementById('vplayer');if(pv&&!pv.hidden){if(typeof closePlayer==='function')closePlayer();else{pv.hidden=true;pv.innerHTML='';document.body.classList.remove('noscroll');}return;}
+  if(XR&&XR.view&&XR.view!=='main'){if(XR.finSync)try{XR.finSync();}catch(e){}XR.view='main';extList();return;}
+  if(sheetKind&&sheetKind!=='who'){closeSheet();try{render();}catch(e){}return;}}
+window.addEventListener('popstate',()=>{if(!NAVG)return;NAVG=false;if(navTop()){navCloseTop();if(navTop())navGuard();}else{try{history.back();}catch(e){}}});
+/** 開いたものがあれば見張りを積む（画面を描くたびに呼んでよい） */
+function navSync(){if(navTop())navGuard();}
+
 /* ===== 家族：依頼を作る・一覧 ===== */
 let XF=null;
 function openReqForm(vids){XF={vids,name:'',text:'',show:true};SH.innerHTML='<div class="grab"></div><h3 id="sh-title">ゲストコーチに見てもらう</h3>'+
@@ -2029,36 +2515,54 @@ function reqListHtml(){if(!canEdit()||!(S.xreqs||[]).length)return '';const C=S.
       (live?'<button class="btn sm2" data-xresend="'+esc(q.id)+'">リンクを送る</button><button class="btn sm2" data-xclose="'+esc(q.id)+'">受付を終える</button>':'<button class="btn sm2" data-xreopen="'+esc(q.id)+'">もう一度受け付ける（'+(q.kind==='チーム'?'30':'7')+'日）</button>')+
       (who!=='本人'&&q.by!=='本人'?'<button class="btn sm2" data-xshow="'+esc(q.id)+'">'+(q.show?'本人に見せない':'本人にも見せる')+'</button>':'')+(q.by?'<br><small class="s">依頼した人：'+esc(q.by)+'</small>':'')+'</div>';}).join('')+'</div>';}
 
-/* ===== v4.49：コーチに送る（動画と相談）。チームのコーチもゲストも同じ作り。1人のコーチ×1回の相談 ===== */
+/* ===== v4.54：コーチに送る。相談の文は3つの書き出し（S2）、動画の画面で「＋ この場面」から場面ごとに書き添え（S1）。チームのコーチもゲストも同じ作り。1人のコーチ×1回の相談 ===== */
 let CS=null;
-function openSend(ids,star){const vids=ids.filter(id=>(S.videos||[]).some(v=>v.id===id));if(!vids.length)return;if(vids.length>10){toast('10本までにしてください');return;}
-  CS={ids:vids,star:(star||[]).filter(id=>vids.indexOf(id)>=0),to:[],guest:false,ok6:false};const cs=(S.coaches||[]).filter(c=>c!=='コーチ');
-  SH.innerHTML='<div class="grab"></div><h3 id="sh-title">コーチに送る（'+vids.length+'本'+(CS.star.length?'・☆'+CS.star.length+'本':'')+'）</h3>'+
-    '<div class="lab">誰に（複数選ぶと、コーチごとに別の相談になります）</div><div class="wrap">'+cs.map(c=>'<button class="opt sm" data-sdto="'+esc(c)+'" aria-pressed="false">'+esc(c)+'</button>').join('')+'<button class="opt sm" data-act="sdGuest" aria-pressed="false">＋ ゲストコーチ</button></div>'+
-    '<div id="sd-guest" hidden><label class="lab">ゲストコーチの名前（相手の画面に「〇〇へ」と出ます）<input type="text" id="sd-gname" maxlength="40" placeholder="例：〇〇コーチ"></label><label class="lab">所属・関係（例：〇〇クラブ、合宿でお世話になった）<input type="text" id="sd-gorg" maxlength="60"></label></div>'+
-    '<label class="lab">相談の文（自分の言葉で）<textarea id="sd-text" rows="5" maxlength="1000" class="ta2" placeholder="例：第2エアの踏み切りが早くなってしまいます。☆の2本を比べて見てもらえるとうれしいです。"></textarea></label><p class="note mic">🎤 キーボードのマイクで、話して入力できます</p>'+
+const SD_HEADS=[['see','見てほしいこと','例：第2エアの踏み切り'],['feel','自分で感じていること','例：踏み切りが早くなってしまう'],['ask','聞きたいこと','例：どこを意識すればいいですか？']];
+function openSend(ids,star){if(vplay)closePlayer();if(SC)scClose(true);const vids=ids.filter(id=>(S.videos||[]).some(v=>v.id===id));if(!vids.length)return;if(vids.length>10){toast('10本までにしてください');return;}
+  if(CS&&!CS.sent&&CS.ids.join()===vids.join()&&(CS.notes.length||Object.values(CS.parts).some(x=>String(x).trim()))){sdDraw();toast('書きかけを戻しました');return;}
+  CS={ids:vids,star:(star||[]).filter(id=>vids.indexOf(id)>=0),to:[],guest:false,ok6:false,parts:{see:'',feel:'',ask:''},notes:[],gname:'',gorg:'',n:0};sdDraw();}
+function sdDraw(){const cs=[...new Set((S.coaches||[]).filter(c=>c!=='コーチ'))],vs=CS.ids.map(id=>(S.videos||[]).find(v=>v.id===id)).filter(Boolean);
+  SH.innerHTML='<div class="grab"></div><h3 id="sh-title">コーチに送る（'+vs.length+'本'+(CS.star.length?'・☆'+CS.star.length+'本':'')+'）</h3>'+
+    '<div class="lab">誰に（複数選ぶと、コーチごとに別の相談になります）</div><div class="wrap">'+cs.map(c=>'<button class="opt sm" data-sdto="'+esc(c)+'" aria-pressed="'+(CS.to.indexOf(c)>=0)+'">'+esc(c)+'</button>').join('')+'<button class="opt sm" data-act="sdGuest" aria-pressed="'+CS.guest+'">＋ ゲストコーチ</button></div>'+
+    '<div id="sd-guest"'+(CS.guest?'':' hidden')+'><label class="lab">ゲストコーチの名前（相手の画面に「〇〇へ」と出ます）<input type="text" id="sd-gname" maxlength="40" placeholder="例：〇〇コーチ" value="'+esc(CS.gname)+'"></label><label class="lab">所属・関係（例：〇〇クラブ、合宿でお世話になった）<input type="text" id="sd-gorg" maxlength="60" value="'+esc(CS.gorg)+'"></label></div>'+
+    '<div class="lab">相談の文（どれか1つ以上。自分の言葉で）</div>'+SD_HEADS.map(([k,h,ph])=>'<div class="sd-h"><b>'+h+'</b><div class="sc-txt"><textarea id="sd-'+k+'" rows="2" maxlength="400" class="ta2" placeholder="'+esc(ph)+'">'+esc(CS.parts[k])+'</textarea><button class="btn sm2" data-sdmic="'+k+'">🎤 話して書く</button></div></div>').join('')+
+    '<div class="lab">場面ごとに書き添える（任意）</div><p class="note">動画を開いて、気になる場面で「＋ この場面」。どこ・どう・書き足す・止まった画面に図、をコーチと同じ欄で書けます。コーチの画面では、その場面に本人の印で出ます。</p>'+
+    '<div class="sd-vs">'+vs.map(v=>{const n=CS.notes.filter(x=>x.vid===v.id).length,tu=thumbUrl(v);return '<button class="sd-v" data-sdnote="'+esc(v.id)+'">'+(tu?'<img alt="" src="'+esc(tu)+'" onerror="this.remove()">':'<i>▶</i>')+'<span><b>'+(CS.star.indexOf(v.id)>=0?'☆ ':'')+esc(v.title)+'</b><small>'+(n?'書き添え '+n+'件':'＋ この場面に書き添える')+'</small></span></button>';}).join('')+'</div>'+
     '<p class="note">コーチはアプリも合言葉もなしで、LINEのリンクから見られます。リンクはチームのコーチ30日、ゲストコーチ7日で使えなくなります（相手には表示しません）。</p>'+
-    '<div class="acts" style="flex-wrap:wrap"><button class="btn" data-act="close">やめる</button><button class="btn" data-act="sdPrev">コーチにはこう見えます</button><button class="btn pri" data-act="sdGo">送る</button></div>';openS('send');}
-const sdText=()=>(document.getElementById('sd-text')||{value:''}).value.trim();
+    '<div class="acts" style="flex-wrap:wrap"><button class="btn" data-act="close">やめる</button><button class="btn" data-act="sdPrev">コーチにはこう見えます</button><button class="btn pri" data-act="sdGo">送る</button></div>';openS('send');
+  SD_HEADS.forEach(([k])=>{const e=document.getElementById('sd-'+k);if(e)e.oninput=()=>{CS.parts[k]=e.value;};});
+  const g=document.getElementById('sd-gname'),o=document.getElementById('sd-gorg');if(g)g.oninput=()=>{CS.gname=g.value;};if(o)o.oninput=()=>{CS.gorg=o.value;};}
+/** 送る文（サーバーと同じ組み立て。LINE の文面と見本に使う） */
+const sdText=()=>SD_HEADS.map(([k,h])=>{const t=String(CS.parts[k]||'').trim();return t?'【'+h+'】'+t:'';}).filter(Boolean).join('\n');
+/** 場面ごとの書き添え：動画を全画面で開き、＋ この場面（送るまでこの端末に置いておく） */
+function sdNote(vid){const v=(S.videos||[]).find(x=>x.id===vid);if(!v)return;closeSheet();const c={rate:1,id:vid};
+  const marks=()=>CS.notes.filter(x=>x.vid===vid).map(x=>({id:x.id,t:x.t,fam:true,kindL:'書き添え',text:x.text,part:x.part,ev:x.ev,mine:true,img:x.img?'data:image/jpeg;base64,'+x.img:''}));
+  scOpen({v,mode:'note',c,sub:'書き添え（送るまで、この端末に置いておきます）',marks,words:g=>vWords(g),groups:()=>vGroups(v.kind),sentLabel:'書き添えました',noResume:true,
+    save:p=>{if(!p.id&&CS.notes.length>=30)return Promise.reject(new Error('書き添えは30件までです'));if(p.id){const x=CS.notes.find(n=>n.id===p.id);if(x)Object.assign(x,{part:p.part,ev:p.ev,text:p.text},p.img?{img:p.img}:{});}else CS.notes.push({id:'n'+(++CS.n),vid,t:p.t,part:p.part,ev:p.ev,text:p.text,img:p.img||''});return Promise.resolve();},
+    remove:id=>{CS.notes=CS.notes.filter(x=>x.id!==id);return Promise.resolve();},
+    onClose:()=>{render();sdDraw();},
+    load:sc=>loadVideo(v,{c,alive:()=>SC===sc,onOk:()=>scBind()})});}
 /** 確認用の見本（コーチの画面と同じ見た目） */
-function sdPreview(){const t=sdText(),to=CS.to[0]||(CS.guest&&(document.getElementById('sd-gname')||{value:''}).value.trim())||'〇〇コーチ';
+function sdPreview(){const t=sdText(),to=CS.to[0]||(CS.guest&&CS.gname.trim())||'〇〇コーチ';
   const vs=CS.ids.map(id=>(S.videos||[]).find(v=>v.id===id)).filter(Boolean).sort((a,b)=>(CS.star.indexOf(b.id)>=0)-(CS.star.indexOf(a.id)>=0));
   const p=document.createElement('div');p.className='xprev';p.innerHTML='<div class="xprev-in"><div class="note" style="text-align:center;background:#FFF3E3;border-radius:8px;padding:4px">確認用の見本です（'+esc(to)+'の画面）</div>'+
-    '<p class="xfrom">モーグル（フリースタイルスキー）　'+esc(String((S.cfgView||{}).athlete||dispName('本人')))+'<br><small>送った人：'+esc(me())+'</small></p><h2>'+esc(to)+'へ</h2><div class="xmsg">'+(esc(t)||'（相談の文がまだありません）').replace(/\n/g,'<br>')+'</div>'+
-    '<p class="xprog">見た動画 <b>0／'+vs.length+'本</b>'+(CS.star.length?'　☆は特に見てほしい動画です':'')+'</p>'+
-    '<div class="vgrid">'+vs.map(v=>{const tu=thumbUrl(v);return '<div class="vcard"><span class="vth">'+(tu?'<img alt="" src="'+esc(tu)+'">':'')+'<i>'+(isPh(v)?'📷':'▶')+'</i>'+(CS.star.indexOf(v.id)>=0?'<b class="vb">☆</b>':'')+'</span><span class="vt">'+esc(v.title)+'</span></div>';}).join('')+'</div>'+
-    '<h2>返事</h2><p class="note">ここに返事を書く欄があります。言葉だけで返事できます。動画ごとに、止めた場面へのひとことも残せます（任意）。</p>'+
+    '<p class="xfrom">モーグル（フリースタイルスキー）　'+esc(String((S.cfgView||{}).athlete||dispName('本人')))+'<br><small>送った人：'+esc(me())+'</small></p><h2>'+esc(to)+'へ</h2><div class="xmsg">'+(t?esc(t).replace(/【([^】]+)】/g,'<b class="xhd">$1</b>').replace(/\n/g,'<br>'):'（相談の文がまだありません）')+'</div>'+
+    (CS.star.length?'<p class="note">☆は特に見てほしい動画です</p>':'')+
+    '<div class="vgrid">'+vs.map(v=>{const tu=thumbUrl(v),n=CS.notes.filter(x=>x.vid===v.id).length;return '<div class="vcard"><span class="vth">'+(tu?'<img alt="" src="'+esc(tu)+'">':'')+'<i>'+(isPh(v)?'📷':'▶')+'</i>'+(CS.star.indexOf(v.id)>=0?'<b class="vb">☆</b>':'')+'</span><span class="vt">'+esc(v.title)+'</span><small>まだ見ていません'+(n?'<span class="xfam">本人の書き添え '+n+'</span>':'')+'</small></div>';}).join('')+'</div>'+
+    '<p class="note">動画を開くと、書き添えた場面に本人の印が出ます。コーチは「＋ この場面」で、止めた場面へのひとことや図を残せます。</p>'+
     '<button class="btn" data-act="xprevClose" style="width:100%">← 戻って直す</button></div>';document.body.appendChild(p);}
 /** 送る：コーチごとに1つの相談（リンク）を作る */
 async function sdGo(btn){const t=sdText(),tg=CS.to.map(n=>({name:n,kind:'チーム'}));
-  if(CS.guest){const g=(document.getElementById('sd-gname')||{value:''}).value.trim();if(!g){toast('ゲストコーチの名前を書いてください');return;}tg.push({name:g,org:(document.getElementById('sd-gorg')||{value:''}).value.trim(),kind:'ゲスト'});}
-  if(!tg.length){toast('誰に送るか選んでください');return;}if(!t){toast('相談の文を書いてください');return;}
+  if(CS.guest){const g=CS.gname.trim();if(!g){toast('ゲストコーチの名前を書いてください');return;}tg.push({name:g,org:CS.gorg.trim(),kind:'ゲスト'});}
+  if(!tg.length){toast('誰に送るか選んでください');return;}if(!t){toast('「見てほしいこと」「自分で感じていること」「聞きたいこと」のどれか1つを書いてください');return;}
   if(CS.ids.length>=6&&!CS.ok6){if(!confirm('動画が'+CS.ids.length+'本あります。コーチの負担が大きくなりますが、このまま送りますか？'))return;CS.ok6=true;}
-  const back=busy(btn),made=[];
+  const back=busy(btn),made=[],notes=CS.notes.map(x=>({vid:x.vid,t:x.t,part:x.part,ev:x.ev,text:x.text,img:x.img||''}));
   try{let k=0;for(const x of tg){k++;if(tg.length>1)btn.innerHTML='送っています…（'+k+'／'+tg.length+'）';
-      const r=await call('createReq',{who,key,vids:CS.ids,star:CS.star,name:x.name,org:x.org||'',text:t,kind:x.kind,show:true});S.xreqs=r.xreqs;made.push(r.xreqs.find(q=>q.id===r.id)||{name:x.name,key:r.key});}
-    VSEL=null;sdLine(made,t);try{render();}catch(e){reportErr('コーチに送る','送ったあとの再描画：'+errMsg(e));}}
+      CS.base=CS.base||scBase();const rp={who,key,vids:CS.ids,star:CS.star,name:x.name,org:x.org||'',parts:CS.parts,text:t,notes,kind:x.kind,show:true};   /* text は古いサーバー（v4.53まで）用 */rp._nonce=scNonce(CS.base,JSON.stringify([x.name,x.kind,CS.ids,CS.star,CS.parts,notes.map(n=>[n.vid,n.t,n.part,n.ev,n.text,n.img.length])]));
+      const r=await call('createReq',rp);S.xreqs=r.xreqs;if(r.vcoms)S.vcoms=r.vcoms;made.push(r.xreqs.find(q=>q.id===r.id)||{name:x.name,key:r.key});}
+    CS.sent=true;VSEL=null;sdLine(made,t.replace(/【[^】]+】/g,''));try{render();}catch(e){reportErr('コーチに送る','送ったあとの再描画：'+errMsg(e));}}
   catch(e){if(made.length){VSEL=null;sdLine(made,t);try{render();}catch(x){}toast('一部だけ送れました：'+errMsg(e));}else{back();toast(errMsg(e));}}}
+
 /** LINEで知らせる：コーチごと（直せる）／グループに1回 */
 function sdLine(qs,text){const short=text.length>60?text.slice(0,60)+'…':text;
   const mk=q=>fillT(tpl('コーチへのLINEのひな形')||'{名前}\n{送る人}です。動画を見ていただけたらうれしいです。\n{ひとこと}\n{リンク}',{名前:q.name,送る人:me(),ひとこと:short,リンク:XLINK(q.key)});
@@ -2067,15 +2571,180 @@ function sdLine(qs,text){const short=text.length>60?text.slice(0,60)+'…':text;
     qs.map((q,i)=>'<div class="lab">'+esc(q.name)+'へ（直せます）</div><textarea id="cl-'+i+'" rows="6" class="ta2">'+esc(mk(q))+'</textarea><div class="acts"><button class="btn line" data-clsend="'+i+'">'+esc(q.name)+'に LINE</button><button class="btn" data-clcopy="'+i+'">コピー</button></div>').join('')+
     (grp?'<div class="lab">グループに1回で送る（直せます）</div><textarea id="cl-g" rows="7" class="ta2">'+esc(grp)+'</textarea><div class="acts"><button class="btn line" data-clsend="g">グループに LINE</button><button class="btn" data-clcopy="g">コピー</button></div>':'')+
     '<div class="acts"><button class="btn" data-act="close">閉じる</button></div>';openS('cline');}
-/** 送った相談（簡易版。v4.49の次の段階で、相談の一覧とチャットに作り直す） */
-function consultLite(){const Q=(S.xreqs||[]).slice().sort((a,b)=>a.at<b.at?1:-1).slice(0,6);if(!Q.length)return '';const C=S.xcoms||[];
-  return '<h2>コーチに送った相談</h2><div class="list">'+Q.map(q=>{const cs=C.filter(c=>c.req===q.id),last=cs.slice(-1)[0],live=q.st==='受付中'&&(!q.exp||q.exp>=TODAY),
-      days=Math.max(0,Math.round((Date.parse(TODAY)-Date.parse(String(q.at).slice(0,10).replace(/\//g,'-')))/864e5)),sn=(q.seen||[]).length,
-      st=cs.some(c=>c.ev==='以上')?'済（以上です）':last?'返事あり':live?'返事待ち（'+days+'日）':'終了';
-    return '<div class="cslt"><b>'+esc(q.name)+'</b>'+(q.kind==='ゲスト'?'<small class="s">（ゲスト）</small>':'')+'<small class="s">　'+esc(String(q.at).slice(5,10))+'送信・'+q.vids.length+'本・見た '+sn+'／'+q.vids.length+'・'+st+'</small>'+
-      (last?'<div class="cslt-r">'+esc(last.text.length>140?last.text.slice(0,140)+'…':last.text).replace(/\n/g,'<br>')+'<small class="s">（'+esc(String(last.at).slice(5,16))+(last.vid?'・動画へのひとこと':'')+'）</small></div>':'')+'</div>';}).join('')+'</div>';}
+/* ===== v4.53：相談（本人・家族）。状態は保存せず、やりとりの並びから計算する ===== */
+const cTime=x=>Date.parse(String(x||'').replace(/\//g,'-').replace(' ','T')+'+09:00')||0;
+/** 相談の状態：{st 済／返事あり／返事待ち／やりとり中／受付終了, days, why, auto, nudge3, ask14, C やりとり, last} */
+function cState(q){const C=cItems(q),last=C.slice(-1)[0],lastCoach=C.filter(cIsCoach).slice(-1)[0],now=Date.now(),live=q.st==='受付中'&&(!q.exp||q.exp>=TODAY);
+  const base={C,last,lastCoach,live};
+  if(last&&last.ev==='解決')return Object.assign(base,{st:'済',why:'解決した',at:last.at});
+  if(last&&last.ev==='以上'){if(live&&lastCoach&&cSeen()[q.id]!==lastCoach.id&&now-cTime(last.at)<14*864e5)return Object.assign(base,{st:'返事あり',done:true});return Object.assign(base,{st:'済',why:'コーチが「以上です」',at:last.at});}
+  if(last&&cIsCoach(last)){if(now-cTime(last.at)>=14*864e5)return Object.assign(base,{st:'済',why:'返事から14日',auto:true,at:last.at,autoAt:cTime(last.at)+14*864e5});return Object.assign(base,{st:live?'返事あり':'受付終了'});}
+  if(!live)return Object.assign(base,{st:'受付終了'});
+  const since=last?cTime(last.at):cTime(q.at),days=Math.max(0,Math.floor((now-since)/864e5)),wait=(S.xwaits||{})[q.id]||0;
+  return Object.assign(base,{st:lastCoach?'やりとり中':'返事待ち',days,nudge3:days>=3,ask14:days>=14&&now-wait>7*864e5});}
+const cSeen=()=>{try{return JSON.parse(LS.get('cseen:'+who)||'{}');}catch(e){return {};}};
+const cUnseen=(q,x)=>x.st==='返事あり'&&x.lastCoach&&cSeen()[q.id]!==x.lastCoach.id;
+const cBadge=x=>'<b class="cbadge '+({済:'done',返事あり:'new',返事待ち:'wait',やりとり中:'talk',受付終了:'end'}[x.st]||'')+'">'+esc(x.st+((x.st==='返事待ち'||x.st==='やりとり中')&&x.days?'（'+x.days+'日）':''))+'</b>';
+/** 気にかけてほしい順：未読の返事→14日→3日→そのほか（新しい順） */
+function cSorted(){return (S.xreqs||[]).map(q=>({q,x:cState(q)})).sort((a,b)=>{const w=o=>cUnseen(o.q,o.x)?0:o.x.ask14?1:o.x.nudge3?2:o.x.st==='済'||o.x.st==='受付終了'?4:3;
+  return w(a)-w(b)||(cTime((b.x.last||{}).at||b.q.at)-cTime((a.x.last||{}).at||a.q.at));});}
+/** 動画タブ：相談の一覧 */
+function consultLite(){const L=cSorted().slice(0,10);if(!L.length)return '';
+  return '<h2>相談</h2><div class="list">'+L.map(({q,x})=>{const lm=x.last;
+    return '<button class="cslt" data-cs="'+esc(q.id)+'"><b>'+esc(q.name)+'</b>'+(q.kind==='ゲスト'?'<small class="s">（ゲスト）</small>':'')+' '+cBadge(x)+(cUnseen(q,x)?' <b class="cnew">新着</b>':'')+
+      '<small class="s" style="display:block">'+esc(String(q.at).slice(5,10))+'送信・'+q.vids.length+'本・見た '+(q.seen||[]).length+'／'+q.vids.length+(x.why?'・'+esc(x.why):'')+'</small>'+
+      (x.ask14?'<span class="cwarn">14日返事がありません。閉じますか？</span>':x.nudge3?'<span class="cwarn">まだ返事がありません。もう一度声をかけてみませんか</span>':'')+
+      (lm?'<span class="cslt-r">'+esc(lm.k==='all'?cWho(q,lm):lm.fam?dispName(lm.by):lm.by)+'：'+esc(cBody(lm).length>80?cBody(lm).slice(0,80)+'…':cBody(lm))+'</span>':'')+'</button>';}).join('')+'</div>';}
+const cWho=(q,c)=>c.ev==='家族'||c.ev==='解決'||c.ev==='お礼'?dispName(c.by):c.by+(c.ev==='LINE'?'（LINEより）':'');
+/** ホーム：相談の知らせ（未読の返事・3日・14日・自動で済） */
+function consultNews(){if(!S.xreqs||!S.xreqs.length)return '';const ack=(()=>{try{return JSON.parse(LS.get('cack:'+who)||'{}');}catch(e){return {};}})(),out=[];
+  cSorted().forEach(({q,x})=>{if(cUnseen(q,x))out.push([q,'💬 '+q.name+'から返事があります']);else if(x.ask14)out.push([q,'⏳ '+q.name+'：14日返事がありません。閉じますか？']);else if(x.nudge3)out.push([q,'⏳ '+q.name+'：まだ返事がありません（'+x.days+'日）']);
+    else if(x.auto&&Date.now()-x.autoAt<3*864e5&&!ack[q.id])out.push([q,'✓ '+q.name+'との相談を「済」にしました（返事から14日）']);});
+  if(!out.length)return '';return '<h2>相談</h2><div class="exl">'+out.slice(0,5).map(([q,t])=>'<button class="vnew" data-cs="'+esc(q.id)+'">'+esc(t)+'</button>').join('')+'</div>';}
+/* ===== v4.54 家族側：相談の画面（F1）・動画ごとのひとこと（F2）・順に見る（F3）・比較を見る（F4）・お礼を伝えて終える（F6） =====
+ * 相談の中身は、外部の評価（全体のやりとり）＋動画のひとこと（相談IDつきの場面）＋比較＋参考動画を、時刻の順に合わせたもの */
+const cIsFamK=k=>k==='本人の書き添え'||k==='質問';
+function cItems(q){const out=[];
+  (S.xcoms||[]).filter(c=>c.req===q.id).forEach(c=>out.push(Object.assign({k:'all'},c)));
+  (S.vcoms||[]).filter(c=>c.req===q.id).forEach(c=>out.push({k:'scene',id:c.id,at:c.at,by:c.by,vid:c.vid,t:c.t,text:c.text,part:c.part,ev:c.ev,img:c.img,kind:c.kind||'コーチ',star:!!c.star,rep:c.rep,fam:cIsFamK(c.kind)}));
+  (S.cmps||[]).filter(c=>c.req===q.id).forEach(c=>out.push(Object.assign({k:'cmp'},c)));
+  (S.videos||[]).filter(v=>v.req===q.id&&v.ref).forEach(v=>out.push({k:'ref',id:v.id,at:v.at,by:v.by,v}));
+  return out.map((c,i)=>[c,i]).sort((a,b)=>cTime(a[0].at)-cTime(b[0].at)||a[1]-b[1]).map(x=>x[0]);}
+const cIsCoach=c=>c.k==='scene'?!c.fam:c.k==='cmp'||c.k==='ref'?true:(c.ev===''||c.ev==null||c.ev==='以上'||c.ev==='LINE');
+const cBody=c=>c.k==='scene'?[[c.part,c.ev].filter(Boolean).join('・'),c.text].filter(Boolean).join('：')||'（図）':c.k==='cmp'?'比較：'+(c.text||'（図）'):c.k==='ref'?'参考動画「'+c.v.title+'」':String(c.text||'');
+const cVT=id=>{const v=(S.videos||[]).find(y=>y.id===id);return v?v.title:'動画';};
+/** まだ見ていないコーチのひとこと（この端末で） */
+const cSeen2=()=>{try{return JSON.parse(LS.get('cseen2:'+who)||'{}');}catch(e){return {};}};
+function cSeenMark(ids){const s=cSeen2();ids.forEach(i=>s[i]=1);LS.set('cseen2:'+who,JSON.stringify(s));}
+/** 動画ごとの場面のひとこと（コーチの指摘を元に、本人の質問・コーチの答えを下に。本人の書き添えにはコーチの答えを下に） */
+function cMarks(q,vid){const all=cItems(q),cs=all.filter(c=>c.k==='scene'&&c.vid===vid),byId={},seen=cSeen2();cs.forEach(c=>byId[c.id]=c);
+  const root=c=>{let x=c,n=0;while(x.rep&&byId[x.rep]&&n++<5)x=byId[x.rep];return x;},kids={};cs.forEach(c=>{if(c.rep&&byId[c.rep]){const r=root(c);(kids[r.id]=kids[r.id]||[]).push(c);}});
+  return cs.filter(c=>!(c.rep&&byId[c.rep])).map(c=>({id:c.id,t:c.t,fam:c.fam,kindL:c.fam?dispName(c.by)+(c.kind==='本人の書き添え'?'の書き添え':'の質問'):'',star:c.star,text:c.text,part:c.part,ev:c.ev,mine:c.fam&&c.by===who,img:c.img?apiImg(c.img):'',by:c.fam?dispName(c.by):c.by,isNew:!c.fam&&!seen[c.id],
+    answers:(kids[c.id]||[]).map(a=>({by:a.fam?dispName(a.by):a.by,lab:a.fam?'質問':'答え',text:a.text,part:a.part,ev:a.ev}))}));}
+/** 相談の動画（送った動画＋参考動画） */
+const cVids=q=>q.vids.concat((S.videos||[]).filter(v=>v.req===q.id&&v.ref).map(v=>v.id));
+/* ---------- F1 相談の画面 ---------- */
+function openConsult(id,mode){const q=(S.xreqs||[]).find(x=>x.id===id);if(!q)return;const x=cState(q);CSX={id,mode:mode||''};
+  if(x.lastCoach){const sn=cSeen(),was=sn[id];sn[id]=x.lastCoach.id;LS.set('cseen:'+who,JSON.stringify(sn));if(was!==x.lastCoach.id)setTimeout(()=>{try{render();}catch(e){}},0);}   // 見たら、後ろの一覧・ホームの知らせも描き直す
+  if(x.auto){try{const a=JSON.parse(LS.get('cack:'+who)||'{}');a[id]=1;LS.set('cack:'+who,JSON.stringify(a));}catch(e){}}
+  const C=x.C,coachN=C.filter(c=>c.k==='scene'&&!c.fam).length+C.filter(c=>c.k==='cmp').length,star=C.find(c=>c.k==='scene'&&c.star&&!c.fam),seen=cSeen2();
+  let h='<div class="grab"></div><h3 id="sh-title">'+esc(q.name)+'への相談 '+cBadge(x)+'</h3><p class="note">'+esc(String(q.at).slice(5,10))+' 送信・'+q.vids.length+'本・見た '+(q.seen||[]).length+'／'+q.vids.length+(x.live?'・リンクは'+md(q.exp)+'まで（相手には出ません）':'・受付は終わっています')+'</p>';
+  if(coachN)h+='<button class="btn pri cs-all" data-csl="'+esc(q.id)+'">コーチのひとこと '+coachN+'件を見る（動画ごと）</button>';
+  if(star)h+='<div class="cm coach scene starc">'+(!seen[star.id]?'<b class="sc-new">新</b> ':'')+'<small>☆いちばん大事・'+esc(star.by)+'・'+esc(cVT(star.vid))+(star.t!=null?' '+fmtT(star.t):'')+'</small><div>'+esc(cBody(star))+(star.img?'（図）':'')+'</div><button class="linkbtn2" data-csgo="'+esc(star.vid+'|'+star.id)+'">▶ この場面を見る</button></div>';
+  h+='<div class="cchat"><div class="cm me"><small>'+esc(dispName(q.by))+'・'+esc(String(q.at).slice(5,16))+'</small><div>'+esc(q.text).replace(/【([^】]+)】/g,'<b class="xhd">$1</b>').replace(/\n/g,'<br>')+'</div></div>';
+  h+=C.map(c=>{const tm=esc(String(c.at).slice(5,16)),nw=cIsCoach(c)&&!seen[c.id]?'<b class="sc-new">新</b> ':'';
+    if(c.k==='scene'){if(c.fam)return '<div class="cm me scene"><small>'+esc(dispName(c.by))+'・'+esc(c.kind==='本人の書き添え'?'書き添え':'場面への質問')+'（'+esc(cVT(c.vid))+(c.t!=null?' '+fmtT(c.t):'')+'）</small><div>'+esc(cBody(c))+'</div></div>';
+      return '<div class="cm coach scene">'+nw+'<small>'+(c.t!=null?'<b>'+fmtT(c.t)+'</b> ':'')+esc(c.by)+'・'+esc(cVT(c.vid))+(c.kind==='答え'?'・答え':'')+'</small><div>'+esc(cBody(c))+(c.img?'（図）':'')+'</div><button class="linkbtn2" data-csgo="'+esc(c.vid+'|'+c.id)+'">▶ この場面を見る</button></div>';}
+    if(c.k==='ref')return '<div class="cm coach ref">'+nw+'<small>参考・'+esc(c.by)+'・'+tm+'</small><div>'+esc(c.by)+'が参考動画を添えました<br><b>'+esc(c.v.title)+'</b></div><div class="acts"><button class="btn sm2" data-vplay="'+esc(c.v.id)+'">▶ 見る</button><button class="btn sm2" data-cscmpref="'+esc(c.v.id)+'">本人の動画と並べる</button></div></div>';
+    if(c.k==='cmp')return '<div class="cm coach">'+nw+'<small>比較・'+esc(c.by)+'・'+tm+'</small><div>'+esc(cVT(c.l))+' と '+esc(cVT(c.r))+(c.part?'（'+esc(c.part)+'）':'')+'：'+esc(c.text||'（図）')+'</div><button class="linkbtn2" data-cscmp="'+esc(c.id)+'">▶ 比較を見る</button></div>';
+    if(c.ev==='解決')return '<div class="cm mark">✓ '+esc(dispName(c.by))+'が「済」にしました'+(c.text&&c.text!=='解決しました'?'<div>分かったこと（家族の中だけ）：'+esc(c.text).replace(/\n/g,'<br>')+'</div>':'')+'<small>'+tm+'</small></div>';
+    const mine=c.ev==='家族'||c.ev==='お礼';return '<div class="cm '+(mine?'me':'coach')+(c.ev==='以上'?' done':'')+'">'+(mine?'':nw)+'<small>'+esc(cWho(q,c))+'・'+tm+(c.ev==='お礼'?'・お礼':!mine&&!c.vid?'・全体へのひとこと':'')+'</small><div>'+esc(c.text).replace(/\n/g,'<br>')+'</div></div>';}).join('')+
+    (x.auto?'<div class="cm mark">✓ 返事から14日たったので「済」にしました。また書けば再開します</div>':x.st==='済'?'<div class="cm mark">済（'+esc(x.why)+'）。また書けば再開します</div>':'')+'</div>';
+  if(x.live&&x.ask14)h+='<div class="cbox"><b>14日返事がありません。この相談を閉じますか？</b><p class="note">閉じるとリンクが使えなくなり、置き場の動画も消えます（ドライブの原本は残ります）。</p><div class="acts"><button class="btn" data-act="csWait">まだ待つ（7日）</button><button class="btn danger" data-act="csClose">閉じる</button></div></div>';
+  else if(x.live&&x.nudge3)h+='<div class="cbox"><b>まだ返事がありません（'+x.days+'日）</b><p class="note">コーチはLINEを見落としていることもあります。丁寧にもう一度声をかけてみませんか。</p><button class="btn line" data-act="csResend" style="width:100%">もう一度声をかける文面を出す</button></div>';
+  if(x.live){const m=CSX.mode;
+    if(m==='ask'||m==='line')h+='<label class="lab">'+(m==='ask'?'追加で聞きたいこと':'LINE で来た返事を貼り付け')+'（🎤 キーボードのマイクで話して入力できます）<textarea id="cs-text" rows="3" maxlength="1000" class="ta2">'+esc(CS0.txt||'')+'</textarea></label><div class="acts"><button class="btn" data-cs="'+esc(q.id)+'">やめる</button><button class="btn pri" data-act="'+(m==='ask'?'csAsk':'csLine')+'">'+(m==='ask'?'追加で聞く（LINEでも知らせる）':'記録する')+'</button></div>';
+    else{if(C.some(cIsCoach)&&x.st!=='済')h+='<p class="note cs-pick">見終わったら、どちらかを選んでください</p><div class="acts"><button class="btn" data-act="csAskOpen">追加で聞く</button><button class="btn pri" data-act="csThanksOpen">お礼を伝えて終える</button></div>';
+      else h+='<div class="acts"><button class="btn" data-act="csAskOpen">追加で聞く</button></div>';
+      h+='<button class="linkbtn2" data-act="csLineOpen">LINE で来た返事を記録する</button>';}}
+  h+='<div class="acts"><button class="btn" data-act="close">閉じる</button></div>';
+  SH.innerHTML=h;openS('consult');const ta=document.getElementById('cs-text');if(ta){ta.oninput=()=>{CS0.txt=ta.value;};ta.focus();}
+  cSeenMark(C.filter(c=>cIsCoach(c)&&c.k!=='scene').map(c=>c.id));}
+/* ---------- F2 動画ごとのひとこと ---------- */
+function openConsultList(id,tab){const q=(S.xreqs||[]).find(x=>x.id===id);if(!q)return;CSX={id,mode:'list',tab:tab||''};const vids=cVids(q),seen=cSeen2(),C=cItems(q);
+  const per=vids.map(v=>({v,m:cMarks(q,v),cm:C.filter(c=>c.k==='cmp'&&(c.l===v||c.r===v))})).filter(o=>o.m.length||o.cm.length),total=C.filter(c=>c.k==='scene'&&!c.fam).length+C.filter(c=>c.k==='cmp').length;
+  const isRef=v=>!!((S.videos||[]).find(x=>x.id===v)||{}).ref,cur=tab||'';
+  let h='<div class="grab"></div><h3 id="sh-title">'+esc(q.name)+'のひとこと</h3><div class="wrap cs-tabs"><button class="opt sm" data-csl="'+esc(id)+'" aria-pressed="'+(!cur)+'">すべて '+total+'</button>'+
+    per.map(o=>'<button class="opt sm" data-csl="'+esc(id)+'|'+esc(o.v)+'" aria-pressed="'+(cur===o.v)+'">'+((q.star||[]).indexOf(o.v)>=0?'☆ ':isRef(o.v)?'参考 ':'')+esc(cVT(o.v))+' '+(o.m.filter(x=>!x.fam).length+o.cm.length)+'</button>').join('')+'</div>';
+  per.filter(o=>!cur||o.v===cur).forEach(o=>{const cnt={};o.m.filter(x=>!x.fam).forEach(x=>{[x.part,x.ev].filter(Boolean).forEach(w=>cnt[w]=(cnt[w]||0)+1);});const nn=o.m.filter(x=>x.isNew).length;
+    h+='<div class="cs-vh"><b>'+esc(cVT(o.v))+'</b>'+((q.star||[]).indexOf(o.v)>=0?'<small>（☆特に見てほしい）</small>':'')+'<div class="note">'+esc(Object.keys(cnt).map(k=>k+' '+cnt[k]).join('・'))+(nn?'／まだ見ていない '+nn:'')+'</div>'+
+      '<button class="btn pri cs-seq" data-csseq="'+esc(id+'|'+o.v)+'">▶ '+esc(cVT(o.v))+' のひとことを順に見る（'+(o.m.length+o.cm.length)+'件）</button></div>';
+    const L=o.m.map(m=>({t:m.t,h:'<button class="cs-it'+(m.fam?' fam':'')+'" data-csgo="'+esc(o.v+'|'+m.id)+'"><span class="cs-ih">'+(m.t!=null?'<b>'+fmtT(m.t)+'</b>':'')+(m.star?' <b class="sc-star">☆</b>':'')+(m.fam?' <span class="sc-who fam">'+esc(m.kindL)+'</span>':'')+' '+esc([m.part,m.ev].filter(Boolean).join('・'))+(m.isNew?' <b class="sc-new">新</b>':' <small>見た</small>')+'</span>'+
+      (m.text?'<span>'+esc(m.text)+'</span>':'')+(m.img?'<small>（図）</small>':'')+(m.answers||[]).map(a=>'<span class="cs-ans">'+esc(a.by)+'の'+esc(a.lab)+'：'+esc([[a.part,a.ev].filter(Boolean).join('・'),a.text].filter(Boolean).join('：'))+'</span>').join('')+'</button>'}))
+      .concat(o.cm.map(c=>({t:(c.l===o.v?c.lm:c.rm),h:'<button class="cs-it cmp" data-cscmp="'+esc(c.id)+'"><span class="cs-ih"><b>比較</b> '+esc(cVT(c.l===o.v?c.r:c.l))+'と並べて'+(c.part?'：'+esc(c.part):'')+(!seen[c.id]?' <b class="sc-new">新</b>':'')+'</span><span>'+esc(c.text||'')+'</span>'+(c.limg||c.rimg?'<small>（図）</small>':'')+'</button>'}))).sort((a,b)=>(a.t==null?1e9:a.t)-(b.t==null?1e9:b.t));
+    h+=L.map(x=>x.h).join('');});
+  h+='<p class="note">ひとことは、その動画の時刻の順。比較は、使った両方の動画のところに出ます。</p><div class="acts"><button class="btn" data-cs="'+esc(id)+'">← 相談に戻る</button><button class="btn" data-act="close">閉じる</button></div>';
+  SH.innerHTML=h;openS('consult');}
+/* ---------- F3 順に見る（全画面・止まった場面に図）・F8 ---------- */
+function cSeqList(q,vid){const C=cItems(q);return cMarks(q,vid).map(m=>({k:'m',t:m.t,m})).concat(C.filter(c=>c.k==='cmp'&&(c.l===vid||c.r===vid)).map(c=>({k:'c',t:c.l===vid?c.lm:c.rm,c}))).sort((a,b)=>(a.t==null?1e9:a.t)-(b.t==null?1e9:b.t));}
+function cPlay(q,vid,startId){const v=(S.videos||[]).find(x=>x.id===vid);if(!v)return;closeSheet();const seq=cSeqList(q,vid);let i=Math.max(0,seq.findIndex(s=>(s.m&&s.m.id===startId)||(s.c&&s.c.id===startId)));if(startId==='__none'){i=seq.findIndex(s=>s.k==='m');if(i<0){render();openConsult(q.id);return;}}
+  const c={rate:1,id:vid};
+  scOpen({v,mode:'fam',c,sub:q.name+'のひとこと',closeLabel:'← 一覧',extra:cVids(q).filter(x=>x!==vid&&cSeqList(q,x).length).length?[{label:'動画を切り替え',fn:()=>cSwitch(q,vid)}]:[],marks:()=>cMarks(q,vid),words:g=>vWords(g),groups:()=>vGroups(v.kind),addLabel:'＋ この場面について聞く',askLabel:'この場面について聞く（どうしても聞きたいとき）',sentLabel:'聞きました',noResume:true,
+    save:p=>call('videoComment',Object.assign({who,key,req:q.id},p)).then(d=>{applyPart(d);}),remove:id=>call('videoComment',{who,key,id,remove:true}).then(d=>applyPart(d)),
+    onClose:()=>{render();if(SC_LAST_SENT)csLineSheet(q,'動画の場面について、質問を書きました。お時間のあるときに見ていただけたらうれしいです。','LINE でも知らせる');else openConsultList(q.id,'');},
+    seq:{list:seq,i,show:j=>cSeqShow(q,vid,j)},
+    load:sc=>loadVideo(v,{c,alive:()=>SC===sc,onOk:()=>{scBind();cSeqShow(q,vid,sc.seq.i,true);}})});}
+/** 順に見る：ほかの動画に切り替える（ひとことのある動画だけ） */
+function cSwitch(q,vid){const p=document.getElementById('sc-panel');if(!p)return;const ve=scVe();if(ve)ve.pause();
+  p.innerHTML='<div class="vp-ph"><b>動画を切り替え</b><button class="vp-ic" data-sc="panelX" aria-label="閉じる">✕</button></div>'+cVids(q).filter(x=>cSeqList(q,x).length).map(x=>'<button class="sc-b cs-sw'+(x===vid?' on':'')+'" data-csseq="'+esc(q.id+'|'+x)+'">'+((q.star||[]).indexOf(x)>=0?'☆ ':'')+esc(cVT(x))+'（'+cSeqList(q,x).length+'件）</button>').join('');p.hidden=false;SC.listOpen=true;}
+/** 順に見る：j 番目の場面で止めて、図を重ね、ひとことと「前・次」を出す（比較なら比較の画面へ） */
+function cSeqShow(q,vid,j,first){if(!SC||!SC.seq)return;const S0=SC.seq,s=S0.list[j];if(!s)return;S0.i=j;
+  if(s.k==='c'){const c=s.c,L=(S.videos||[]).find(v=>v.id===c.l),R=(S.videos||[]).find(v=>v.id===c.r);cSeenMark([c.id]);const back=()=>{cPlay(q,vid,'');};scClose(true);
+    cpOpen({L,R,slow:true,src:(v,onp)=>vBlob(v,onp).then(url=>({url,cors:false})),view:Object.assign({limgU:apiImg(c.limg),rimgU:apiImg(c.rimg)},c),only:true,lab:v=>v.ref?'参考':'本人',onClose:()=>{if(!SC)cPlay(q,vid,j>0?(S0.list[j-1].m||S0.list[j-1].c).id:'__none');},openOne:v=>{cPlay(q,v.id,'');},
+      nav:{n:j+1,of:S0.list.length,prev:j>0?()=>{CP.onClose=null;cpClose();cPlay(q,vid,(S0.list[j-1].m||S0.list[j-1].c).id);}:null,next:j<S0.list.length-1?()=>{CP.onClose=null;cpClose();cPlay(q,vid,(S0.list[j+1].m||S0.list[j+1].c).id);}:null}});return;}
+  const m=s.m,ve=scVe();if(ve&&m.t!=null){ve.pause();ve.currentTime=m.t;scTime();}cSeenMark([m.id]);
+  const b=document.getElementById('sc-bub');if(!b)return;b.className='sc-bub seq'+(m.fam?' fam':'');
+  b.innerHTML='<div class="sc-seqh"><b>'+esc(cVT(vid))+' のひとこと '+(j+1)+'／'+S0.list.length+'</b></div>'+scItem(m,false)+
+    '<div class="sc-acts">'+(m.img?'<button class="sc-b sm" data-scfig="'+esc(m.img)+'">図を消す</button>':'')+(m.t!=null?'<button class="sc-b sm" data-sc="stepB">◀ 1コマ</button><button class="sc-b sm pri" data-sc="fromHere">▶ ここから再生（½）</button><button class="sc-b sm" data-sc="stepF">1コマ ▶</button>':'')+'</div>'+
+    (m.fam?'':'<button class="linkbtn2 sc-ask" data-scans="'+esc(m.id)+'">この場面について聞く（どうしても聞きたいとき）</button>')+
+    '<div class="sc-acts sc-nav"><button class="sc-b sm" data-scseq="'+(j-1)+'"'+(j>0?'':' disabled')+'>◀ 前</button><span class="sc-sp"></span><button class="sc-b sm" data-scseq="'+(j+1)+'"'+(j<S0.list.length-1?'':' disabled')+'>次 ▶'+(S0.list[j+1]&&S0.list[j+1].k==='c'?'（比較）':'')+'</button></div>';
+  b.hidden=false;document.getElementById('vplayer').classList.add('seqon');scFig(m.img);}
+/** 止まった場面に図を重ねる（もう一度押すと消す） */
+function scFig(u){let f=document.getElementById('sc-figimg');if(!u){if(f)f.remove();return;}const R=scRect();if(!R)return;if(!f){f=document.createElement('img');f.id='sc-figimg';f.className='sc-figimg';f.alt='図';document.getElementById('vplayer').appendChild(f);}
+  f.src=u;Object.assign(f.style,{left:R.x+'px',top:R.y+'px',width:R.w+'px',height:R.h+'px'});}
+/* ---------- F6 お礼を伝えて終える ---------- */
+const CS_THX=['ありがとうございました！','次の練習で意識してみます','また見てください'];
+function csThanksSheet(q){SH.innerHTML='<div class="grab"></div><h3 id="sh-title">お礼を伝えて終える</h3><p class="note">'+esc(q.name)+'との相談を「済」にします。また書けば再開できます。</p>'+
+  '<div class="lab">① '+esc(q.name)+'へのお礼 <small>（コーチに届きます）</small></div><div class="wrap">'+CS_THX.map(w=>'<button class="opt sm" data-csthx="'+esc(w)+'">'+esc(w)+'</button>').join('')+'</div>'+
+  '<textarea id="cs-thx" rows="3" maxlength="1000" class="ta2">'+esc(CS0.thx||'')+'</textarea>'+
+  '<div class="lab">② 分かったこと <small>（任意・コーチには見えません）</small></div><p class="note">本人の言葉の材料（ことばのかけら）に残ります</p><textarea id="cs-learn" rows="3" maxlength="1000" class="ta2" placeholder="例：踏み切りの直前に右ひざが内に入るので、高さが出ていなかった">'+esc(CS0.learn||'')+'</textarea>'+
+  '<p class="note">送ったあと、LINE でもお礼を伝える文面が出ます</p><div class="acts"><button class="btn" data-cs="'+esc(q.id)+'">戻る</button><button class="btn pri" data-act="csThanks">お礼を送って終える</button></div>';openS('consult');
+  const a=document.getElementById('cs-thx'),l=document.getElementById('cs-learn');a.oninput=()=>{CS0.thx=a.value;};l.oninput=()=>{CS0.learn=l.value;};}
+/** v4.54 の家族側のボタン（相談の操作 csClick より先に） */
+function famClick(ds,b){
+  if(ds.csl!==undefined){const [id,tab]=String(ds.csl).split('|');openConsultList(id,tab||'');return true;}
+  if(ds.csgo){const [vid,mid]=kp(ds.csgo),q=CSX&&(S.xreqs||[]).find(x=>x.id===CSX.id);if(q)cPlay(q,vid,mid);return true;}
+  if(ds.csseq){const [id,vid]=kp(ds.csseq),q=(S.xreqs||[]).find(x=>x.id===id);if(q)cPlay(q,vid,'');return true;}
+  if(ds.cscmp){const c=(S.cmps||[]).find(x=>x.id===ds.cscmp);if(!c)return true;const L=(S.videos||[]).find(v=>v.id===c.l),R=(S.videos||[]).find(v=>v.id===c.r);if(!L||!R){toast('動画が見つかりません');return true;}cSeenMark([c.id]);closeSheet();
+    cpOpen({L,R,slow:true,src:(v,onp)=>vBlob(v,onp).then(url=>({url,cors:false})),view:Object.assign({limgU:apiImg(c.limg),rimgU:apiImg(c.rimg)},c),only:true,lab:v=>v.ref?'参考':'本人',onClose:()=>{render();if(CSX)openConsult(CSX.id);},openOne:v=>{const q=(S.xreqs||[]).find(x=>x.id===c.req);if(q)cPlay(q,v.id,'');}});
+    if(who==='本人'&&!c.seen)call('saveCompare',{who,key,id:c.id,seen:true}).then(r=>{if(r&&r.cmps)S.cmps=r.cmps;}).catch(()=>{});return true;}
+  if(ds.cscmpref){const q=CSX&&(S.xreqs||[]).find(x=>x.id===CSX.id),R=(S.videos||[]).find(v=>v.id===ds.cscmpref),L=q&&(S.videos||[]).find(v=>v.id===((q.star||[])[0]||q.vids[0]));if(!L||!R)return true;closeSheet();
+    cpOpen({L,R,src:(v,onp)=>vBlob(v,onp).then(url=>({url,cors:false})),lab:v=>v.ref?'参考':'本人',pick:()=>(S.videos||[]).filter(v=>cVids(q).indexOf(v.id)>=0&&v.id!==L.id&&v.type!=='写真').map(v=>Object.assign({thumbU:thumbUrl(v)},v)),noSave:true,onClose:()=>{render();openConsult(q.id);}});return true;}
+  if(ds.csthx){const a=document.getElementById('cs-thx');if(a){a.value=(a.value.trim()?a.value.trim()+(/[。！]$/.test(a.value.trim())?'':'。'):'')+ds.csthx;CS0.thx=a.value;}return true;}
+  const q=CSX&&(S.xreqs||[]).find(x=>x.id===CSX.id);if(!q)return false;
+  if(ds.act==='csAskOpen'||ds.act==='csLineOpen'){openConsult(q.id,ds.act==='csAskOpen'?'ask':'line');return true;}
+  if(ds.act==='csThanksOpen'){csThanksSheet(q);return true;}
+  if(ds.act==='csThanks'){const t=(document.getElementById('cs-thx')||{value:''}).value.trim(),l=(document.getElementById('cs-learn')||{value:''}).value.trim();if(!t){toast('お礼のひとことを書くか、選んでください');return true;}
+    CS0.base=CS0.base||scBase();const back=busy(b,'送っています…');call('consultPost',{who,key,id:q.id,kind:'お礼',text:t,learn:l,_nonce:scNonce(CS0.base,'お礼'+t+'|'+l)}).then(r=>{S.xcoms=r.xcoms;CS0.thx='';CS0.learn='';CS0.base='';render();csLineSheet(q,t,'LINE でもお礼を伝える');toast('お礼を送りました。「済」にしました');}).catch(e=>{back();toast(errMsg(e));});return true;}
+  return false;}
+
+let CSX=null;const CS0={txt:'',thx:'',learn:''};
+/** 追加で聞いたあと／もう一度声をかけるとき：LINE の文面（直せる） */
+function csLineSheet(q,body,title){const msg=q.name+'\n'+me()+'です。'+body+'\n'+XLINK(q.key);
+  SH.innerHTML='<div class="grab"></div><h3 id="sh-title">'+esc(title)+'</h3><p class="note">LINEで知らせると気づいてもらえます。文面は直せます。</p><textarea id="cl-0" rows="7" class="ta2">'+esc(msg)+'</textarea>'+
+    '<div class="acts"><button class="btn line" data-clsend="0">'+esc(q.name)+'に LINE</button><button class="btn" data-clcopy="0">コピー</button></div><div class="acts"><button class="btn" data-cs="'+esc(q.id)+'">← 相談に戻る</button><button class="btn" data-act="close">閉じる</button></div>';openS('cline');}
+/** 解決した：分かったこと（任意。本人の言葉の材料に残る） */
+function csSolveSheet(q){SH.innerHTML='<div class="grab"></div><h3 id="sh-title">解決した</h3><p class="note">'+esc(q.name)+'との相談を「済」にします。分かったことがあれば一言どうぞ（任意）。本人の言葉の材料（ことばのかけら）にも残ります。コーチには見えません。</p>'+
+  '<textarea id="cs-learn" rows="4" maxlength="1000" class="ta2" placeholder="例：踏み切りで目線が下がっていた。次の練習で遠くを見る"></textarea><p class="note mic">🎤 キーボードのマイクで、話して入力できます</p>'+
+  '<div class="acts"><button class="btn" data-cs="'+esc(q.id)+'">← 戻る</button><button class="btn pri" data-act="csSolve">解決にする</button></div>';openS('consult');}
+/** 相談の操作 */
+function csClick(ds,b){const q=CSX&&(S.xreqs||[]).find(x=>x.id===CSX.id);
+  if(ds.cs!==undefined){openConsult(ds.cs);return true;}
+  if(!q)return false;
+  if(ds.act==='csAsk'||ds.act==='csLine'){const t=(document.getElementById('cs-text')||{value:''}).value.trim();if(!t){toast(ds.act==='csAsk'?'聞きたいことを書いてください':'LINEで来た返事を貼り付けてください');return true;}
+    CS0.base=CS0.base||scBase();const back=busy(b,'記録しています…');call('consultPost',{who,key,id:q.id,kind:ds.act==='csAsk'?'家族':'LINE',text:t,_nonce:scNonce(CS0.base,ds.act+t)}).then(r=>{S.xcoms=r.xcoms;CS0.txt='';CS0.base='';
+      if(ds.act==='csAsk')csLineSheet(q,'追加で質問させてください。\n'+t,'LINEでも知らせる');else{openConsult(q.id);toast('LINEの返事を記録しました');}render();}).catch(e=>{back();toast(errMsg(e));});return true;}
+  if(ds.act==='csSolveOpen'){csSolveSheet(q);return true;}
+  if(ds.act==='csSolve'){const t=(document.getElementById('cs-learn')||{value:''}).value.trim(),back=busy(b,'記録しています…');
+    call('consultPost',{who,key,id:q.id,kind:'解決',text:t}).then(r=>{S.xcoms=r.xcoms;openConsult(q.id);render();toast('「済」にしました。また書けば再開します');}).catch(e=>{back();toast(errMsg(e));});return true;}
+  if(ds.act==='csResend'){csLineSheet(q,'お忙しいところすみません。先日お送りした動画のご相談、お時間のあるときに見ていただけたらうれしいです。','もう一度声をかける');return true;}
+  if(ds.act==='csWait'){const back=busy(b,'記録しています…');call('consultWait',{who,key,id:q.id}).then(r=>{S.xwaits=r.waits;openConsult(q.id);render();toast('7日後にまた確かめます');}).catch(e=>{back();toast(errMsg(e));});return true;}
+  if(ds.act==='csClose'){if(!confirm(q.name+'との相談を閉じますか？\nリンクが使えなくなり、置き場の動画も消えます。'))return true;const back=busy(b,'閉じています…');
+    call('updateReq',{who,key,id:q.id,close:true}).then(r=>{S.xreqs=r.xreqs;openConsult(q.id);render();toast('閉じました');}).catch(e=>{back();toast(errMsg(e));});return true;}
+  return false;}
 /** ホームの新着（家族・本人）：まだ見ていない外部の評価 */
-function extNews(){if(!S.xcoms||!S.xcoms.length)return '';const seen=JSON.parse(LS.get('xseen:'+who)||'{}'),L=[...new Set(S.xcoms.filter(c=>!seen[c.id]).map(c=>c.vid))].map(id=>(S.videos||[]).find(v=>v.id===id)).filter(Boolean);
+function extNews(){return '';   // v4.54：コーチの返事は「相談」の知らせにまとめた
+  if(!S.xcoms||!S.xcoms.length)return '';const seen=JSON.parse(LS.get('xseen:'+who)||'{}'),L=[...new Set(S.xcoms.filter(c=>!seen[c.id]).map(c=>c.vid))].map(id=>(S.videos||[]).find(v=>v.id===id)).filter(Boolean);
   if(!L.length)return '';return '<h2>コーチからのひとこと（新着'+L.length+'）</h2><div class="exl">'+L.map(v=>{const c=S.xcoms.filter(x=>x.vid===v.id).slice(-1)[0];const q=(S.xreqs||[]).find(x=>x.id===c.req)||{};return '<button class="vnew ext" data-vplay="'+esc(v.id)+'">📝 '+(q.kind==='チーム'?'':'ゲスト：')+esc(c.by)+'：'+esc(c.text)+'<small>'+esc(v.title)+'</small></button>';}).join('')+'</div>';}
 // ---------- v4.46：使う人の目線で「動画・写真」を作り直し（撮影日から自動振り分け・過去の動画・写真・これまでの大会） ----------
 const SUBS=['表彰・賞状','取材・掲載','遠征・生活','表彰台・集合写真','その他'],CATS=['練習','大会','合宿','学校行事','過去'];
@@ -2580,7 +3249,7 @@ function optimistic(list,del){list.forEach(p=>{const L=S.acts[p.date]=(S.acts[p.
   ingest(S);}
 function redraw(){render();if(sheetKind==='day'&&openDay){openDay=DAYS[DIDX[openDay.d]];drawDay();}if(sheetKind==='brec'&&brec){buildBrec();drawBrec();}if(sheetKind==='pat'&&pat)drawPat();}
 /** 通信の失敗か（＝あとで送れば通る）。サーバーが内容を拒否した場合は false */
-const isNetErr=m=>/Load failed|Failed to fetch|NetworkError|通信エラー|timeout|タイムアウト|The Internet connection|network/i.test(String(m||''));
+const isNetErr=m=>/Load failed|Failed to fetch|NetworkError|通信エラー|通信できませんでした|timeout|タイムアウト|The Internet connection|network/i.test(String(m||''));
 /* ---- 未送信の記録（端末に残し、つながったら送る） ---- */
 let Q=[];try{Q=JSON.parse(localStorage.getItem('pendQ')||'[]')||[];}catch(e){Q=[];}
 let qBusy=false;
@@ -2642,6 +3311,8 @@ function allDone(date){const d=DAYS[DIDX[date]],rows=rowsOf(d).filter(r=>r.plann
 // ---------- 操作 ----------
 document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mview],[data-vcmp]');
   if(XR&&b&&xClick(b.dataset,b))return;
+  if(!XR&&b&&SC&&scClick(b.dataset,b))return;
+  if(!XR&&b&&CP&&cpClick(b.dataset,b))return;
   if(!b){if(e.target.id==='sheetbg'&&!(sheetKind==='who'&&!who)&&!upBusy&&!saving)closeSheet();return;}
   const ds=b.dataset;
   if(ds.who!==undefined){who=ds.who;LS.set('who',who);closeSheet();render();toast(who+'として記録します');return;}
@@ -2866,7 +3537,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.act==='actRepGo'){if(saving)return;makeActRep();return;}
   if(ds.act==='vidAdd'){openMediaAdd({fix:openDay.d});return;}
   if(ds.vcmp){openVcmp(ds.vcmp);return;}
-  if(ds.vplay){openPlayer(ds.vplay,ds.vlist?ds.vlist.split(','):null);return;}
+  if(ds.vplay){const v0=(S.videos||[]).find(x=>x.id===ds.vplay);if(isCoachMe()&&v0&&v0.type!=='写真'){coachOpen(ds.vplay);return;}openPlayer(ds.vplay,ds.vlist?ds.vlist.split(','):null);return;}
   if(ds.act==='vpClose'){closePlayer();return;}
   if(ds.act==='vpRetry'){const c=vplay,v=c&&(S.videos||[]).find(x=>x.id===c.id),st=document.getElementById('vp-stage');if(!v||!st)return;const o=vCache[v.fileId];if(o){Object.keys(o.urls).forEach(t=>{try{URL.revokeObjectURL(o.urls[t]);}catch(e){}});delete vCache[v.fileId];}st.innerHTML='<div class="vp-load" id="vp-load">読み込み中…</div>';loadVideo(v);return;}
   if(ds.act==='vpPrev'||ds.act==='vpNext'){vpGo(ds.act==='vpNext'?1:-1);return;}
@@ -2913,8 +3584,9 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.act==='tdevLoad'||ds.tdevSet!==undefined){(ds.tdevSet!==undefined?call('setTestDevice',{who,on:ds.tdevSet==='1'}):call('isTestDevice',{who})).then(r=>{const e=document.getElementById('tdev');if(e)e.innerHTML='<p><b>'+(r.test?'この端末は警告の対象外（テスト用）です':'この端末は警告の対象です')+'</b></p><button class="btn" data-tdev-set="'+(r.test?'0':'1')+'">'+(r.test?'警告の対象に戻す':'この端末を警告の対象外にする（テスト用）')+'</button>';if(ds.tdevSet!==undefined)toast(r.test?'この端末を警告の対象外にしました':'警告の対象に戻しました');}).catch(e=>toast(errMsg(e)));return;}
   if(ds.act==='alogLoad'){const e=document.getElementById('alog');if(e)e.innerHTML='<p class="note">読み込み中…</p>';call('getAccessLog',{who}).then(r=>{const L=r.log||[];const el=document.getElementById('alog');if(!el)return;
     el.innerHTML='<p class="note">新しい順に'+L.length+'件。「失敗」「ゲスト」「いつもと違う時間帯」に注意。端末番号は端末ごとに違います（この端末：'+esc(DEVID)+'）。</p><div class="alog">'+L.map(x=>'<div class="'+(x.res==='失敗'?'ng':x.role==='ゲスト'?'ext':'')+'"><b>'+esc(String(x.at).slice(5,16))+'</b> '+esc(x.who||'（不明）')+'<small>'+esc([x.fn,x.res,x.tz,x.dev,x.note].filter(Boolean).join('｜'))+'</small></div>').join('')+'</div>';}).catch(e=>{const el=document.getElementById('alog');if(el)el.textContent=errMsg(e);});return;}
-  if(ds.act==='ukGo'){const v=(document.getElementById('uk-in')||{value:''}).value.trim();if(!v)return;LS.set('ukey',v);load(false);return;}
-  if(ds.act==='ukReset'){if(!confirm('この端末の利用者を変えます。あなたの合言葉をもう一度入れてください。'))return;LS.set('ukey','');LS.set('who','');who='';askUKey('');return;}   // 前の人のデータを端末に残さない
+  if(ds.ukuse!==undefined){const u=ukUsed()[Number(ds.ukuse)];if(!u)return;UKFOR=u;askUKey('');const i=document.getElementById('uk-in');if(i)i.focus();return;}
+  if(ds.act==='ukGo'){const v=(document.getElementById('uk-in')||{value:''}).value.trim();if(!v)return;LS.set('ukExpect',UKFOR?UKFOR.name:(LS.get('ukLastName')||''));LS.set('ukey',v);load(false);return;}
+  if(ds.act==='ukReset'){if(!confirm('ほかの人として使います。名前を選ぶか、その人の合言葉を入れてください。'))return;LS.set('ukey','');LS.set('who','');who='';askUKey('');return;}   // 前の人のデータを端末に残さない
   if(ds.xreq1){openSend([ds.xreq1]);return;}
   if(ds.xfname){const e=document.getElementById('xf-name');if(e)e.value=ds.xfname;const L=(S.xreqs||[]).filter(x=>x.name===ds.xfname).sort((a,c)=>a.at<c.at?1:-1),q=L[0],o=document.getElementById('xf-org'),t=document.getElementById('xf-text');if(q){if(o)o.value=q.org||'';if(t&&q.text)t.value=q.text;}toast('前回の内容を下書きに入れました。読み直して直してください');return;}
   if(ds.xftpl){const e=document.getElementById('xf-text');if(e)e.value='お世話になっております。'+ds.xftpl+'について、ご意見をいただけますと幸いです。';return;}
@@ -2930,11 +3602,15 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.upwant!==undefined){const i=+ds.upwant;UP.want[i]=!UP.want[i];drawPick();return;}
   if(ds.upall){const all=UP.want.every(Boolean);UP.want=UP.want.map(()=>!all);drawPick();return;}
   if(ds.act==='vselMode'){VSEL=VSEL?null:{};render();return;}
+  if(famClick(ds,b))return;
+  if((ds.cs!==undefined||/^cs/.test(ds.act||''))&&csClick(ds,b))return;
   if(ds.vsel){const id=ds.vsel;if(VSEL._send){if(!VSEL[id]){if(Object.keys(VSEL).filter(k=>k[0]!=='_').length>=10){toast('10本までです');return;}VSEL[id]=1;}else if(!VSEL._star[id])VSEL._star[id]=1;else{delete VSEL[id];delete VSEL._star[id];}}
     else if(VSEL[id])delete VSEL[id];else VSEL[id]=1;render();return;}
   if(ds.act==='sendMode'){VSEL={_send:true,_star:{}};render();return;}
   if(ds.act==='vselSend'){const ids=Object.keys(VSEL||{}).filter(k=>k[0]!=='_');if(ids.length)openSend(ids,Object.keys(VSEL._star||{}).filter(id=>VSEL[id]));return;}
   if(ds.sdto!==undefined){const i=CS.to.indexOf(ds.sdto);if(i>=0)CS.to.splice(i,1);else CS.to.push(ds.sdto);b.setAttribute('aria-pressed',String(i<0));return;}
+  if(ds.sdnote){sdNote(ds.sdnote);return;}
+  if(ds.sdmic){scMic('sd-'+ds.sdmic,b);return;}
   if(ds.act==='sdGuest'){CS.guest=!CS.guest;b.setAttribute('aria-pressed',String(CS.guest));const g=document.getElementById('sd-guest');if(g){g.hidden=!CS.guest;if(CS.guest){const n=document.getElementById('sd-gname');if(n)n.focus();}}return;}
   if(ds.act==='sdPrev'){sdPreview();return;}
   if(ds.act==='sdGo'){sdGo(b);return;}
@@ -2974,6 +3650,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.act==='refGo'){refGo();return;}
   if(ds.act==='refClose'){refForm=null;if(cmp){drawCompare();}else closeSheet();return;}
   if(ds.taskst){const [id,st]=ds.taskst.split('|');const m=st==='まだ'?(prompt('どこがまだ？（ひとこと・任意）')||''):'';call('saveTask',{who,key,id,st,memo:m||undefined}).then(r=>{S.tasks=r.tasks;render();toast(st==='できた'?'「できた」を送りました':'「まだ」を送りました');}).catch(e=>toast(errMsg(e)));return;}
+  if(ds.taskev){const [id,ev]=kp(ds.taskev),t=(S.tasks||[]).find(x=>x.id===id),nv=t&&t.ev===ev?'':ev;call('saveTask',{who,key,id,ev:nv}).then(r=>{S.tasks=r.tasks;render();toast(nv?'「'+nv+'」にしました':'評価を取り消しました');}).catch(e=>toast(errMsg(e)));return;}
   if(ds.taskok){call('saveTask',{who,key,id:ds.taskok,ok:true}).then(r=>{S.tasks=r.tasks;render();toast('確認しました');}).catch(e=>toast(errMsg(e)));return;}
   if(ds.taskdel){if(!confirm('この課題を消しますか？'))return;call('saveTask',{who,key,id:ds.taskdel,remove:true}).then(r=>{S.tasks=r.tasks;render();}).catch(e=>toast(errMsg(e)));return;}
   if(ds.act==='cmpClose'){closeCompare();return;}
