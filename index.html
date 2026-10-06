@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- 孝磨のこぶ日記（旧：スキー行動予定アプリ） 画面側 v4.54.3 -->
+<!-- 孝磨のこぶ日記（旧：スキー行動予定アプリ） 画面側 v4.54.4 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -830,6 +830,26 @@ body.locked nav.tabs,body.locked #whoin,body.locked #hdrsub,body.locked .hdrx{di
 #vplayer.shrink .sc-ftop button{pointer-events:auto}
 .sc-hint{position:absolute;left:50%;top:22%;transform:translateX(-50%);background:rgba(20,40,60,.88);color:#fff;font-weight:700;font-size:14px;padding:8px 14px;border-radius:999px;z-index:7;pointer-events:none;white-space:nowrap;max-width:92vw}
 .sc-hint[hidden]{display:none}
+/* v4.54.4 順に見る：ほかの動画・吹き出しを小さく・図を大きく */
+#vplayer.swopen .sc-seqbar,#vplayer.swopen .sc-bub,#vplayer.swopen .sc-figimg{display:none}
+#vplayer.swopen .sc-panel{z-index:9;max-height:80%}
+.sc-swn{font-size:13px;color:#B8C7D6;margin:2px 0 8px;line-height:1.5}
+.cs-sw{display:block;width:100%;text-align:left;margin:0 0 8px;padding:10px 12px;font-size:16px;font-weight:800;border-radius:12px}
+.cs-sw small{display:block;font-size:12.5px;font-weight:600;margin-top:2px;opacity:.85}
+div.cs-sw.on{background:#1C2B38;color:#CFE0EF;border:1px dashed #4A5B6B}
+.sc-bmin{position:absolute;right:6px;top:6px;background:rgba(255,255,255,.14);border:0;color:#fff;font-size:12.5px;font-weight:700;border-radius:999px;padding:4px 10px;min-height:30px}
+.sc-bmax{display:none}
+.sc-bub.seq{padding-right:84px}
+.sc-bub.min{padding:0;background:transparent;border:0;max-height:none;overflow:visible;right:auto}
+.sc-bub.min>*{display:none}
+.sc-bub.min>.sc-bmax{display:block;background:rgba(16,26,36,.94);border:1px solid #E87A30;color:#fff;font-size:14px;font-weight:800;border-radius:999px;padding:8px 14px;min-height:40px}
+.sc-bub.fam.min>.sc-bmax{border-color:#3D8BFD}
+.sc-imgfull{z-index:30}
+.sc-imgx{margin-top:12px;min-height:44px;padding:0 18px}
+.sc-mictip{background:#1E3A5A;color:#fff;font-size:13.5px;font-weight:700;border-radius:10px;padding:7px 10px;margin:4px 0}
+.sc-mictip[hidden]{display:none}
+.toast{z-index:95}
+#vplayer.sc .sc-top{z-index:6}
 .ukwhy{font-weight:700;color:#16324F;background:#EAF3FF;border-radius:10px;padding:8px 10px}
 .vmore{width:100%;margin:10px 0;min-height:48px}
 .appver{font-size:11px;font-weight:600;opacity:.75;margin-left:8px;letter-spacing:0;vertical-align:middle}
@@ -840,7 +860,7 @@ body.locked nav.tabs,body.locked #whoin,body.locked #hdrsub,body.locked .hdrx{di
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.54.3';
+const CLIENT_VERSION='4.54.4';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -2247,9 +2267,9 @@ function scMarks(){const box=document.getElementById('sc-marks'),ve=scVe(),n=doc
 function scBubble(id){const m=SC.marks().find(x=>x.id===id),b=document.getElementById('sc-bub');if(!m||!b)return;const ve=scVe();if(ve&&m.t!=null){ve.pause();ve.currentTime=m.t;scTime();}
   SC.bub=id;b.className='sc-bub'+(m.fam?' fam':'');b.innerHTML=scItem(m,true)+'<button class="sc-bx" data-sc="bubX" aria-label="閉じる">✕</button>';b.hidden=false;}
 /** ひとこと1件の表示（帯の吹き出し・一覧で同じ） */
-function scItem(m,acts){const lab=(m.fam?'<span class="sc-who fam">'+esc(m.kindL||'本人')+'</span>':'<span class="sc-who">'+esc(m.by||'コーチ')+'</span>');
+function scItem(m,acts,noImg){const lab=(m.fam?'<span class="sc-who fam">'+esc(m.kindL||'本人')+'</span>':'<span class="sc-who">'+esc(m.by||'コーチ')+'</span>');
   const body=[[m.part,m.ev].filter(Boolean).join('・'),m.text].filter(Boolean).join('：');
-  let h='<div class="sc-it"><div class="sc-ih">'+(m.star?'<b class="sc-star">☆いちばん大事</b>':'')+'<b>'+esc(scT(m.t))+'</b>'+lab+(m.isNew?'<b class="sc-new">新</b>':'')+'</div><div class="sc-ib">'+esc(body||'（図）').replace(/\n/g,'<br>')+'</div>'+(m.img?'<img class="sc-iimg" alt="図" src="'+esc(m.img)+'" data-scimg="'+esc(m.img)+'">':'')+
+  let h='<div class="sc-it"><div class="sc-ih">'+(m.star?'<b class="sc-star">☆いちばん大事</b>':'')+'<b>'+esc(scT(m.t))+'</b>'+lab+(m.isNew?'<b class="sc-new">新</b>':'')+'</div><div class="sc-ib">'+esc(body||'（図）').replace(/\n/g,'<br>')+'</div>'+(m.img&&!noImg?'<img class="sc-iimg" alt="図" src="'+esc(m.img)+'" data-scimg="'+esc(m.img)+'">':'')+
     (m.answers||[]).map(a=>'<div class="sc-ans'+(a.lab==='質問'?' q':'')+'">'+esc(a.by||'')+'の'+esc(a.lab||'答え')+'：'+esc([[a.part,a.ev].filter(Boolean).join('・'),a.text].filter(Boolean).join('：'))+'</div>').join('');
   if(acts){h+='<div class="sc-acts">';if(m.t!=null)h+='<button class="sc-b sm" data-scgo="'+esc(m.id)+'">▶ この場面から</button>';
     if(m.mine)h+='<button class="sc-b sm" data-scedit="'+esc(m.id)+'">直す</button><button class="sc-b sm" data-scdel="'+esc(m.id)+'">取り消す</button>';
@@ -2267,7 +2287,7 @@ function scAdd(edit,rep){navSync();const ve=scVe(),pv=document.getElementById('v
   SC.form={id:m?m.id:'',rep:q?q.id:'',t:ve&&!SC.v.photo?Math.round(ve.currentTime*100)/100:(m?m.t:null),part:m?m.part:(dr&&dr.part)||'',ev:m?m.ev:(dr&&dr.ev)||'',text:m?m.text:(dr&&dr.text)||'',star:m?!!m.star:false,shapes:[],tool:'arrow',ang:[],g:''};
   SC.listOpen=false;{const fl=document.getElementById('sc-flash');if(fl)fl.hidden=true;const hn=document.getElementById('sc-hint');if(hn)hn.hidden=true;}document.getElementById('sc-bub').hidden=true;pv.classList.remove('seqon');scFig('');pv.classList.add('shrink');document.getElementById('vp-ui').classList.remove('off');scForm();setTimeout(scFit,60);}
 function scForm(){const f=SC.form,p=document.getElementById('sc-panel'),gs=SC.groups?SC.groups():vGroups(SC.v.kind);f.g=f.g&&gs.indexOf(f.g)>=0?f.g:gs[0]||'';
-  const q=f.rep?SC.marks().find(x=>x.id===f.rep):null,ttl=q?(q.kindL||'本人')+'に答える':f.id?'直す':SC.v.photo?'この写真':scT(f.t)+'の場面';
+  const q=f.rep?SC.marks().find(x=>x.id===f.rep):null,ttl=q?(q.fam?(q.kindL||'本人')+'に答える':'この場面について聞く'):f.id?'直す':SC.v.photo?'この写真':scT(f.t)+'の場面';
   // 動画をできるだけ大きく見せるため、欄は詰めて並べる（言葉は横に流れる1行。送るはいつも見える）
   // ひとこと欄を開いている間は、縮めた動画の上の帯を「やめる・○秒の場面・☆ いちばん大事」に替える（よく使うものを隠さない）
   const pv=document.getElementById('vplayer');let ft=document.getElementById('sc-ftop');if(!ft){ft=document.createElement('div');ft.id='sc-ftop';ft.className='sc-ftop';pv.appendChild(ft);}
@@ -2313,11 +2333,15 @@ function scImage(){const f=SC.form;if(!f||!f.shapes.length)return '';const ve=sc
   return c.toDataURL('image/jpeg',0.82).split(',')[1];}
 /* ---------- 話して書く ---------- */
 function scMic(id,btn){const ta=document.getElementById(id);if(!ta)return;const R=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!R){ta.focus();toast('キーボードのマイクのボタンで、話して入力できます');return;}
-  if(scMic.cur){try{scMic.cur.stop();}catch(e){}return;}const r=new R();r.lang='ja-JP';r.interimResults=false;r.continuous=false;scMic.cur=r;const o=btn?btn.innerHTML:'';if(btn){btn.innerHTML='● 聞いています…（止める）';btn.classList.add('on');}
-  const end=()=>{scMic.cur=null;if(btn){btn.innerHTML=o;btn.classList.remove('on');}};
+  const ios=/iPhone|iPad|iPod/.test(navigator.userAgent||'')||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  if(!R||ios){ta.focus();scMicTip(ta);return;}
+  if(scMic.cur){try{scMic.cur.abort();}catch(e){}scMic.end&&scMic.end();return;}const r=new R();r.lang='ja-JP';r.interimResults=false;r.continuous=false;scMic.cur=r;const o=btn?btn.innerHTML:'';if(btn){btn.innerHTML='● 聞いています…（止める）';btn.classList.add('on');}
+  let got=false,tm=0;const end=()=>{clearTimeout(tm);if(scMic.cur!==r)return;scMic.cur=null;scMic.end=null;if(btn){btn.innerHTML=o;btn.classList.remove('on');}};scMic.end=end;
+  r.onstart=r.onaudiostart=()=>{got=true;};tm=setTimeout(()=>{if(scMic.cur!==r)return;try{r.abort();}catch(e){}end();if(!got){ta.focus();scMicTip(ta);}},got?20000:6000);
   r.onresult=e=>{const t=Array.from(e.results).map(x=>x[0].transcript).join('');ta.value=(ta.value?ta.value.replace(/\s+$/,'')+(/[。、]$/.test(ta.value.trim())?'':'。'):'')+t;ta.dispatchEvent(new Event('input'));};
-  r.onerror=e=>{end();if(e.error==='not-allowed')toast('マイクが使えません。キーボードのマイクで話して入力できます');};r.onend=end;try{r.start();}catch(e){end();ta.focus();}}
+  r.onerror=e=>{end();if(e.error!=='no-speech'&&e.error!=='aborted'){ta.focus();scMicTip(ta);}};r.onend=end;try{r.start();}catch(e){end();ta.focus();scMicTip(ta);}}
+/** 話して入力：キーボードのマイクの案内（入力欄のすぐ上に出す） */
+function scMicTip(ta){let e=document.getElementById('sc-mictip');if(!e){e=document.createElement('div');e.id='sc-mictip';e.className='sc-mictip';const row=ta.closest('.sc-trow')||ta.parentElement;row.parentElement.insertBefore(e,row);}e.textContent='キーボードの 🎤（マイク）を押すと、話して入力できます';e.hidden=false;clearTimeout(scMicTip.h);scMicTip.h=setTimeout(()=>{e.hidden=true;},8000);}
 /* ---------- 送る・直す・取り消す ---------- */
 async function scSend(b){const f=SC.form;if(!f)return;const text=(document.getElementById('sc-text')||{value:''}).value.trim();
   if(!text&&!f.part&&!f.ev&&!f.shapes.length){toast(SC.mode==='coach'?'言葉を選ぶか、書いてください':'書いてください');return;}
@@ -2339,12 +2363,12 @@ function scClick(ds,b){if(!SC)return false;
   if(ds.scm){if(SC.seq){const j=SC.seq.list.findIndex(s=>s.m&&s.m.id===ds.scm);if(j>=0){SC.seq.show(j);return true;}}scBubble(ds.scm);return true;}
   if(ds.scx!==undefined){const x=(SC.extra||[])[Number(ds.scx)];if(x)x.fn();return true;}
   if(ds.scseq!==undefined){const j=Number(ds.scseq);if(SC.seq&&j>=0&&j<SC.seq.list.length)SC.seq.show(j);return true;}
-  if(ds.scfig!==undefined){const f=document.getElementById('sc-figimg');if(f){f.remove();b.textContent='図を見る';}else{scFig(ds.scfig);b.textContent='図を消す';}return true;}
+  if(ds.scfig!==undefined){const f=document.getElementById('sc-figimg');if(f){f.remove();b.textContent='図を重ねる';}else{scFig(ds.scfig);b.textContent='図を隠す';}return true;}
   if(ds.scgo){const m=SC.marks().find(x=>x.id===ds.scgo),ve=scVe();document.getElementById('sc-panel').hidden=true;SC.listOpen=false;document.getElementById('sc-bub').hidden=true;if(ve&&m&&m.t!=null){ve.currentTime=m.t;const p=ve.play();if(p&&p.catch)p.catch(()=>{});}return true;}
   if(ds.scedit){scAdd(ds.scedit,'');return true;}
   if(ds.scans){scAdd('',ds.scans);return true;}
   if(ds.scdel){if(!confirm('このひとことを取り消しますか？'))return true;const back=busy(b,'取り消しています…');Promise.resolve(SC.remove(ds.scdel)).then(()=>{if(!SC)return;document.getElementById('sc-bub').hidden=true;scMarks();if(SC.listOpen)scList();scFlash('取り消しました');}).catch(e=>{back();toast(errMsg(e));});return true;}
-  if(ds.scimg){const w=document.createElement('div');w.className='vp-imgfull';w.innerHTML='<img alt="図" src="'+esc(ds.scimg)+'"><span>たたくと閉じます</span>';w.onclick=()=>w.remove();document.body.appendChild(w);return true;}
+  if(ds.scimg){const pv=document.getElementById('vplayer'),w=document.createElement('div');w.className='vp-imgfull sc-imgfull';w.innerHTML='<img alt="図" src="'+esc(ds.scimg)+'"><button type="button" class="sc-b pri sc-imgx">✕ 図を閉じる</button>';w.onclick=e=>{e.stopPropagation();w.remove();};(pv&&!pv.hidden?pv:document.body).appendChild(w);return true;}
   if(ds.sctool){SC.form.tool=ds.sctool;SC.form.ang=[];scForm();return true;}
   if(ds.scg!==undefined){SC.form.g=ds.scg;scForm();return true;}
   if(ds.scpart!==undefined){SC.form.part=SC.form.part===ds.scpart?'':ds.scpart;scDraftSave();scForm();return true;}
@@ -2356,8 +2380,9 @@ function scClick(ds,b){if(!SC)return false;
   if(a==='rate'){const i=(SC_RATES.indexOf(SC.rate)+1)%SC_RATES.length;SC.rate=SC_RATES[i];if(SC.c)SC.c.rate=SC.rate;if(ve){ve.playbackRate=SC.rate;ve.defaultPlaybackRate=SC.rate;}b.textContent=scRateL(SC.rate);return true;}
   if(a==='add'){scAdd('','');return true;}
   if(a==='list'){if(SC.listOpen){document.getElementById('sc-panel').hidden=true;SC.listOpen=false;}else{if(ve)ve.pause();scList();}return true;}
-  if(a==='panelX'){document.getElementById('sc-panel').hidden=true;SC.listOpen=false;return true;}
+  if(a==='panelX'){document.getElementById('sc-panel').hidden=true;SC.listOpen=false;document.getElementById('vplayer').classList.remove('swopen');return true;}
   if(a==='bubX'){document.getElementById('sc-bub').hidden=true;return true;}
+  if(a==='bubMin'||a==='bubMax'){document.getElementById('sc-bub').classList.toggle('min',a==='bubMin');return true;}
   if(a==='seqPlay'){if(!ve)return true;if(!ve.paused){ve.pause();if(SC.seq)SC.seq.show(SC.seq.i);return true;}SC.rate=0.5;ve.playbackRate=0.5;const rb=document.getElementById('sc-rate');if(rb)rb.textContent='½';document.getElementById('sc-bub').hidden=true;document.getElementById('vplayer').classList.remove('seqon');scFig('');const p=ve.play();if(p&&p.catch)p.catch(()=>{});return true;}
   if(a==='fromHere'){if(!ve)return true;SC.rate=0.5;ve.playbackRate=0.5;const rb=document.getElementById('sc-rate');if(rb)rb.textContent='½';document.getElementById('sc-bub').hidden=true;document.getElementById('vplayer').classList.remove('seqon');scFig('');const p=ve.play();if(p&&p.catch)p.catch(()=>{});return true;}
   if(a==='formX'){scFormClose();return true;}
@@ -2771,14 +2796,19 @@ function openConsultList(id,tab){const q=(S.xreqs||[]).find(x=>x.id===id);if(!q)
 function cSeqList(q,vid){const C=cItems(q);return cMarks(q,vid).map(m=>({k:'m',t:m.t,m})).concat(C.filter(c=>c.k==='cmp'&&(c.l===vid||c.r===vid)).map(c=>({k:'c',t:c.l===vid?c.lm:c.rm,c}))).sort((a,b)=>(a.t==null?1e9:a.t)-(b.t==null?1e9:b.t));}
 function cPlay(q,vid,startId){const v=(S.videos||[]).find(x=>x.id===vid);if(!v)return;closeSheet();const seq=cSeqList(q,vid);let i=Math.max(0,seq.findIndex(s=>(s.m&&s.m.id===startId)||(s.c&&s.c.id===startId)));if(startId==='__none'){i=seq.findIndex(s=>s.k==='m');if(i<0){render();openConsult(q.id);return;}}
   const c={rate:1,id:vid};
-  scOpen({v,mode:'fam',c,sub:q.name+'のひとこと',closeLabel:'← 一覧',extra:cVids(q).filter(x=>x!==vid&&cSeqList(q,x).length).length?[{label:'動画を切り替え',fn:()=>cSwitch(q,vid)}]:[],marks:()=>cMarks(q,vid),words:g=>vWords(g),groups:()=>vGroups(v.kind),addLabel:'＋ この場面について聞く',askLabel:'この場面について聞く（どうしても聞きたいとき）',sentLabel:'聞きました',noResume:true,
+  scOpen({v,mode:'fam',c,sub:q.name+'のひとこと',closeLabel:'← 一覧',extra:cVids(q).filter(x=>x!==vid&&cSeqList(q,x).length).length?[{label:'ほかの動画',fn:()=>cSwitch(q,vid)}]:[],marks:()=>cMarks(q,vid),words:g=>vWords(g),groups:()=>vGroups(v.kind),addLabel:'＋ この場面について聞く',askLabel:'この場面について聞く（どうしても聞きたいとき）',sentLabel:'聞きました',noResume:true,
     save:p=>call('videoComment',Object.assign({who,key,req:q.id},p)).then(d=>{applyPart(d);}),remove:id=>call('videoComment',{who,key,id,remove:true}).then(d=>applyPart(d)),
     onClose:()=>{render();if(SC_LAST_SENT)csLineSheet(q,'動画の場面について、質問を書きました。お時間のあるときに見ていただけたらうれしいです。','LINE でも知らせる');else openConsultList(q.id,'');},
     seq:{list:seq,i,show:j=>cSeqShow(q,vid,j)},
     load:sc=>loadVideo(v,{c,alive:()=>SC===sc,onOk:()=>{scBind();cSeqShow(q,vid,sc.seq.i,true);}})});}
 /** 順に見る：ほかの動画に切り替える（ひとことのある動画だけ） */
-function cSwitch(q,vid){const p=document.getElementById('sc-panel');if(!p)return;const ve=scVe();if(ve)ve.pause();
-  p.innerHTML='<div class="vp-ph"><b>動画を切り替え</b><button class="vp-ic" data-sc="panelX" aria-label="閉じる">✕</button></div>'+cVids(q).filter(x=>cSeqList(q,x).length).map(x=>'<button class="sc-b cs-sw'+(x===vid?' on':'')+'" data-csseq="'+esc(q.id+'|'+x)+'">'+((q.star||[]).indexOf(x)>=0?'☆ ':'')+esc(cVT(x))+'（'+cSeqList(q,x).length+'件）</button>').join('');p.hidden=false;SC.listOpen=true;}
+function cSwitch(q,vid){const p=document.getElementById('sc-panel'),pv=document.getElementById('vplayer');if(!p)return;const ve=scVe();if(ve)ve.pause();
+  const seen=cSeen2();
+  p.innerHTML='<div class="vp-ph"><b>ほかの動画のひとことを見る</b><button class="vp-ic" data-sc="panelX" aria-label="閉じる">✕</button></div><p class="sc-swn">この相談で、コーチのひとことがある動画です。押すと、その動画のひとことを最初から順に見られます。</p>'+
+    cVids(q).filter(x=>cSeqList(q,x).length).map(x=>{const L=cSeqList(q,x),nw=L.filter(s=>{const id=(s.m||s.c).id;return !seen[id];}).length;
+      return x===vid?'<div class="cs-sw on">'+((q.star||[]).indexOf(x)>=0?'☆ ':'')+esc(cVT(x))+'<small>いま見ている動画（'+L.length+'件）</small></div>'
+        :'<button class="sc-b cs-sw" data-csseq="'+esc(q.id+'|'+x)+'">'+((q.star||[]).indexOf(x)>=0?'☆ ':'')+esc(cVT(x))+' を見る ▶<small>ひとこと '+L.length+'件'+(nw?'（まだ見ていない '+nw+'件）':'')+'</small></button>';}).join('');
+  p.hidden=false;SC.listOpen=true;if(pv)pv.classList.add('swopen');}
 /** 順に見る：j 番目の場面で止めて、図を重ね、ひとことと「前・次」を出す（比較なら比較の画面へ） */
 function cSeqShow(q,vid,j,first){if(!SC||!SC.seq)return;const S0=SC.seq,s=S0.list[j];if(!s)return;S0.i=j;
   if(s.k==='c'){const c=s.c,L=(S.videos||[]).find(v=>v.id===c.l),R=(S.videos||[]).find(v=>v.id===c.r);cSeenMark([c.id]);const back=()=>{cPlay(q,vid,'');};scClose(true);
@@ -2786,8 +2816,8 @@ function cSeqShow(q,vid,j,first){if(!SC||!SC.seq)return;const S0=SC.seq,s=S0.lis
       nav:{n:j+1,of:S0.list.length,prev:j>0?()=>{CP.onClose=null;cpClose();cPlay(q,vid,(S0.list[j-1].m||S0.list[j-1].c).id);}:null,next:j<S0.list.length-1?()=>{CP.onClose=null;cpClose();cPlay(q,vid,(S0.list[j+1].m||S0.list[j+1].c).id);}:null}});return;}
   const m=s.m,ve=scVe();if(ve&&m.t!=null){ve.pause();ve.currentTime=m.t;scTime();}cSeenMark([m.id]);
   const b=document.getElementById('sc-bub');if(!b)return;b.className='sc-bub seq'+(m.fam?' fam':'');
-  b.innerHTML=scItem(m,false)+'<div class="sc-acts">'+(m.img?'<button class="sc-b sm" data-scfig="'+esc(m.img)+'">図を消す</button>':'')+(m.fam?'':'<button class="sc-b sm" data-scans="'+esc(m.id)+'">この場面について聞く</button>')+'</div>';
-  b.hidden=false;const pv=document.getElementById('vplayer');pv.classList.add('seqon','seqmode');scFig(m.img);cSeqBar();}
+  b.innerHTML='<button class="sc-bmin" data-sc="bubMin" aria-label="ひとことを小さくする">▼ 小さく</button><button class="sc-bmax" data-sc="bubMax">▲ ひとことを開く（'+esc(scT(m.t))+'・'+esc(m.fam?(m.kindL||'本人'):(m.by||'コーチ'))+'）</button>'+scItem(m,false,true)+'<div class="sc-acts">'+(m.img?'<button class="sc-b sm" data-scfig="'+esc(m.img)+'">図を隠す</button><button class="sc-b sm" data-scimg="'+esc(m.img)+'">図を大きく見る</button>':'')+(m.fam?'':'<button class="sc-b sm" data-scans="'+esc(m.id)+'">この場面について聞く</button>')+'</div>';
+  b.hidden=false;const pv=document.getElementById('vplayer');pv.classList.add('seqon','seqmode');scFig(m.img);cSeqBar();scShow();}
 /** 順に見るの下の帯：前のひとこと・ここから再生／止める・次のひとこと（再生中も出しておく） */
 function cSeqBar(){if(!SC||!SC.seq)return;const S0=SC.seq,j=S0.i,n=S0.list.length,pv=document.getElementById('vplayer');let e=document.getElementById('sc-seqbar');
   if(!e){e=document.createElement('div');e.id='sc-seqbar';e.className='sc-seqbar';pv.appendChild(e);}
