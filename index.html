@@ -877,7 +877,7 @@ div.cs-sw.on{background:#1C2B38;color:#CFE0EF;border:1px dashed #4A5B6B}
 .rp-wait{margin:0 0 8px auto;text-align:right;font-size:12px}
 .rp-qa{max-height:none}
 .btn.line{background:#037A33;border-color:#037A33}   /* 白い文字が読めるように濃く（もとの LINE の緑では 2.3） */
-</style>
+.cnt .cnt-sub span:first-child{padding-left:18px;color:var(--sub)}.cnt small{color:var(--sub)}</style>
 </head>
 <body>
 <div id="root"></div>
@@ -3416,6 +3416,17 @@ function ensureSess(a){if(!S.sessFrom||a>=S.sessFrom||sessLoading)return false;s
 let repLoading=false;
 function ensureReports(){if(S.reports!==null&&S.reports!==undefined||repLoading)return;repLoading=true;S.reports=[];
   call('listReports').then(r=>{repLoading=false;S.reports=(r&&r.reports)||[];if(tab==='stats')render();}).catch(()=>{repLoading=false;});}
+/** v4.56：この期間の回数（コーチと話すとき用）。実施＝予定どおり＋予定外。ROMベーシックはフル・ハーフに分け、WJは本数も */
+const CNT_KINDS=['ROMベーシック','ROMプラス','エクスプロッシブ','WJ','雪上','TR'];
+function countBox(K,ds,a,b){const cut=b<TODAY?b:TODAY,fh={};
+  ds.forEach(d=>rowsOf(d).forEach(r=>{if(r.kind==='ROMベーシック'&&r.act&&r.act.st==='実施'){const s=S.sess[r.act.id],f=s&&s.fh||'区分なし';fh[f]=(fh[f]||0)+1;}}));
+  const dn=k=>K[k]?K[k].d+(K[k].x||0):0,pl=k=>K[k]?K[k].p:0,wj=wjSum(a,cut).n;
+  const row=(lab,n,p,sub,note)=>'<div class="tr'+(sub?' cnt-sub':'')+'"><span>'+lab+'</span><span><b>'+n+'</b>回'+(note?'<small> '+note+'</small>':'')+'</span><span>'+(p===''?'':p+'回')+'</span></div>';
+  let h='<h2>この期間の回数</h2><div class="tbl t3 cnt"><div class="tr th"><span>トレーニング</span><span>やった回数</span><span>予定</span></div>';
+  CNT_KINDS.forEach(k=>{if(k==='ROMベーシック'){h+=row('<span class="atag sm '+kCls(k)+'">ROMベーシック</span>',dn(k),pl(k));['フル','ハーフ','区分なし'].forEach(f=>{if(f==='区分なし'&&!fh[f])return;h+=row('└ '+f,fh[f]||0,'',true);});return;}
+    h+=row('<span class="atag sm '+kCls(k)+'">'+esc(k)+'</span>',dn(k),pl(k),false,k==='WJ'&&wj?'（'+fmtN(wj)+'本）':'');});
+  return h+'</div><p class="note">やった回数は、予定どおりの実施と予定外の実施の合計です（'+(b>TODAY?'今日まで':md(a)+'〜'+md(b))+'）。ROMベーシックのフル・ハーフは記録の区分から数えます。</p>';}
+
 function renderStats(){ensureReports();ensureGrades();
   const [a,b]=statRange(),cut=b<TODAY?b:TODAY,ds=DAYS.filter(d=>d.d>=a&&d.d<=cut);
   const loading=ensureSess(a);
@@ -3435,6 +3446,7 @@ function renderStats(){ensureReports();ensureGrades();
   const kk=S.opt.kinds.concat(['大会']).filter(k=>K[k]).concat(Object.keys(K).filter(k=>S.opt.kinds.indexOf(k)<0&&k!=='大会'));
   const P=kk.reduce((t,k)=>t+(k==='大会'?0:K[k].p),0),D=kk.reduce((t,k)=>t+(k==='大会'?0:K[k].d),0),X=kk.reduce((t,k)=>t+(k==='大会'?0:(K[k].x||0)),0);
   const offN=ds.filter(x=>x.off).length;
+  h+=countBox(K,ds,a,b);
   h+='<div class="stats"><div class="st"><b>'+D+'／'+P+'</b><span>実施／予定'+(b>TODAY?'（今日まで）':'')+(X?'　予定外 '+X:'')+'</span></div><div class="st"><b>'+rom+'</b>日<span>ROMをやった日（通算 '+ROMTOTAL+'回）</span></div><div class="st"><b>'+offN+'</b>日<span>休養日（OFF）</span></div></div>';
   if(statP==='year'){const y=fy(a),sc=schoolCount(y),lim=S.warkLimit||5,left=lim-sc.used;
     h+='<h2>学校の休み（'+y+'年度）</h2><div class="tbl"><div class="tr th"><span>区分</span><span>日数</span><span>日付</span></div>'+
