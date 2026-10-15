@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- 孝磨のこぶ日記（旧：スキー行動予定アプリ） 画面側 v4.59.1 -->
+<!-- 孝磨のこぶ日記（旧：スキー行動予定アプリ） 画面側 v4.59.2 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -937,7 +937,7 @@ details.cwf>.chn:first-of-type{border-top:1px solid var(--line)}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.59.1';
+const CLIENT_VERSION='4.59.2';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -3546,20 +3546,24 @@ const cwDesc=(x,y)=>x.d<y.d?1:x.d>y.d?-1:(x.id<y.id?1:-1);
 const cwAsc=(x,y)=>-cwDesc(x,y);
 function cwList(){return (S.cwords||[]).filter(w=>w.cat!=='聞くこと');}
 /** その種目のいちばん新しいポイント（注意 → 変更 → やり方 の順に優先） */
-function cwPoint(name){const L=cwList().filter(w=>w.item===name&&['注意','変更','やり方','ねらい'].indexOf(w.cat)>=0&&cwAct(w));if(!L.length)return null;
+const cwKB=n=>/^KB|ケトルベル/.test(n||'');
+/** その種目（種類も一致）に当てはまる言葉か。「KB（共通）」は同じ種類のKB・ケトルベルの種目すべてに当てはめる */
+const cwFor=(w,name,kind)=>w.kind===kind&&(w.item===name||(w.item==='KB（共通）'&&cwKB(name)));
+function mzKind(z){if(z.classList.contains('wu'))return 'ウォームアップ';const r=z.closest('.arow'),t=r&&r.querySelector('.atag[data-mview]');return t?kp(t.dataset.mview)[1]:'';}
+function cwPoint(name,kind){const L=cwList().filter(w=>cwFor(w,name,kind)&&['注意','変更','やり方','ねらい'].indexOf(w.cat)>=0&&cwAct(w));if(!L.length)return null;
   const top=L.sort(cwDesc)[0].d,R=L.filter(w=>w.d===top);return R.find(w=>w.cat==='注意')||R.find(w=>w.cat==='変更')||R[0];}
 function cwIssues(){return cwList().filter(w=>w.cat==='いまの課題'&&cwAct(w)).sort(cwDesc).slice(0,3);}
 /** ホーム：いまの課題・種目ごとのひとこと・ウォームアップ・計測ボタン */
 function homeCw(sec){if(!sec||!S.cwords)return;
   const iss=cwIssues();if(iss.length&&!sec.querySelector('.cw-focus'))sec.insertAdjacentHTML('afterbegin','<div class="cw-focus"><b>🎯 いまの課題（コーチ '+md(iss[0].d)+'）</b><ul>'+iss.map(w=>'<li>'+(w.theme?'<b>'+esc(w.theme)+'</b>：':'')+esc(w.text)+'</li>').join('')+'</ul></div>');
-  sec.querySelectorAll('.mz li').forEach(li=>{const n=li.querySelector('.nm');if(!n||li.querySelector('.cw-pt'))return;const w=cwPoint(n.textContent);if(!w)return;
+  sec.querySelectorAll('.mz li').forEach(li=>{const n=li.querySelector('.nm');if(!n||li.querySelector('.cw-pt'))return;const w=cwPoint(n.textContent,mzKind(li.closest('.mz')));if(!w)return;
     li.insertAdjacentHTML('beforeend','<div class="cw-pt">💬 '+(w.cat==='注意'?'⚠ ':'')+esc(md(w.d))+' '+esc(w.text.length>44?w.text.slice(0,44)+'…':w.text)+'</div>');});
   sec.querySelectorAll('.arow.hasmz').forEach(r=>{const z=r.querySelector('.mz');if(!z||z.classList.contains('closed')||z.querySelector('[data-act="measIn"]'))return;
-    Object.keys(MEAS_ITEMS).forEach(it=>{if([...z.querySelectorAll('.nm')].some(n=>n.textContent===it))z.insertAdjacentHTML('beforeend','<div class="qrow" style="margin-top:6px"><button class="linkbtn2" data-act="measIn" data-item="'+esc(it)+'">📊 '+esc(it)+'を1本ずつ入れる</button></div>');});});
+    Object.keys(MEAS_ITEMS).forEach(it=>{if(MEAS_ITEMS[it]===mzKind(z)&&[...z.querySelectorAll('.nm')].some(n=>n.textContent===it))z.insertAdjacentHTML('beforeend','<div class="qrow" style="margin-top:6px"><button class="linkbtn2" data-act="measIn" data-item="'+esc(it)+'">📊 '+esc(it)+'を1本ずつ入れる</button></div>');});});
   const first=sec.querySelector('.arow.hasmz'),W=menuOf('ウォームアップ','');
   if(first&&W.length&&!sec.querySelector('.mz.wu')){const key='wu|'+TODAY,open=MZ[key]===true;
     first.insertAdjacentHTML('beforebegin','<div class="mz wu'+(open?'':' closed')+'"><div class="mh"><b>ウォームアップ</b><span>'+W.length+'種目</span><button class="tg" data-mzt="'+key+'" aria-expanded="'+open+'">'+(open?'たたむ ▴':'ひらく ▾')+'</button></div>'+
-      (open?'<ol>'+W.map((m,i)=>{const q=mzQty(m),n=mzNote(m),w=cwPoint(m.name);return '<li><span class="n">'+(i+1)+'</span><span class="nm">'+esc(m.name)+'</span><span class="q">'+esc(q)+'</span>'+(n?'<small>'+esc(n)+'</small>':'')+'</li>';}).join('')+'</ol>':'')+'</div>');}
+      (open?'<ol>'+W.map((m,i)=>{const q=mzQty(m),n=mzNote(m);return '<li><span class="n">'+(i+1)+'</span><span class="nm">'+esc(m.name)+'</span><span class="q">'+esc(q)+'</span>'+(n?'<small>'+esc(n)+'</small>':'')+'</li>';}).join('')+'</ol>':'')+'</div>');}
   if((S.cwords||[]).length&&!sec.querySelector('[data-tab="cw"]'))sec.insertAdjacentHTML('beforeend','<div class="qrow" style="margin-top:8px"><button class="linkbtn2" data-tab="cw">💬 コーチの言葉をぜんぶ見る</button>'+((S.meas||[]).length?'<button class="linkbtn2" data-tab="meas">📊 計測</button>':'')+'</div>');}
 /* ---------- コーチの言葉の画面 ---------- */
 function renderCw(){if(!FOLDON){FOLDON=true;V.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.fk)FOLD[d.dataset.fk]=d.open;},true);}
