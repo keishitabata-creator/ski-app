@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- 孝磨のこぶ日記（旧：スキー行動予定アプリ） 画面側 v4.59.2 -->
+<!-- 孝磨のこぶ日記（旧：スキー行動予定アプリ） 画面側 v4.59.3 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -937,7 +937,7 @@ details.cwf>.chn:first-of-type{border-top:1px solid var(--line)}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.59.2';
+const CLIENT_VERSION='4.59.3';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -3633,20 +3633,21 @@ function tempoSvg(L){const W=340,H=170,x0=30,y0=12,x1=W-8,y1=H-26,T=L.filter(m=>
 function renderMeas(){const items=[...new Set((S.meas||[]).map(m=>m.item))];if(items.length&&items.indexOf(MSI)<0)MSI=items[0];
   const ds=measDates(MSI);if(!MSD||ds.indexOf(MSD)<0)MSD=ds[ds.length-1]||'';
   const L=(S.meas||[]).filter(m=>m.item===MSI&&m.d===MSD).sort((a,b)=>a.set-b.set);
-  const av=a=>{const x=a.filter(v=>v!=null);return x.length?x.reduce((p,q)=>p+q,0)/x.length:null;},me=a=>{const x=a.filter(v=>v!=null).sort((p,q)=>p-q);return x.length?x[Math.floor((x.length-1)/2)]:null;};
+  const av=a=>{const x=a.filter(v=>v!=null);return x.length?x.reduce((p,q)=>p+q,0)/x.length:null;},me=a=>{const x=a.filter(v=>v!=null).sort((p,q)=>p-q),n=x.length;return n?(n%2?x[(n-1)/2]:Math.round((x[n/2-1]+x[n/2])/2)):null;};
   let h='<main><div class="cw-top"><button class="linkbtn2" data-tab="home">← もどる</button></div><h2 style="margin-top:4px">計測（動画分析）</h2>';
   if(!L.length){V.innerHTML=h+'<p class="empty">まだ計測がありません。今日のメニューの「📊 1本ずつ入れる」から入れられます。</p></main>';return;}
   h+='<div class="sg9">'+ds.slice(-6).map(d=>'<button data-msd="'+d+'" class="'+(d===MSD?'on':'')+'">'+md(d)+'</button>').join('')+'</div>';
-  const c=av(L.map(m=>m.cnt)),on=me(L.map(m=>m.onset)),dr=av(L.map(m=>m.drop)),r0=av(L.map(m=>m.r0)),r1=av(L.map(m=>m.r1)),lf=L.filter(m=>m.lift!=null);
-  h+='<p class="note" style="margin:0">'+esc(MSI)+'　'+(L[0].sec?L[0].sec+'秒':'')+'×'+L.length+'本　・　'+(L.some(m=>/動画/.test(m.src))?'動画から自動':'本人の入力')+'</p>'+
-    '<div class="k4"><div><span>回数（平均）</span><b>'+(c!=null?Math.round(c)+'回':'—')+'</b><span>'+(c!=null?Math.min(...L.filter(m=>m.cnt!=null).map(m=>m.cnt))+'〜'+Math.max(...L.filter(m=>m.cnt!=null).map(m=>m.cnt)):'')+'</span></div>'+
+  const sec0=Math.max(...L.map(m=>m.sec||0)),K=L.filter(m=>(m.sec||0)===sec0),oth=L.filter(m=>(m.sec||0)!==sec0);   // 数字は一番長い秒数の本でそろえる
+  const c=av(K.map(m=>m.cnt)),on=me(K.map(m=>m.onset)),dr=av(K.map(m=>m.drop)),r0=av(K.map(m=>m.r0)),r1=av(K.map(m=>m.r1)),lf=K.filter(m=>m.lift!=null);
+  h+='<p class="note" style="margin:0">'+esc(MSI)+'　'+(sec0?sec0+'秒':'')+'×'+K.length+'本'+(oth.length?'（ほか'+[...new Set(oth.map(m=>m.sec?m.sec+'秒':'記録なし'))].join('・')+'×'+oth.length+'本）':'')+'　・　'+(L.some(m=>/動画/.test(m.src))?'動画から自動':'本人の入力')+'</p>'+
+    '<div class="k4"><div><span>回数（平均）</span><b>'+(c!=null?Math.round(c)+'回':'—')+'</b><span>'+(c!=null?Math.min(...K.filter(m=>m.cnt!=null).map(m=>m.cnt))+'〜'+Math.max(...K.filter(m=>m.cnt!=null).map(m=>m.cnt)):'')+'</span></div>'+
     '<div><span>テンポが落ち始めた</span><b>'+(on!=null?on+'秒':'—')+'</b><span>中央値</span></div><div><span>最初→最後のテンポ</span><b>'+(dr!=null?'−'+Math.round(dr)+'%':'—')+'</b><span>'+(r0!=null?r0.toFixed(1)+'→'+r1.toFixed(1)+'回/秒':'')+'</span></div>'+
-    '<div><span>足の上がり</span><b>'+(lf.length?(lf.every(m=>Math.abs(m.lift)<=10)?'落ちず':'変化あり'):'—')+'</b><span>'+(lf.length?'最初→最後 '+(lf.reduce((p,m)=>p+m.lift,0)/lf.length>=0?'+':'')+Math.round(lf.reduce((p,m)=>p+m.lift,0)/lf.length)+'%':'')+'</span></div></div>'+tempoSvg(L);
-  h+='<table class="st5"><tr><th>本</th><th>回数</th><th>接地</th><th>落ち始め</th><th>低下</th><th>きつい（本人）</th><th></th></tr>'+L.map(m=>'<tr><td><span class="mdot" style="background:'+MCOL[(m.set-1)%6]+'"></span> '+m.set+'</td><td><b>'+(m.cnt!=null?m.cnt:'—')+'</b></td><td>'+(m.touch!=null?m.touch:'')+'</td><td>'+(m.onset!=null?m.onset+'秒':'')+'</td><td>'+(m.drop!=null?'−'+m.drop+'%':'')+'</td><td>'+(m.hard!=null?m.hard+'秒':'')+(m.rpe!=null?'<small> /'+m.rpe+'</small>':'')+'</td><td class="'+(m.ev||m.trip==='転んだ'?'evr':'')+'">'+(m.ev?'⚠ '+(/転倒/.test(m.ev)?'転倒':'あり'):esc(m.trip&&m.trip!=='なし'?m.trip:''))+'</td></tr>').join('')+'</table>';
-  const hd=L.filter(m=>m.hard!=null&&m.onset!=null);
+    '<div><span>足の上がり</span><b>'+(lf.length?(()=>{const a=lf.reduce((p,m)=>p+m.lift,0)/lf.length;return a<-10?'下がった':a>10?'上がった':'落ちず';})():'—')+'</b><span>'+(lf.length?'最初→最後 '+(lf.reduce((p,m)=>p+m.lift,0)/lf.length>=0?'+':'')+Math.round(lf.reduce((p,m)=>p+m.lift,0)/lf.length)+'%':'')+'</span></div></div>'+tempoSvg(L);
+  h+='<table class="st5"><tr><th>本</th><th>回数</th><th>接地</th><th>落ち始め</th><th>低下</th><th>きつい（本人）</th><th></th></tr>'+L.map(m=>'<tr><td><span class="mdot" style="background:'+MCOL[(m.set-1)%6]+'"></span> '+m.set+((m.sec||0)!==sec0?'<small> '+(m.sec?m.sec+'秒':'')+'</small>':'')+'</td><td><b>'+(m.cnt!=null?m.cnt:'—')+'</b></td><td>'+(m.touch!=null?m.touch:'')+'</td><td>'+(m.onset!=null?m.onset+'秒':'')+'</td><td>'+(m.drop!=null?'−'+m.drop+'%':'')+'</td><td>'+(m.hard!=null?m.hard+'秒':'')+(m.rpe!=null?'<small> /'+m.rpe+'</small>':'')+'</td><td class="'+(m.ev||m.trip==='転んだ'?'evr':'')+'">'+(m.ev?'⚠ '+(/転倒/.test(m.ev)?'転倒':'あり'):m.cnt==null&&m.touch==null&&/撮れていない/.test(m.memo)?'動画なし':esc(m.trip&&m.trip!=='なし'?m.trip:''))+'</td></tr>').join('')+'</table>';
+  const hd=K.filter(m=>m.hard!=null&&m.onset!=null);
   if(hd.length){const a=me(hd.map(m=>m.hard)),b=me(hd.map(m=>m.onset));h+='<div class="mcmp"><b>体感と動画</b><table><tr><td>きつくなった（本人）</td><td><b>'+a+'秒</b></td></tr><tr><td>テンポが落ちた（動画）</td><td><b>'+b+'秒</b></td></tr></table><span class="note">'+(a>b?'体感より'+(a-b)+'秒早く落ちています':a<b?'体感の方が'+(b-a)+'秒早い':'体感と同じ')+'</span></div>';}
-  L.filter(m=>m.ev).forEach(m=>h+='<div class="wn"><b>⚠ '+m.set+'本目</b>　'+esc(m.ev)+'</div>');
-  if(ds.length>=1){const pts=ds.slice(-8).map(d=>{const X=(S.meas||[]).filter(m=>m.item===MSI&&m.d===d);return {d,on:me(X.map(m=>m.onset)),c:av(X.map(m=>m.cnt)),dr:av(X.map(m=>m.drop))};});
+  L.filter(m=>m.ev&&!/撮れていない/.test(m.ev)).forEach(m=>h+='<div class="wn"><b>⚠ '+m.set+'本目</b>　'+esc(m.ev)+'</div>');
+  if(ds.length>=1){const pts=ds.slice(-8).map(d=>{const X0=(S.meas||[]).filter(m=>m.item===MSI&&m.d===d),sx=Math.max(...X0.map(m=>m.sec||0)),X=X0.filter(m=>(m.sec||0)===sx);return {d,on:me(X.map(m=>m.onset)),c:av(X.map(m=>m.cnt)),dr:av(X.map(m=>m.drop))};});
     const bars=(t,k,u,good)=>{const mx=Math.max(...pts.map(p=>p[k]||0),1);return '<div class="mchart"><div class="ct">'+t+'<small>（'+good+'）</small></div><div class="bars">'+pts.map(p=>'<div class="bc"><i style="height:'+(p[k]!=null?Math.max(4,70*p[k]/mx):0)+'px"></i><b>'+(p[k]!=null?(k==='dr'?'−':'')+Math.round(p[k])+u:'')+'</b><span>'+md(p.d)+'</span></div>').join('')+'</div></div>';};
     h+='<h3 style="margin-top:14px">推移</h3>'+bars('テンポが落ち始めた秒','on','秒','長いほど良い')+bars('回数（1本の平均）','c','回','多いほど良い')+bars('最初→最後のテンポ低下','dr','%','小さいほど良い')+'<p class="note">月1回、同じ撮り方（正面・置いたまま・スタート前から）で撮ると伸びが見えます。</p>';}
   h+='<div class="qrow" style="margin-top:12px"><button class="btn" style="width:100%" data-act="report" data-ym="'+MSD.slice(0,7)+'">📄 '+(+(MSD.slice(0,7)).slice(5,7))+'月のコーチ報告PDFを作る（コーチの言葉・計測入り）</button></div>';
