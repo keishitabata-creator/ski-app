@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- 孝磨のこぶ日記（旧：スキー行動予定アプリ） 画面側 v4.59.0 -->
+<!-- 孝磨のこぶ日記（旧：スキー行動予定アプリ） 画面側 v4.59.1 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -921,13 +921,15 @@ details.cwf>.chn:first-of-type{border-top:1px solid var(--line)}
 .sg9{display:flex;gap:5px;flex-wrap:wrap;margin:4px 0 10px}#sheet .sg9 button,main .sg9 button{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:6px 11px;font-size:13.5px;color:var(--ink);min-height:38px;min-width:40px}
 #sheet .sg9 button.on,main .sg9 button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
 .lab2{font-size:13px;font-weight:700;margin-top:6px}.mbig{display:flex;align-items:center;gap:10px;margin:4px 0 10px}.mbig button{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:22px;color:var(--ink)}.mbig b{font-size:30px;min-width:70px;text-align:center}
-.k4{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}.k4 div{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--card)}.k4 b{display:block;font-size:22px;color:var(--navy)}.k4 span{font-size:11.5px;color:var(--sub)}
+.k4{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}.k4 div{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--card)}.k4 b{display:block;font-size:22px;color:var(--ink)}.k4 span{font-size:11.5px;color:var(--sub)}
 .mchart{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:8px;margin:8px 0;color:var(--ink)}.mchart .ct{font-size:12.5px;font-weight:700;margin-bottom:4px}.mchart .ct small{font-weight:400;color:var(--sub)}
 .mchart .lg{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--sub)}.mchart .lg i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:4px;vertical-align:middle}
 .bars{display:flex;gap:10px;align-items:flex-end;height:110px;padding:0 4px}.bc{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;flex:0 0 44px;height:100%}.bc i{display:block;width:24px;border-radius:4px 4px 0 0;background:#2a78d6}.bc b{font-size:11px;margin-top:2px}.bc span{font-size:10.5px;color:var(--sub)}
 .st5{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card);border-radius:10px}.st5 td,.st5 th{border-bottom:1px solid var(--line);padding:6px 3px;text-align:center}.st5 th{font-size:11px;color:var(--sub);font-weight:400}.st5 .evr{color:#C0392B;font-size:11px}
 .mdot{display:inline-block;width:9px;height:9px;border-radius:50%}.wn{border:2px solid #C0392B;border-radius:10px;padding:8px 10px;background:#FFF3F1;color:#5a1a12;font-size:13px;margin:8px 0}
 .mcmp{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--card);font-size:13px;margin:8px 0}.mcmp td{padding:3px 6px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .cw-day .src.st,:root:not([data-theme="light"]) .chn .cst,:root:not([data-theme="light"]) .mh2{color:#7FD3A0}:root:not([data-theme="light"]) .cw-day .src.st.nw,:root:not([data-theme="light"]) .chn .cst.nw{color:#F2A766}:root:not([data-theme="light"]) .st5 .evr{color:#FF8A7A}}
+:root[data-theme="dark"] .cw-day .src.st,:root[data-theme="dark"] .chn .cst,:root[data-theme="dark"] .mh2{color:#7FD3A0}:root[data-theme="dark"] .cw-day .src.st.nw,:root[data-theme="dark"] .chn .cst.nw{color:#F2A766}:root[data-theme="dark"] .st5 .evr{color:#FF8A7A}
 </style>
 </head>
 <body>
@@ -935,7 +937,7 @@ details.cwf>.chn:first-of-type{border-top:1px solid var(--line)}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.59.0';
+const CLIENT_VERSION='4.59.1';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -3549,7 +3551,7 @@ function cwPoint(name){const L=cwList().filter(w=>w.item===name&&['注意','変�
 function cwIssues(){return cwList().filter(w=>w.cat==='いまの課題'&&cwAct(w)).sort(cwDesc).slice(0,3);}
 /** ホーム：いまの課題・種目ごとのひとこと・ウォームアップ・計測ボタン */
 function homeCw(sec){if(!sec||!S.cwords)return;
-  const iss=cwIssues();if(iss.length&&!sec.querySelector('.cw-focus'))sec.insertAdjacentHTML('afterbegin','<div class="cw-focus"><b>🎯 いまの課題（コーチ '+md(iss[0].d)+'）</b><ul>'+iss.map(w=>'<li>'+(w.theme?'<b>'+esc(w.theme)+'</b>：':'')+esc(w.text.length>34?w.text.slice(0,34)+'…':w.text)+'</li>').join('')+'</ul></div>');
+  const iss=cwIssues();if(iss.length&&!sec.querySelector('.cw-focus'))sec.insertAdjacentHTML('afterbegin','<div class="cw-focus"><b>🎯 いまの課題（コーチ '+md(iss[0].d)+'）</b><ul>'+iss.map(w=>'<li>'+(w.theme?'<b>'+esc(w.theme)+'</b>：':'')+esc(w.text)+'</li>').join('')+'</ul></div>');
   sec.querySelectorAll('.mz li').forEach(li=>{const n=li.querySelector('.nm');if(!n||li.querySelector('.cw-pt'))return;const w=cwPoint(n.textContent);if(!w)return;
     li.insertAdjacentHTML('beforeend','<div class="cw-pt">💬 '+(w.cat==='注意'?'⚠ ':'')+esc(md(w.d))+' '+esc(w.text.length>44?w.text.slice(0,44)+'…':w.text)+'</div>');});
   sec.querySelectorAll('.arow.hasmz').forEach(r=>{const z=r.querySelector('.mz');if(!z||z.classList.contains('closed')||z.querySelector('[data-act="measIn"]'))return;
@@ -3584,6 +3586,7 @@ const fam=cwFam(),A=cwList(),tabs=[['item','種目ごと'],['theme','テーマ']
   else if(CWV==='ask'){const Q=(S.cwords||[]).filter(w=>w.cat==='聞くこと').sort(cwDesc);
     h+='<p class="note">次のパーソナルで聞くこと。父がまとめ、聞けたら「済」にします。PDFにも載ります。</p><div class="cw-day">'+(Q.length?Q.map(w=>'<div class="chn ed" data-cwe="'+esc(w.id)+'"><div class="d"><b>'+md(w.d)+'</b>'+esc(w.item||'全般')+'</div><div>'+(w.st==='済'?'<s>'+esc(w.text)+'</s> <span class="me">済</span>':esc(w.text))+'</div></div>').join(''):'<div class="cw-it note">まだありません。</div>')+'</div>'+
       '<div class="qrow"><button class="btn pri" style="width:100%" data-act="cwAdd" data-cat="聞くこと">＋ 聞くことを足す</button></div><div class="qrow"><button class="btn" style="width:100%" data-act="cwAdd" data-cat="様子">＋ 本人の様子を残す</button></div>';}
+  if(A.length)h+='<div class="qrow" style="margin-top:12px"><button class="btn" style="width:100%" data-act="report" data-ym="'+TODAY.slice(0,7)+'">📄 '+(+(TODAY.slice(0,7)).slice(5,7))+'月のコーチ報告PDFを作る（コーチの言葉・計測入り）</button></div>';
   if(fam&&CWV!=='ask')h+='<p class="note">言葉を押すと、状態（これから→実践中→身についた）や様子を直せます。本人は見るだけです。</p>';
   V.innerHTML=h+'</main>';}
 function cwEdit(id){const w=(S.cwords||[]).find(x=>x.id===id);if(!w)return;sheetCtx={cw:id};
@@ -3642,6 +3645,7 @@ function renderMeas(){const items=[...new Set((S.meas||[]).map(m=>m.item))];if(i
   if(ds.length>=1){const pts=ds.slice(-8).map(d=>{const X=(S.meas||[]).filter(m=>m.item===MSI&&m.d===d);return {d,on:me(X.map(m=>m.onset)),c:av(X.map(m=>m.cnt)),dr:av(X.map(m=>m.drop))};});
     const bars=(t,k,u,good)=>{const mx=Math.max(...pts.map(p=>p[k]||0),1);return '<div class="mchart"><div class="ct">'+t+'<small>（'+good+'）</small></div><div class="bars">'+pts.map(p=>'<div class="bc"><i style="height:'+(p[k]!=null?Math.max(4,70*p[k]/mx):0)+'px"></i><b>'+(p[k]!=null?(k==='dr'?'−':'')+Math.round(p[k])+u:'')+'</b><span>'+md(p.d)+'</span></div>').join('')+'</div></div>';};
     h+='<h3 style="margin-top:14px">推移</h3>'+bars('テンポが落ち始めた秒','on','秒','長いほど良い')+bars('回数（1本の平均）','c','回','多いほど良い')+bars('最初→最後のテンポ低下','dr','%','小さいほど良い')+'<p class="note">月1回、同じ撮り方（正面・置いたまま・スタート前から）で撮ると伸びが見えます。</p>';}
+  h+='<div class="qrow" style="margin-top:12px"><button class="btn" style="width:100%" data-act="report" data-ym="'+MSD.slice(0,7)+'">📄 '+(+(MSD.slice(0,7)).slice(5,7))+'月のコーチ報告PDFを作る（コーチの言葉・計測入り）</button></div>';
   V.innerHTML=h+'</main>';}
 
 function cwLinks(){return '<div class="cwl"><button class="linkbtn2" data-tab="cw">💬 コーチの言葉</button>'+((S.meas||[]).length?'<button class="linkbtn2" data-tab="meas">📊 計測（動画分析）</button>':'')+'</div>';}
