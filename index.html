@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- 孝磨のこぶ日記（旧：スキー行動予定アプリ） 画面側 v4.58.0 -->
+<!-- 孝磨のこぶ日記（旧：スキー行動予定アプリ） 画面側 v4.59.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -902,6 +902,32 @@ details.dfold>summary::after{content:'▸';color:var(--sub);margin-left:auto}det
 details.dfold .rl>button[data-day]{display:none}details.dfold .rl{padding:0 6px 8px}
 .recfold .fctl{display:flex;gap:12px;justify-content:flex-end}.recfold .fctl button{font-size:12.5px;background:none;border:0;text-decoration:underline;color:var(--ink);min-height:32px}
 .mhrow{padding:8px 4px;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.5}.mhrow:last-child{border-bottom:0}
+.cw-tabs{display:flex;gap:6px;margin:6px 0 10px}.cw-tabs button{flex:1;border:1px solid var(--line);background:var(--card);border-radius:18px;padding:7px 4px;font-size:13px;color:var(--ink);min-height:36px}
+.cw-tabs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.cw-focus{border:2px solid #E8913A;border-radius:12px;padding:9px 12px;margin:0 0 8px;background:#FFF7EC;color:#3a2a10}.cw-focus b{font-size:14px}.cw-focus ul{margin:5px 0 0;padding-left:18px;font-size:13.5px;line-height:1.6}
+.cw-day{border:1px solid var(--line);border-radius:12px;background:var(--card);margin:8px 0;overflow:hidden}
+.cw-day>.hd{display:flex;align-items:center;gap:6px;padding:9px 12px;background:var(--bg);font-size:13px;flex-wrap:wrap}.cw-day>.hd b{font-size:14px}
+.cw-day .src{margin-left:auto;font-size:11.5px;color:var(--sub);border:1px solid var(--line);border-radius:10px;padding:1px 7px;background:var(--card)}.cw-day .src.st{color:#2B6A47;font-weight:700}.cw-day .src.st.nw{color:#A0521E}
+.cw-it{padding:9px 12px;border-top:1px solid var(--line);font-size:14px;line-height:1.5}
+.chn{padding:8px 12px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.5;display:grid;grid-template-columns:64px 1fr;gap:2px 8px}.chn.ed{cursor:pointer}
+.chn .d{font-size:11.5px;color:var(--sub)}.chn .cst{display:block;font-style:normal;font-size:10.5px;color:#2B6A47;font-weight:700}.chn .cst.nw{color:#A0521E}.chn .d b{display:block;color:var(--ink);font-size:12.5px}.chn .me{font-size:12px;color:var(--sub);margin-top:2px}
+.cwkb{font-size:10.5px;border-radius:8px;padding:0 6px;background:#EEF1F5;color:#334;margin-right:4px;white-space:nowrap}.cwkb.k-変更{background:#FFE9D2;color:#8A4300}.cwkb.k-注意{background:#FDE2E2;color:#9B1C1C}.cwkb.k-やり方{background:#E3F0FF;color:#1E4E8C}.cwkb.k-ねらい{background:#E8F5EC;color:#2B6A47}.cwkb.k-いまの課題{background:#FFF0C2;color:#6A4A00}
+.mh2{font-size:12px;color:#2B6A47;font-weight:700;padding:6px 12px;border-top:1px dashed var(--line)}
+.imp{display:flex;gap:8px;align-items:center;padding:9px 12px;border-top:1px solid var(--line);font-size:13px;flex-wrap:wrap}.imp .cwfn{flex:1;min-width:0;font-size:11.5px;color:var(--sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+details.cwf>.chn:first-of-type{border-top:1px solid var(--line)}
+.cw-pt{font-size:12px;color:#8A4300;background:#FFF3E3;border-radius:6px;padding:2px 6px;margin-top:3px;grid-column:2/4}
+.mz.wu{margin:0 0 8px;border:1px dashed var(--line);border-radius:10px;padding:6px 8px;background:var(--card)}
+.cw-top{margin-top:4px}.cwl{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.sg9{display:flex;gap:5px;flex-wrap:wrap;margin:4px 0 10px}#sheet .sg9 button,main .sg9 button{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:6px 11px;font-size:13.5px;color:var(--ink);min-height:38px;min-width:40px}
+#sheet .sg9 button.on,main .sg9 button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.lab2{font-size:13px;font-weight:700;margin-top:6px}.mbig{display:flex;align-items:center;gap:10px;margin:4px 0 10px}.mbig button{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:22px;color:var(--ink)}.mbig b{font-size:30px;min-width:70px;text-align:center}
+.k4{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}.k4 div{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--card)}.k4 b{display:block;font-size:22px;color:var(--navy)}.k4 span{font-size:11.5px;color:var(--sub)}
+.mchart{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:8px;margin:8px 0;color:var(--ink)}.mchart .ct{font-size:12.5px;font-weight:700;margin-bottom:4px}.mchart .ct small{font-weight:400;color:var(--sub)}
+.mchart .lg{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--sub)}.mchart .lg i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.bars{display:flex;gap:10px;align-items:flex-end;height:110px;padding:0 4px}.bc{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;flex:0 0 44px;height:100%}.bc i{display:block;width:24px;border-radius:4px 4px 0 0;background:#2a78d6}.bc b{font-size:11px;margin-top:2px}.bc span{font-size:10.5px;color:var(--sub)}
+.st5{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card);border-radius:10px}.st5 td,.st5 th{border-bottom:1px solid var(--line);padding:6px 3px;text-align:center}.st5 th{font-size:11px;color:var(--sub);font-weight:400}.st5 .evr{color:#C0392B;font-size:11px}
+.mdot{display:inline-block;width:9px;height:9px;border-radius:50%}.wn{border:2px solid #C0392B;border-radius:10px;padding:8px 10px;background:#FFF3F1;color:#5a1a12;font-size:13px;margin:8px 0}
+.mcmp{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--card);font-size:13px;margin:8px 0}.mcmp td{padding:3px 6px}
 </style>
 </head>
 <body>
@@ -909,7 +935,7 @@ details.dfold .rl>button[data-day]{display:none}details.dfold .rl{padding:0 6px 
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.58.0';
+const CLIENT_VERSION='4.59.0';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -979,6 +1005,7 @@ function applyPart(d){if(!d||!d.partial){ingest(d);return;}
   if(d.trips){S.trips=d.trips;S.races=d.races;S.tdays=d.tdays;if(d.days)S.days=d.days;ingest(S);return;}
   if(d.results){S.results=d.results;ingest(S);return;}
   if(d.coachings){S.coachings=d.coachings;ingest(S);return;}
+  if(d.cw){S.cwords=d.cwords;S.cwsrc=d.cwsrc;S.meas=d.meas;ingest(S);return;}
   if(d.videos){S.videos=d.videos;if(d.vcoms)S.vcoms=d.vcoms;if(d.cmps)S.cmps=d.cmps;if(d.tasks)S.tasks=d.tasks;if(d.vwords)S.vwords=d.vwords;ingest(S);return;}
   if(d.sess&&!d.dates&&!d.acts){expandSess(d.sess);Object.keys(d.sess).forEach(k=>S.sess[k]=d.sess[k]);if(d.sessFrom&&d.sessFrom<S.sessFrom)S.sessFrom=d.sessFrom;ingest(S);return;}
   if(d.planDays){const m={};d.planDays.forEach(r=>m[r[0]]=r);S.days=S.days.map(r=>m[r[0]]||r);if(d.patterns)S.patterns=d.patterns;if(!d.dates){ingest(S);return;}}
@@ -1266,7 +1293,7 @@ function homeMenus(){const sec=V.querySelector('section.today:not(.tmr)');if(!se
     if(open===undefined)open=!done&&first;if(!done)first=false;
     const h='<div class="mz'+(open?'':' closed')+'"><div class="mh"><b>今日のメニュー</b><span>'+M.length+'種目'+(f?'・'+esc(f):'')+'</span><button class="tg" data-mzt="'+esc(key)+'" aria-expanded="'+open+'">'+(open?'たたむ ▴':'ひらく ▾')+'</button></div>'+
       (open?'<ol>'+M.map((m,i)=>{const q=mzQty(m),n=mzNote(m);return '<li><span class="n">'+(i+1)+'</span><span class="nm">'+esc(m.name)+'</span><span class="q">'+esc(q)+'</span>'+(n?'<small>'+esc(n)+'</small>':'')+'</li>';}).join('')+'</ol>':'')+'</div>';
-    r.classList.add('hasmz');r.insertAdjacentHTML('beforeend',h);});}
+    r.classList.add('hasmz');r.insertAdjacentHTML('beforeend',h);});homeCw(sec);}
 
 function renderHome(){
   let h='<main>';
@@ -1398,7 +1425,7 @@ function openS(kind){sheetKind=kind;document.body.classList.add('open');navSync(
 function closeSheet(){document.body.classList.remove('open');openDay=null;sheetKind='';sheetCtx=null;act=null;dplan=null;}
 function render(){if(!S)return;
   document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===tab?'page':'false'));
-  renderHead();({home:renderHome,plan:renderPlan,videos:renderVideos,race:renderRace,stats:renderStats,help:renderHelp})[tab]();
+  renderHead();({home:renderHome,plan:renderPlan,videos:renderVideos,race:renderRace,stats:renderStats,help:renderHelp,cw:renderCw,meas:renderMeas})[tab]();
   if(tab!=='race')document.getElementById('savebar').classList.remove('show');
   updSavebar();try{vidBadge();}catch(e){}}
 function askWho(){openDay=null;
@@ -3506,6 +3533,118 @@ function foldRecs(h){const list=h.nextElementSibling;if(!list||!list.classList.c
     w.appendChild(md);});
   list.replaceWith(w);}
 
+/* v4.59：コーチの言葉（父が整理・本人は見る）・計測（動画分析）・ウォームアップ */
+let CWV='item',CWK='',MSD='',MSI='ボックスステップ',MI=null;
+const CW_ST=['これから','実践中','身についた','—'];
+const MEAS_ITEMS={'ボックスステップ':'エクスプロッシブ'};   // 1本ずつ計測する種目
+const cwFam=()=>canEdit()&&who!=='本人';
+const cwAct=w=>w.st!=='身についた'&&w.st!=='済';
+const cwKb=c=>'<span class="cwkb k-'+esc(c)+'">'+esc(c)+'</span>';
+const cwDesc=(x,y)=>x.d<y.d?1:x.d>y.d?-1:(x.id<y.id?1:-1);
+const cwAsc=(x,y)=>-cwDesc(x,y);
+function cwList(){return (S.cwords||[]).filter(w=>w.cat!=='聞くこと');}
+/** その種目のいちばん新しいポイント（注意 → 変更 → やり方 の順に優先） */
+function cwPoint(name){const L=cwList().filter(w=>w.item===name&&['注意','変更','やり方','ねらい'].indexOf(w.cat)>=0&&cwAct(w));if(!L.length)return null;
+  const top=L.sort(cwDesc)[0].d,R=L.filter(w=>w.d===top);return R.find(w=>w.cat==='注意')||R.find(w=>w.cat==='変更')||R[0];}
+function cwIssues(){return cwList().filter(w=>w.cat==='いまの課題'&&cwAct(w)).sort(cwDesc).slice(0,3);}
+/** ホーム：いまの課題・種目ごとのひとこと・ウォームアップ・計測ボタン */
+function homeCw(sec){if(!sec||!S.cwords)return;
+  const iss=cwIssues();if(iss.length&&!sec.querySelector('.cw-focus'))sec.insertAdjacentHTML('afterbegin','<div class="cw-focus"><b>🎯 いまの課題（コーチ '+md(iss[0].d)+'）</b><ul>'+iss.map(w=>'<li>'+(w.theme?'<b>'+esc(w.theme)+'</b>：':'')+esc(w.text.length>34?w.text.slice(0,34)+'…':w.text)+'</li>').join('')+'</ul></div>');
+  sec.querySelectorAll('.mz li').forEach(li=>{const n=li.querySelector('.nm');if(!n||li.querySelector('.cw-pt'))return;const w=cwPoint(n.textContent);if(!w)return;
+    li.insertAdjacentHTML('beforeend','<div class="cw-pt">💬 '+(w.cat==='注意'?'⚠ ':'')+esc(md(w.d))+' '+esc(w.text.length>44?w.text.slice(0,44)+'…':w.text)+'</div>');});
+  sec.querySelectorAll('.arow.hasmz').forEach(r=>{const z=r.querySelector('.mz');if(!z||z.classList.contains('closed')||z.querySelector('[data-act="measIn"]'))return;
+    Object.keys(MEAS_ITEMS).forEach(it=>{if([...z.querySelectorAll('.nm')].some(n=>n.textContent===it))z.insertAdjacentHTML('beforeend','<div class="qrow" style="margin-top:6px"><button class="linkbtn2" data-act="measIn" data-item="'+esc(it)+'">📊 '+esc(it)+'を1本ずつ入れる</button></div>');});});
+  const first=sec.querySelector('.arow.hasmz'),W=menuOf('ウォームアップ','');
+  if(first&&W.length&&!sec.querySelector('.mz.wu')){const key='wu|'+TODAY,open=MZ[key]===true;
+    first.insertAdjacentHTML('beforebegin','<div class="mz wu'+(open?'':' closed')+'"><div class="mh"><b>ウォームアップ</b><span>'+W.length+'種目</span><button class="tg" data-mzt="'+key+'" aria-expanded="'+open+'">'+(open?'たたむ ▴':'ひらく ▾')+'</button></div>'+
+      (open?'<ol>'+W.map((m,i)=>{const q=mzQty(m),n=mzNote(m),w=cwPoint(m.name);return '<li><span class="n">'+(i+1)+'</span><span class="nm">'+esc(m.name)+'</span><span class="q">'+esc(q)+'</span>'+(n?'<small>'+esc(n)+'</small>':'')+'</li>';}).join('')+'</ol>':'')+'</div>');}
+  if((S.cwords||[]).length&&!sec.querySelector('[data-tab="cw"]'))sec.insertAdjacentHTML('beforeend','<div class="qrow" style="margin-top:8px"><button class="linkbtn2" data-tab="cw">💬 コーチの言葉をぜんぶ見る</button>'+((S.meas||[]).length?'<button class="linkbtn2" data-tab="meas">📊 計測</button>':'')+'</div>');}
+/* ---------- コーチの言葉の画面 ---------- */
+function renderCw(){if(!FOLDON){FOLDON=true;V.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.fk)FOLD[d.dataset.fk]=d.open;},true);}
+const fam=cwFam(),A=cwList(),tabs=[['item','種目ごと'],['theme','テーマ'],['day','日ごと']].concat(fam?[['ask','聞くこと']]:[]);
+  let h='<main><div class="cw-top"><button class="linkbtn2" data-tab="home">← もどる</button></div><h2 style="margin-top:4px">コーチの言葉</h2>'+
+    '<div class="cw-tabs">'+tabs.map(([k,l])=>'<button data-cwv="'+k+'" class="'+(CWV===k?'on':'')+'">'+l+'</button>').join('')+'</div>';
+  const aim=A.filter(w=>w.cat==='ねらい'&&!w.item&&w.theme&&cwAct(w)).sort(cwDesc)[0];
+  if(aim&&CWV!=='ask')h+='<div class="cw-focus"><b>🎯 '+esc(aim.theme)+'</b><ul><li>'+esc(aim.text)+'</li></ul></div>';
+  if(!A.length&&CWV!=='ask')h+='<p class="empty">まだコーチの言葉がありません。父が文字起こしを置いて、Claude に取り込んでもらうと、ここに並びます。</p>';
+  const row=(w,lab)=>'<div class="chn'+(fam?' ed':'')+'"'+(fam?' data-cwe="'+esc(w.id)+'"':'')+'><div class="d"><b>'+md(w.d)+'</b>'+esc(lab)+(fam&&w.st&&w.st!=='—'?'<i class="cst'+(w.st==='これから'?' nw':'')+'">'+esc(w.st)+'</i>':'')+'</div><div>'+cwKb(w.cat)+esc(w.text)+(w.note?'<div class="me">様子：'+esc(w.note)+'</div>':'')+(fam&&w.src?'<div class="me">'+esc(w.src)+'</div>':'')+'</div></div>';
+  const stTag=L=>{const on=L.some(cwAct),nw=L.some(w=>w.st==='これから');return '<span class="src st'+(nw?' nw':'')+'">'+(L.every(w=>w.st==='身についた')?'身についた':nw?'これから':on?'実践中':'—')+'</span>';};
+  if(CWV==='item'){const ks=[...new Set(A.filter(w=>w.item).map(w=>w.kind))];
+    h+='<div class="sg9">'+['すべて'].concat(ks).map(k=>'<button data-cwk="'+esc(k==='すべて'?'':k)+'" class="'+((CWK||'')===(k==='すべて'?'':k)?'on':'')+'">'+esc(k)+'</button>').join('')+'</div>';
+    const g={};A.filter(w=>w.item&&(!CWK||w.kind===CWK)).forEach(w=>{const k=w.kind+'｜'+w.item;(g[k]=g[k]||[]).push(w);});
+    Object.keys(g).sort((x,y)=>{const a=g[x].reduce((m,w)=>w.d>m?w.d:m,''),b=g[y].reduce((m,w)=>w.d>m?w.d:m,'');return a<b?1:a>b?-1:0;}).forEach(k=>{const L=g[k].sort(cwAsc),p=k.split('｜');
+      h+='<div class="cw-day"><div class="hd"><span class="atag sm '+kCls(p[0])+'">'+esc(p[0])+'</span><b>'+esc(p[1])+'</b>'+stTag(L)+'</div>'+L.map(w=>row(w,w.scene)).join('')+(L.some(w=>w.menu)?'<div class="mh2">→ メニューに反映（'+esc(L.filter(w=>w.menu).map(w=>w.menu).pop())+'）</div>':'')+'</div>';});}
+  else if(CWV==='theme'){const g={};A.filter(w=>w.theme).forEach(w=>(g[w.theme]=g[w.theme]||[]).push(w));
+    h+='<p class="note">何度も言われていること。種目をこえてつながっています。</p>';
+    Object.keys(g).sort((x,y)=>g[y].length-g[x].length).forEach(k=>{const L=g[k].sort(cwAsc);h+='<div class="cw-day"><div class="hd"><b>'+esc(k)+'</b><span class="src">'+L.length+'回</span></div>'+L.map(w=>row(w,w.item||'全般')).join('')+'</div>';});}
+  else if(CWV==='day'){const g={};A.forEach(w=>{const k=w.d+'|'+w.scene;(g[k]=g[k]||[]).push(w);});
+    if(fam&&(S.cwsrc||[]).length)h+='<div class="cw-day"><div class="hd"><b>取り込み</b><span class="src">文字起こしフォルダ</span></div>'+S.cwsrc.slice().sort((x,y)=>x.d<y.d?1:-1).map(x=>'<div class="imp"><b>'+md(x.d)+' '+esc(x.scene)+'</b><span class="cwfn">'+(x.url?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.file)+'</a>':esc(x.file))+'</span>'+x.n+'件 ✓</div>').join('')+'<div class="cw-it note">新しい文字起こしを置いたら Claude に伝えてください。</div></div>';
+    Object.keys(g).sort().reverse().forEach(k=>{const L=g[k].sort((x,y)=>x.id<y.id?-1:1),p=k.split('|');
+      h+='<details class="fold cwf" data-fk="cw:'+esc(k)+'"'+(FOLD['cw:'+k]!==undefined?(FOLD['cw:'+k]?' open':''):(k===Object.keys(g).sort().reverse()[0]?' open':''))+'><summary>'+mdw(p[0])+' <small>'+esc(p[1])+'・'+L.length+'件</small></summary>'+L.map(w=>row(w,(w.kind==='全般'?'':w.kind+' ')+(w.item||'全般'))).join('')+'</details>';});}
+  else if(CWV==='ask'){const Q=(S.cwords||[]).filter(w=>w.cat==='聞くこと').sort(cwDesc);
+    h+='<p class="note">次のパーソナルで聞くこと。父がまとめ、聞けたら「済」にします。PDFにも載ります。</p><div class="cw-day">'+(Q.length?Q.map(w=>'<div class="chn ed" data-cwe="'+esc(w.id)+'"><div class="d"><b>'+md(w.d)+'</b>'+esc(w.item||'全般')+'</div><div>'+(w.st==='済'?'<s>'+esc(w.text)+'</s> <span class="me">済</span>':esc(w.text))+'</div></div>').join(''):'<div class="cw-it note">まだありません。</div>')+'</div>'+
+      '<div class="qrow"><button class="btn pri" style="width:100%" data-act="cwAdd" data-cat="聞くこと">＋ 聞くことを足す</button></div><div class="qrow"><button class="btn" style="width:100%" data-act="cwAdd" data-cat="様子">＋ 本人の様子を残す</button></div>';}
+  if(fam&&CWV!=='ask')h+='<p class="note">言葉を押すと、状態（これから→実践中→身についた）や様子を直せます。本人は見るだけです。</p>';
+  V.innerHTML=h+'</main>';}
+function cwEdit(id){const w=(S.cwords||[]).find(x=>x.id===id);if(!w)return;sheetCtx={cw:id};
+  const sts=w.cat==='聞くこと'?['これから','済']:CW_ST;
+  SH.innerHTML='<div class="grab"></div><h3 id="sh-title">'+esc(w.item||'全般')+'　<small>'+md(w.d)+' '+esc(w.scene)+'</small></h3>'+
+    '<div class="lab2">状態</div><div class="sg9">'+sts.map(s=>'<button data-cwst="'+s+'" class="'+(w.st===s?'on':'')+'">'+s+'</button>').join('')+'</div>'+
+    '<label class="lab">言葉<textarea id="cw-t" rows="3">'+esc(w.text)+'</textarea></label>'+(w.cat!=='聞くこと'?'<label class="lab">本人の様子（父のメモ）<input type="text" id="cw-n" maxlength="200" value="'+esc(w.note||'')+'"></label>':'')+
+    (w.src?'<p class="note">出典：'+esc(w.src)+(w.link?'　つながり：'+esc(w.link):'')+'</p>':'')+
+    '<div class="acts"><button class="btn" data-act="cwDel">消す</button><button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="cwSave">保存</button></div>';openS('cw');}
+function cwAddSheet(cat){sheetCtx={cwnew:cat};const items=[...new Set(cwList().filter(w=>w.item).map(w=>w.item))];
+  SH.innerHTML='<div class="grab"></div><h3 id="sh-title">'+(cat==='聞くこと'?'次のパーソナルで聞くこと':'本人の様子')+'</h3>'+
+    '<label class="lab">種目（なければ空欄＝全般）<input type="text" id="cw-i" list="cw-il"><datalist id="cw-il">'+items.map(x=>'<option value="'+esc(x)+'">').join('')+'</datalist></label>'+
+    '<label class="lab">内容<textarea id="cw-t" rows="3"></textarea></label><div class="acts"><button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="cwSave">残す</button></div>';openS('cw');}
+/* ---------- 計測の入力（1本ずつ） ---------- */
+function measIn(item,set){const kind=MEAS_ITEMS[item]||'',M=menuOf(kind,'').find(m=>m.name===item)||{},sec=+M.v||40,today=(S.meas||[]).filter(m=>m.d===TODAY&&m.item===item);
+  const nset=set||Math.min(20,(today.reduce((x,m)=>Math.max(x,m.set||0),0)||0)+1),cur=today.find(m=>m.set===nset)||{};
+  MI={item,kind,set:nset,sec,cnt:cur.cnt!=null&&cur.src==='本人の入力'?cur.cnt:null,hard:cur.hard!=null?String(cur.hard):'',rpe:cur.rpe!=null?String(cur.rpe):'',trip:cur.trip||'',memo:cur.memo||''};drawMeasIn();openS('meas');}
+function drawMeasIn(){const m=MI,sg=(k,a,on)=>'<div class="sg9">'+a.map(x=>'<button data-mi="'+k+'" data-v="'+esc(x)+'" class="'+(String(on)===String(x)?'on':'')+'">'+esc(x)+'</button>').join('')+'</div>',done=(S.meas||[]).filter(x=>x.d===TODAY&&x.item===m.item).map(x=>x.set);
+  SH.innerHTML='<div class="grab"></div><h3 id="sh-title">'+esc(m.item)+'　'+m.set+'本目</h3><p class="note" style="margin:0 0 6px">'+m.sec+'秒　・　'+mdw(TODAY)+(done.length?'　・　入れた本：'+done.sort((a,b)=>a-b).join('・'):'')+'</p>'+
+    '<div class="lab2">何本目</div>'+sg('set',[1,2,3,4,5,6],m.set)+
+    '<div class="lab2">ボックスに乗った回数（わからなければ空欄 → 動画から出します）</div><div class="mbig"><button data-act="miCnt" data-d="-1">−</button><b>'+(m.cnt==null?'—':m.cnt)+'</b><button data-act="miCnt" data-d="1">＋</button></div>'+
+    '<div class="lab2">きつくなったのは何秒ごろ？（秒）</div>'+sg('hard',[10,15,20,25,30,35,'平気'].filter(x=>x==='平気'||x<m.sec),m.hard)+
+    '<div class="lab2">きつさ（10がいちばん）</div>'+sg('rpe',[5,6,7,8,9,10],m.rpe)+
+    '<div class="lab2">つまずき</div>'+sg('trip',['なし','ヒヤッとした','転んだ'],m.trip)+
+    '<label class="lab">ひとこと（なくてもよい）<input type="text" id="mi-memo" maxlength="100" value="'+esc(m.memo)+'"></label>'+
+    '<p class="note">回数・落ち始め・左右差は、父が動画を置くと Claude が出します。</p>'+
+    '<div class="acts"><button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="miSave">残して次の本へ</button></div>';}
+/* ---------- 計測の結果・推移 ---------- */
+const MCOL=['#2a78d6','#eb6834','#1baf7a','#eda100','#e87ba4','#7d5bd0'];
+function measDates(item){return [...new Set((S.meas||[]).filter(m=>m.item===item).map(m=>m.d))].sort();}
+function tempoSvg(L){const W=340,H=170,x0=30,y0=12,x1=W-8,y1=H-26,T=L.filter(m=>m.tempo&&m.tempo.t);if(!T.length)return '';
+  const mx=Math.max(40,...T.map(m=>m.tempo.t[m.tempo.t.length-1]||0)),ys=T.flatMap(m=>m.tempo.r.filter(v=>v!=null)),lo=Math.floor(Math.min(...ys)*2)/2,hi=Math.ceil(Math.max(...ys)*2)/2;
+  const X=t=>x0+(x1-x0)*t/mx,Y=v=>y1-(y1-y0)*(v-lo)/(hi-lo||1);let g='';
+  for(let v=lo;v<=hi+1e-9;v+=0.5)g+='<line x1="'+x0+'" x2="'+x1+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="currentColor" opacity=".12"/><text x="'+(x0-4)+'" y="'+(Y(v)+4)+'" font-size="10" text-anchor="end" fill="currentColor" opacity=".6">'+v.toFixed(1)+'</text>';
+  for(let t=0;t<=mx;t+=10)g+='<text x="'+X(t)+'" y="'+(H-10)+'" font-size="10" text-anchor="'+(t+10>mx?'end':'middle')+'" fill="currentColor" opacity=".6">'+t+'秒</text>';
+  T.forEach(m=>{const c=MCOL[(m.set-1)%6];let d='',pen=false;m.tempo.t.forEach((t,i)=>{const v=m.tempo.r[i];if(v==null){pen=false;return;}d+=(pen?'L':'M')+X(t).toFixed(1)+' '+Y(v).toFixed(1);pen=true;});
+    g+='<path d="'+d+'" fill="none" stroke="'+c+'" stroke-width="2" stroke-linejoin="round"><title>'+m.set+'本目</title></path>';
+    if(m.onset!=null){const i=m.tempo.t.findIndex(t=>t>=m.onset),v=i>=0?m.tempo.r[i]:null;if(v!=null)g+='<circle cx="'+X(m.onset)+'" cy="'+Y(v)+'" r="4.5" fill="'+c+'" stroke="#fff" stroke-width="2"><title>'+m.set+'本目 落ち始め '+m.onset+'秒</title></circle>';}});
+  return '<div class="mchart"><div class="ct">テンポ（接地／秒）　●＝落ち始め</div><svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="テンポの変化">'+g+'</svg><div class="lg">'+T.map(m=>'<span><i style="background:'+MCOL[(m.set-1)%6]+'"></i>'+m.set+'本目</span>').join('')+'</div></div>';}
+function renderMeas(){const items=[...new Set((S.meas||[]).map(m=>m.item))];if(items.length&&items.indexOf(MSI)<0)MSI=items[0];
+  const ds=measDates(MSI);if(!MSD||ds.indexOf(MSD)<0)MSD=ds[ds.length-1]||'';
+  const L=(S.meas||[]).filter(m=>m.item===MSI&&m.d===MSD).sort((a,b)=>a.set-b.set);
+  const av=a=>{const x=a.filter(v=>v!=null);return x.length?x.reduce((p,q)=>p+q,0)/x.length:null;},me=a=>{const x=a.filter(v=>v!=null).sort((p,q)=>p-q);return x.length?x[Math.floor((x.length-1)/2)]:null;};
+  let h='<main><div class="cw-top"><button class="linkbtn2" data-tab="home">← もどる</button></div><h2 style="margin-top:4px">計測（動画分析）</h2>';
+  if(!L.length){V.innerHTML=h+'<p class="empty">まだ計測がありません。今日のメニューの「📊 1本ずつ入れる」から入れられます。</p></main>';return;}
+  h+='<div class="sg9">'+ds.slice(-6).map(d=>'<button data-msd="'+d+'" class="'+(d===MSD?'on':'')+'">'+md(d)+'</button>').join('')+'</div>';
+  const c=av(L.map(m=>m.cnt)),on=me(L.map(m=>m.onset)),dr=av(L.map(m=>m.drop)),r0=av(L.map(m=>m.r0)),r1=av(L.map(m=>m.r1)),lf=L.filter(m=>m.lift!=null);
+  h+='<p class="note" style="margin:0">'+esc(MSI)+'　'+(L[0].sec?L[0].sec+'秒':'')+'×'+L.length+'本　・　'+(L.some(m=>/動画/.test(m.src))?'動画から自動':'本人の入力')+'</p>'+
+    '<div class="k4"><div><span>回数（平均）</span><b>'+(c!=null?Math.round(c)+'回':'—')+'</b><span>'+(c!=null?Math.min(...L.filter(m=>m.cnt!=null).map(m=>m.cnt))+'〜'+Math.max(...L.filter(m=>m.cnt!=null).map(m=>m.cnt)):'')+'</span></div>'+
+    '<div><span>テンポが落ち始めた</span><b>'+(on!=null?on+'秒':'—')+'</b><span>中央値</span></div><div><span>最初→最後のテンポ</span><b>'+(dr!=null?'−'+Math.round(dr)+'%':'—')+'</b><span>'+(r0!=null?r0.toFixed(1)+'→'+r1.toFixed(1)+'回/秒':'')+'</span></div>'+
+    '<div><span>足の上がり</span><b>'+(lf.length?(lf.every(m=>Math.abs(m.lift)<=10)?'落ちず':'変化あり'):'—')+'</b><span>'+(lf.length?'最初→最後 '+(lf.reduce((p,m)=>p+m.lift,0)/lf.length>=0?'+':'')+Math.round(lf.reduce((p,m)=>p+m.lift,0)/lf.length)+'%':'')+'</span></div></div>'+tempoSvg(L);
+  h+='<table class="st5"><tr><th>本</th><th>回数</th><th>接地</th><th>落ち始め</th><th>低下</th><th>きつい（本人）</th><th></th></tr>'+L.map(m=>'<tr><td><span class="mdot" style="background:'+MCOL[(m.set-1)%6]+'"></span> '+m.set+'</td><td><b>'+(m.cnt!=null?m.cnt:'—')+'</b></td><td>'+(m.touch!=null?m.touch:'')+'</td><td>'+(m.onset!=null?m.onset+'秒':'')+'</td><td>'+(m.drop!=null?'−'+m.drop+'%':'')+'</td><td>'+(m.hard!=null?m.hard+'秒':'')+(m.rpe!=null?'<small> /'+m.rpe+'</small>':'')+'</td><td class="'+(m.ev||m.trip==='転んだ'?'evr':'')+'">'+(m.ev?'⚠ '+(/転倒/.test(m.ev)?'転倒':'あり'):esc(m.trip&&m.trip!=='なし'?m.trip:''))+'</td></tr>').join('')+'</table>';
+  const hd=L.filter(m=>m.hard!=null&&m.onset!=null);
+  if(hd.length){const a=me(hd.map(m=>m.hard)),b=me(hd.map(m=>m.onset));h+='<div class="mcmp"><b>体感と動画</b><table><tr><td>きつくなった（本人）</td><td><b>'+a+'秒</b></td></tr><tr><td>テンポが落ちた（動画）</td><td><b>'+b+'秒</b></td></tr></table><span class="note">'+(a>b?'体感より'+(a-b)+'秒早く落ちています':a<b?'体感の方が'+(b-a)+'秒早い':'体感と同じ')+'</span></div>';}
+  L.filter(m=>m.ev).forEach(m=>h+='<div class="wn"><b>⚠ '+m.set+'本目</b>　'+esc(m.ev)+'</div>');
+  if(ds.length>=1){const pts=ds.slice(-8).map(d=>{const X=(S.meas||[]).filter(m=>m.item===MSI&&m.d===d);return {d,on:me(X.map(m=>m.onset)),c:av(X.map(m=>m.cnt)),dr:av(X.map(m=>m.drop))};});
+    const bars=(t,k,u,good)=>{const mx=Math.max(...pts.map(p=>p[k]||0),1);return '<div class="mchart"><div class="ct">'+t+'<small>（'+good+'）</small></div><div class="bars">'+pts.map(p=>'<div class="bc"><i style="height:'+(p[k]!=null?Math.max(4,70*p[k]/mx):0)+'px"></i><b>'+(p[k]!=null?(k==='dr'?'−':'')+Math.round(p[k])+u:'')+'</b><span>'+md(p.d)+'</span></div>').join('')+'</div></div>';};
+    h+='<h3 style="margin-top:14px">推移</h3>'+bars('テンポが落ち始めた秒','on','秒','長いほど良い')+bars('回数（1本の平均）','c','回','多いほど良い')+bars('最初→最後のテンポ低下','dr','%','小さいほど良い')+'<p class="note">月1回、同じ撮り方（正面・置いたまま・スタート前から）で撮ると伸びが見えます。</p>';}
+  V.innerHTML=h+'</main>';}
+
+function cwLinks(){return '<div class="cwl"><button class="linkbtn2" data-tab="cw">💬 コーチの言葉</button>'+((S.meas||[]).length?'<button class="linkbtn2" data-tab="meas">📊 計測（動画分析）</button>':'')+'</div>';}
 function renderStats(){ensureReports();ensureGrades();
   const [a,b]=statRange(),cut=b<TODAY?b:TODAY,ds=DAYS.filter(d=>d.d>=a&&d.d<=cut);
   const loading=ensureSess(a);
@@ -3516,7 +3655,7 @@ function renderStats(){ensureReports();ensureGrades();
   const R=czRanges();
   let h='<div class="bar"><div class="seg" role="group" aria-label="期間"><button data-sp="week" aria-pressed="'+(statP==='week')+'">週</button><button data-sp="month" aria-pressed="'+(statP==='month')+'">月</button><button data-sp="year" aria-pressed="'+(statP==='year')+'">年度</button><button data-sp="coach" aria-pressed="'+(statP==='coach')+'">パーソナル</button></div>'+
     (statP==='coach'?(R.length?'<div class="row">'+R.map((r,i)=>[r,i]).reverse().map(([r,i])=>'<button class="chip sm" data-cz="'+i+'" aria-pressed="'+((statCz<0?R.length-1:statCz)===i)+'">'+md(r[0])+'〜'+md(r[1])+'</button>').join('')+'</div>':''):
-    '<div class="pnav"><button class="chip" data-sn="-1" aria-label="前へ">◀</button><b>'+esc(statLabel(a,b))+'</b><button class="chip" data-sn="1" aria-label="次へ">▶</button></div>')+'</div><main>';
+    '<div class="pnav"><button class="chip" data-sn="-1" aria-label="前へ">◀</button><b>'+esc(statLabel(a,b))+'</b><button class="chip" data-sn="1" aria-label="次へ">▶</button></div>')+'</div><main>'+cwLinks();
   if(statP==='coach'){
     h+='<div class="czadd"><div class="lab" style="margin-top:0">パーソナルを受けた日を登録</div><div class="qrow" style="margin-top:4px"><input type="date" id="cz-d" value="'+TODAY+'" max="'+DAYS[DAYS.length-1].d+'" style="flex:1"><button class="btn" data-act="czAdd2" style="flex:0 0 auto;padding:0 12px">登録</button></div><input type="text" id="cz-m" placeholder="メモ（内容・コーチの指示など）" maxlength="300" style="margin-top:6px"></div>';
     if(!R.length){V.innerHTML=h+'<p class="empty">パーソナルを受けた日がまだ登録されていません。<br>上で日付を選んで登録すると、前回のパーソナルからの期間で実績とPDFを作れます。</p></main>';return;}
@@ -3601,6 +3740,7 @@ function renderHelp(){if(!S)return;
   '<h3>休養日（OFF）</h3><p>休養日は「その日の位置づけ」で、トレーニングの予定とは別に持っています。合宿中でも休養日にでき、休養日に軽く動く予定を入れることもできます。設定は、日を押して「予定を変更」→「休養日（OFF）」、複数日を選んで「休養日にする」、週の型の「OFF」の行、のいずれかです。カレンダーには上段に「OFF」（合宿中なら「合宿／OFF」）と出ます。</p>'+
   '<h3>3. 予定を変える</h3><ul class="hl"><li>1日だけ変える：日付を押して「予定を変更」</li><li>何日かを選んで変える：「予定」画面の「複数日を選ぶ」（またはカレンダーの日を長押し）→ 日を押して選ぶ →「選んだ日の予定を変更」。入れ替える／足す／外す／休養日にする／休養日をやめる／予定を消す／学校の扱い から選べます</li><li>まとめて変える：「まとめて変更」で、この週をくり返す／前の週と同じにする／期間を休養日にする／やめる／期間の予定を消す／期間に活動を追加／外す</li><li>学校予定やメモ：日付を押して「学校予定・メモを変更」</li></ul><p>コーチの方は予定を変更できません（記録と閲覧はできます）。</p>'+
   '<h3>4. 大会</h3><p>遠征・合宿と大会の一覧です。行かないものは「不参加」「不出場」にして「変更を保存」を押します（予定表には灰色で残ります）。大会・合宿の追加、日程を変える（初日と最終日を選ぶ）、帰宅日の登録もここで行います。大会が終わったら「結果を記録」で順位・得点などを残せます。</p>'+
+  '<h3>コーチの言葉と計測</h3><p>パーソナルの文字起こしやLINEを、父がフォルダに置いて Claude に伝えると、「コーチの言葉」に種目ごと・テーマごと・日ごとに並びます。ホームの今日のメニューには、種目ごとのいちばん新しいポイント（💬）と「いまの課題」が出ます。本人は見るだけ、状態（これから→実践中→身についた）・様子・次に聞くことは父が整理します。ボックスステップは、今日のメニューの「📊 1本ずつ入れる」から、きつくなった秒・きつさ・つまずきを入れます。動画を置くと、回数・落ち始め・テンポの低下を Claude が出し、「計測」に結果と推移が出ます。どちらもコーチ報告PDFに載ります。</p>'+
   '<h3>5. 実績とコーチ報告PDF</h3><p>見出しを押すと、開いたりたたんだりできます（はじめは「この期間の回数」「活動の予定と実施」だけ開いています）。記録の一覧は月ごと・日ごとにたためます。「年度」では、その年度のPDFと月ごとのPDFを作れます。PDFには、その期間に使っていたメニューと「メニューの変遷」（いつ・何を・きっかけ）が載ります。重さを記録する種目（KB）は、「やった」でも前回の重さ（なければ標準の重さ）が入ります。</p><p>週・月・年度・パーソナルごとに、活動の予定と実施の回数、ROMの回数、メニューの合計（セット数・最大重量、WJの本数）、大会結果、記録の一覧を見られます。「月」または「パーソナル」でPDFを作ると、コーチに渡す報告書ができます。パーソナルを受けた日は「パーソナル」の画面か、日付の画面から登録します。</p>'+
   '<h3>6. メニュー</h3><p>ROMベーシック（フル／ハーフ）、ROMプラス、エクスプロッシブ、WJのメニューは、管理用スプレッドシートの「メニュー」シートにあります。種目、回数・秒数、セット数、インターバル、左右、やり方の説明を書き換えると、記録画面の目安と初期値が変わります。新しい活動の種類を作って、同じ種類名で種目を登録すれば、メニュー付きの活動を増やせます。</p>'+
   '<h3>7. 動画</h3><p>日付を押した画面の「動画を登録」から送れます。動画は、このアプリを使っている人なら誰でも見られます。</p>'+
@@ -3711,7 +3851,7 @@ function allDone(date){const d=DAYS[DIDX[date]],rows=rowsOf(d).filter(r=>r.plann
   const list=rows.map(r=>recPayload(date,r.slot,r.kind,'実施'));sendRec('saveActivities',{list},list.length+'件を「やった」で記録しました');}
 
 // ---------- 操作 ----------
-document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mview],[data-vcmp]');
+document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mview],[data-vcmp],[data-cwe]');
   if(XR&&b&&xClick(b.dataset,b))return;
   if(!XR&&b&&SC&&scClick(b.dataset,b))return;
   if(!XR&&b&&CP&&cpClick(b.dataset,b))return;
@@ -4007,6 +4147,22 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.act==='vselMode'){VSEL=VSEL?null:{};render();return;}
   if(ds.mzt!==undefined){const z=b.closest('.mz');MZ[ds.mzt]=!!(z&&z.classList.contains('closed'));renderHome();return;}
   if(ds.fall!==undefined){const on=ds.fall==='1';V.querySelectorAll('.recfold details').forEach(x=>{x.open=on;FOLD[x.dataset.fk]=on;});return;}
+  if(ds.cwv){CWV=ds.cwv;renderCw();return;}
+  if(ds.cwk!==undefined&&tab==='cw'){CWK=ds.cwk;renderCw();return;}
+  if(ds.cwe){cwEdit(ds.cwe);return;}
+  if(ds.act==='cwAdd'){cwAddSheet(ds.cat);return;}
+  if(ds.cwst){SH.querySelectorAll('[data-cwst]').forEach(x=>x.classList.toggle('on',x===b));return;}
+  if(ds.act==='cwSave'&&sheetCtx){const c=sheetCtx,t=(document.getElementById('cw-t')||{}).value||'';
+    if(c.cwnew){const it=(document.getElementById('cw-i')||{}).value||'';if(!t.trim()){toast('内容を書いてください');return;}closeSheet();send('saveCword',{cat:c.cwnew,item:it.trim(),text:t.trim(),d:TODAY},null,'残しました');return;}
+    const st=(SH.querySelector('[data-cwst].on')||{}).dataset,n=document.getElementById('cw-n');closeSheet();
+    send('saveCword',{id:c.cw,st:st?st.cwst:undefined,text:t.trim(),note:n?n.value.trim():undefined},null,'直しました');return;}
+  if(ds.act==='cwDel'&&sheetCtx&&sheetCtx.cw){if(!confirm('この言葉を消しますか？'))return;const id=sheetCtx.cw;closeSheet();send('saveCword',{id,del:true},null,'消しました');return;}
+  if(ds.act==='measIn'){measIn(ds.item);return;}
+  if(ds.act==='miCnt'&&MI){MI.cnt=Math.max(0,(MI.cnt==null?(+ds.d>0?0:0):MI.cnt)+(+ds.d));drawMeasIn();return;}
+  if(ds.mi&&MI){if(ds.mi==='set'){const s0=+ds.v;MI.memo=(document.getElementById('mi-memo')||{}).value||'';measIn(MI.item,s0);return;}MI[ds.mi]=String(MI[ds.mi])===String(ds.v)?'':ds.v;MI.memo=(document.getElementById('mi-memo')||{}).value||'';drawMeasIn();return;}
+  if(ds.act==='miSave'&&MI){const m=MI;m.memo=(document.getElementById('mi-memo')||{}).value||'';
+    send('saveMeas',{d:TODAY,item:m.item,kind:m.kind,set:m.set,sec:m.sec,cnt:m.cnt,hard:m.hard==='平気'?'なし':m.hard,rpe:m.rpe,trip:m.trip,memo:m.memo},()=>{if(m.set<6)measIn(m.item,m.set+1);},m.set+'本目を残しました');return;}
+  if(ds.msd){MSD=ds.msd;renderMeas();return;}
   if(famClick(ds,b))return;
   if(salesClick(ds,b))return;
   if((ds.cs!==undefined||/^cs/.test(ds.act||''))&&csClick(ds,b))return;
