@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- 孝磨のこぶ日記（旧：スキー行動予定アプリ） 画面側 v4.57.0 -->
+<!-- 孝磨のこぶ日記（旧：スキー行動予定アプリ） 画面側 v4.58.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -886,6 +886,22 @@ div.cs-sw.on{background:#1C2B38;color:#CFE0EF;border:1px dashed #4A5B6B}
 .mz li:last-child{border-bottom:0}.mz li .n{color:var(--sub);font-size:12px;text-align:right}.mz li .q{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
 .mz li small{grid-column:2/4;color:var(--sub);font-size:12px;line-height:1.35}
 @media (max-width:560px){.arow.hasmz{grid-template-areas:"s t t" "m m m" "z z z" "b b b"}}
+.pdfbox{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:10px 0;background:var(--card)}
+.pdfms{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.pdfms button{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:6px 12px;font-size:13px;color:var(--ink);min-height:36px}
+.pdfms button.has{border-color:#3B7A57;color:#2B6A47;font-weight:700}
+details.fold{border:1px solid var(--line);border-radius:10px;margin:8px 0;background:var(--card)}
+details.fold>summary{list-style:none;padding:11px 12px;font-weight:700;display:flex;align-items:center;gap:6px;cursor:pointer;font-size:15px;flex-wrap:wrap}
+details.fold>summary::-webkit-details-marker,details.dfold>summary::-webkit-details-marker{display:none}
+details.fold>summary::after{content:'▾';margin-left:auto;color:var(--sub);transition:transform .15s}
+details.fold:not([open])>summary::after{transform:rotate(-90deg)}
+details.fold>summary small{font-weight:400;color:var(--sub);font-size:12px}
+details.fold>:not(summary){margin-left:8px;margin-right:8px}details.fold>.note:last-child,details.fold>.tbl:last-child,details.fold>.list:last-child{margin-bottom:10px}
+details.dfold{border-top:1px solid var(--line)}details.dfold>summary{list-style:none;display:flex;align-items:center;gap:6px;padding:9px 6px;font-size:13.5px;cursor:pointer}
+details.dfold>summary b{min-width:84px}details.dfold>summary .cks{display:flex;gap:3px;flex-wrap:wrap}details.dfold>summary .dm{margin-left:auto;color:var(--sub);font-size:11.5px}
+details.dfold>summary::after{content:'▸';color:var(--sub);margin-left:auto}details.dfold[open]>summary::after{content:'▾'}details.dfold>summary .dm+span{margin-left:6px}
+details.dfold .rl>button[data-day]{display:none}details.dfold .rl{padding:0 6px 8px}
+.recfold .fctl{display:flex;gap:12px;justify-content:flex-end}.recfold .fctl button{font-size:12.5px;background:none;border:0;text-decoration:underline;color:var(--ink);min-height:32px}
+.mhrow{padding:8px 4px;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.5}.mhrow:last-child{border-bottom:0}
 </style>
 </head>
 <body>
@@ -893,7 +909,7 @@ div.cs-sw.on{background:#1C2B38;color:#CFE0EF;border:1px dashed #4A5B6B}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.57.0';
+const CLIENT_VERSION='4.58.0';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -1409,14 +1425,14 @@ function drawDay(){const d=openDay,v=view(d);
 function lastSess(kind,before,exceptId){const ks=Object.keys(S.acts).filter(x=>x<=before).sort().reverse();
   for(const x of ks){const L=(S.acts[x]||[]).filter(a=>a.kind===kind&&a.st==='実施'&&a.id!==exceptId&&S.sess[a.id]).sort((a,b)=>SLOTS.indexOf(b.slot)-SLOTS.indexOf(a.slot));if(L.length)return {d:x,a:L[0],s:S.sess[L[0].id]};}return null;}
 function fillItems(kind,fh,date,exceptId){const M=menuOf(kind,fh),wj=M.length&&M.every(m=>m.unit==='本'),lp=lastSess(kind,date,exceptId);
-  let base=M.map(m=>({name:m.name,v:wj?0:(m.v||''),unit:m.unit||'',sets:+m.sets||0,w:'',m}));
+  let base=M.map(m=>({name:m.name,v:wj?0:(m.v||''),unit:m.unit||'',sets:+m.sets||0,w:m.wd?String(m.wd):'',m}));
   if(wj){
     // 前回の本数を既定にし、最近よく使う技を上に並べる
     const use={};recentSess(kind,date,exceptId,6).forEach(s=>s.items.forEach(i=>{if((parseInt(i.v,10)||0)>0)use[i.name]=(use[i.name]||0)+1;}));
     if(lp)lp.s.items.forEach(i=>{const x=base.find(b=>b.name===i.name);if(x)x.v=parseInt(i.v,10)||0;else base.push({name:i.name,v:parseInt(i.v,10)||0,unit:'本',sets:0,w:'',m:null});});
     base=base.map((x,i)=>({x,i})).sort((p,q)=>((use[q.x.name]||0)-(use[p.x.name]||0))||(p.i-q.i)).map(p=>p.x);
     return {items:base,src:lp?'前回（'+mdw(lp.d)+'）の本数を入れています。よく使う技を上に並べています':'技ごとの本数を入れてください'};}
-  if(lp&&(!fh||lp.s.fh===fh||!lp.s.fh)){lp.s.items.forEach(i=>{const x=base.find(b=>b.name===i.name);if(x){x.v=i.v;x.sets=+i.sets||0;x.w=i.w;}else base.push({name:i.name,v:i.v,unit:i.unit,sets:+i.sets||0,w:i.w,m:null});});
+  if(lp&&(!fh||lp.s.fh===fh||!lp.s.fh)){lp.s.items.forEach(i=>{const x=base.find(b=>b.name===i.name);if(x){x.v=i.v;x.sets=+i.sets||0;x.w=i.w||x.w;}else base.push({name:i.name,v:i.v,unit:i.unit,sets:+i.sets||0,w:i.w,m:null});});
     return {items:base,src:'前回（'+mdw(lp.d)+'）と同じ内容を入れています'};}
   return {items:base,src:'メニューどおりの内容を入れています'};}
 /** 最近の記録（新しい順・最大n件） */
@@ -1476,8 +1492,9 @@ let mstd=null;
 function openMenuStd(date,slot,kind,fh){const M=menuOf(kind,fh);mstd={date,slot,kind,fh,items:M.map(m=>({name:m.name,v:m.v||'',unit:m.unit||'',sets:+m.sets||0}))};drawMenuStd();openS('mstd');}
 function drawMenuStd(){const c=mstd;let h='<div class="grab"></div><div class="acthead '+kCls(c.kind)+'"><small>標準値の変更</small><b id="sh-title">'+esc(c.kind)+(c.fh?'（'+esc(c.fh)+'）':'')+'</b></div>';
   h+='<p class="note">ここで変えた値が、目安と初回の初期値になります（'+(c.fh?c.fh+'だけ':'この種類')+'）。すでに記録した内容は変わりません。</p><div class="mlist">'+c.items.map((x,i)=>'<div class="mi"><div class="mn"><b>'+esc(x.name)+'</b></div><div class="mc">'+(x.unit?'<label class="vbox"><input type="text" inputmode="numeric" data-mv="'+i+'" value="'+esc(x.v)+'" aria-label="回数・秒数"><span>'+esc(x.unit)+'</span></label>':'')+'<button class="stp" data-mst="-" data-i="'+i+'" aria-label="減らす">−</button><span class="sv"><b>'+x.sets+'</b>セット</span><button class="stp" data-mst="+" data-i="'+i+'" aria-label="増やす">＋</button></div></div>').join('')+'</div>';
+  h+='<label class="lab">きっかけ（なくてもよい。例：コーチの指示）<input type="text" id="ms-why" maxlength="60" value="'+esc(c.reason||'')+'"></label>';
   h+='<div class="acts"><button class="btn" data-act="close">閉じる</button><button class="btn pri" data-act="mstdSave"'+(saving?' disabled':'')+'>'+(saving?'保存中…':'標準値を保存')+'</button></div>';SH.innerHTML=h;}
-function readMenuStd(){if(!mstd)return;document.querySelectorAll('[data-mv]').forEach(e=>{mstd.items[+e.dataset.mv].v=e.value.trim();});}
+function readMenuStd(){if(!mstd)return;{const e=document.getElementById('ms-why');if(e)mstd.reason=e.value.trim();}document.querySelectorAll('[data-mv]').forEach(e=>{mstd.items[+e.dataset.mv].v=e.value.trim();});}
 /** 予定で決めた区分（フル／ハーフ）。無ければ '' */
 function plannedFh(date,slot,kind){const d=DAYS[DIDX[date]];if(!d)return '';const it=view(d).items.find(x=>x.slot===slot&&x.kind===kind);return (it&&it.fh)||'';}
 function quickDone(date,slot,kind){const menu=isMenu(kind),wj=menu&&(MENUK[kind]||[]).every(m=>m.unit==='本');
@@ -3432,8 +3449,8 @@ function makeActRep(){const c=arep;if(c.pre==='custom'){c.a=val('ar-a');c.b=val(
   call('makeActivityReport',{a:c.a,b:c.b,label:c.label,audience:c.aud,who}).then(r=>{saving=false;S.reports=r.reports||S.reports;
      SH.innerHTML='<div class="grab"></div><h3 id="sh-title">PDFができました</h3><p class="note">'+esc(r.name||'')+'</p><a class="btn pri" href="'+esc(r.url)+'" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none;min-height:52px;font-size:17px">PDFを開く</a><p class="note" style="margin-top:8px">開いたPDFは、共有（送信・印刷）から渡せます。作ったPDFの一覧は実績画面の下にも残ります。</p><div class="acts"><button class="btn" data-act="close">閉じる</button></div>';openS('pdf');render();})
   .catch(e=>{saving=false;drawActRep();const m=errMsg(e);reportErr('活動報告PDF',m);toast(/[^\x00-\x7F]/.test(m)?m.replace(/^(Exception|Error):\s*/,''):'PDFを作成できませんでした。もう一度お試しください。');});}
-function makeRep(){const b=document.querySelector('[data-act="report"]');if(!b||saving)return;const ym=b.dataset.ym,pa=b.dataset.a,pb=b.dataset.b;saving=true;b.disabled=true;b.textContent='PDFを作成中…（10〜30秒）';
-  call('makeReport',ym?{ym,who}:{a:pa,b:pb,label:'パーソナル後',who}).then(r=>{saving=false;S.reports=r.reports||S.reports;render();
+function makeRep(b0){const b=b0||document.querySelector('[data-act="report"]');if(!b||saving)return;const ym=b.dataset.ym,pa=b.dataset.a,pb=b.dataset.b;saving=true;b.disabled=true;b.textContent='PDFを作成中…（10〜30秒）';
+  call('makeReport',ym?{ym,who}:{a:pa,b:pb,label:b.dataset.lab||'パーソナル後',who}).then(r=>{saving=false;S.reports=r.reports||S.reports;render();
      SH.innerHTML='<div class="grab"></div><h3 id="sh-title">PDFができました</h3><p class="note">'+esc(r.name||'コーチ報告')+'</p><a class="btn pri" href="'+esc(r.url)+'" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none;min-height:52px;font-size:17px">PDFを開く</a><p class="note" style="margin-top:8px">開いたPDFは、共有（送信）からコーチに渡せます。作ったPDFの一覧は、この画面の下にも残ります。</p><div class="acts"><button class="btn" data-act="close">閉じる</button></div>';openS('pdf');})
   .catch(e=>{saving=false;render();const m=errMsg(e);reportErr('PDF作成',m);toast(/[^\x00-\x7F]/.test(m)?m.replace(/^(Exception|Error):\s*/,''):'PDFを作成できませんでした。もう一度お試しください。');});}
 let sessLoading=false;
@@ -3453,6 +3470,42 @@ function countBox(K,ds,a,b){const cut=b<TODAY?b:TODAY,fh={};
     h+=row('<span class="atag sm '+kCls(k)+'">'+esc(k)+'</span>',dn(k),pl(k),false,k==='WJ'&&wj?'（'+fmtN(wj)+'本）':'');});
   return h+'</div><p class="note">やった回数は、予定どおりの実施と予定外の実施の合計です（'+(b>TODAY?'今日まで':md(a)+'〜'+md(b))+'）。ROMベーシックのフル・ハーフは記録の区分から数えます。</p>';}
 
+/* v4.58：実績タブ（年度・月ごとのPDF／見出しごとにたたむ／記録の一覧を月・日でたたむ／メニューの変遷） */
+let FOLD={},FOLDON=false;   // 開閉の記憶（見出し名・月・日ごと）。タブを移っても残る
+const FOLD_OPEN=['この期間の回数','活動の予定と実施'];
+const nextYm=m=>{let y=+m.slice(0,4),mo=+m.slice(5,7)+1;if(mo>12){mo=1;y++;}return y+'-'+String(mo).padStart(2,'0');};
+/** 年度タブ：この年度のPDFと、月ごとのPDF */
+function yearPdfBox(a){const y=+a.slice(0,4),ya=y+'-04-01',yb=(y+1)+'-03-31',R=S.reports||[],has=k=>R.find(r=>r.name.indexOf('_'+k+'.pdf')>=0);
+  const ry=has(ya+'〜'+yb),ms=[];for(let m=ya.slice(0,7);m<=TODAY.slice(0,7)&&m<=yb.slice(0,7);m=nextYm(m))ms.push(m);
+  return '<div class="pdfbox"><b>📄 コーチ報告PDF</b><div class="qrow" style="margin-top:8px"><button class="btn pri qb" data-act="report" data-a="'+ya+'" data-b="'+yb+'" data-lab="'+y+'年度">この年度（'+y+'年度）のPDFを'+(ry?'作り直す':'作成')+'</button></div>'+
+    (ry?'<p class="note"><a href="'+esc(ry.url)+'" target="_blank" rel="noopener">▶ '+esc(ry.name)+' を開く</a></p>':'')+
+    '<p class="note" style="margin-top:8px">月ごとのPDF（✓はもうある月。押すと作り直します）</p><div class="pdfms">'+ms.map(m=>{const r=has(m);return '<button class="'+(r?'has':'')+'" data-act="report" data-ym="'+m+'">'+(+m.slice(5,7))+'月'+(r?' ✓':'')+'</button>';}).join('')+'</div>'+
+    (ms.some(has)?'<p class="note">'+ms.filter(has).map(m=>{const r=has(m);return '<a href="'+esc(r.url)+'" target="_blank" rel="noopener">▶ '+(+m.slice(5,7))+'月を開く</a>';}).join('　')+'</p>':'')+'</div>';}
+/** メニューの変遷（実績タブの最後） */
+function menuHistHtml(){const L=(S.menuHist||[]).slice().sort((x,y)=>x.d<y.d?1:-1);
+  return '<h2>メニューの変遷</h2>'+(L.length?'<div class="list">'+L.map(x=>'<div class="mhrow"><span class="s">'+mdw(x.d)+'　<span class="atag sm '+kCls(x.kind)+'">'+esc(x.kind)+(x.fh?'（'+esc(x.fh)+'）':'')+'</span>'+(x.why?'　'+esc(x.why):'')+'</span><br>'+esc(x.text)+'</div>').join('')+'</div>':'<p class="note">記録されたメニューの変更はまだありません。</p>')+
+    '<p class="note">メニューシートやアプリ（標準値を変える）で変えると、その日付で自動で残ります。PDFにも載ります。</p>';}
+/** 見出しごとにたたむ（はじめは「この期間の回数」「活動の予定と実施」だけ開く）。記録の一覧は月→日 */
+function statFold(){const M=V.querySelector('main');if(!M)return;
+  if(!FOLDON){FOLDON=true;V.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.fk)FOLD[d.dataset.fk]=d.open;},true);}
+  [...M.children].filter(x=>x.tagName==='H2').forEach(h=>{const key=h.textContent.replace(/（[^）]*）\s*$/,'').trim();
+    if(key==='記録の一覧'){foldRecs(h);return;}
+    const d=document.createElement('details');d.className='fold';d.dataset.fk='h:'+key;const o=FOLD['h:'+key];d.open=o===undefined?FOLD_OPEN.indexOf(key)>=0:o;
+    const sm=document.createElement('summary');sm.innerHTML=h.innerHTML;d.appendChild(sm);
+    const mv=[];let n=h.nextElementSibling;while(n&&n.tagName!=='H2'&&!(n.dataset&&n.dataset.act==='reload')){mv.push(n);n=n.nextElementSibling;}
+    h.replaceWith(d);mv.forEach(x=>d.appendChild(x));});}
+function foldRecs(h){const list=h.nextElementSibling;if(!list||!list.classList.contains('list'))return;
+  const by={},order=[];[...list.children].filter(r=>r.classList.contains('rl')).forEach(r=>{const b=r.querySelector('[data-day]'),d=b?b.dataset.day:'';const m=d.slice(0,7);if(!by[m]){by[m]=[];order.push(m);}by[m].push([d,r]);});
+  const w=document.createElement('div');w.className='recfold';w.innerHTML='<div class="fctl"><button data-fall="1">すべて開く</button><button data-fall="0">すべてたたむ</button></div>';
+  order.forEach((m,mi)=>{const md=document.createElement('details');md.className='fold';md.dataset.fk='m:'+m;const om=FOLD['m:'+m];md.open=om===undefined?mi===0:om;
+    md.innerHTML='<summary>'+m.slice(0,4)+'年'+(+m.slice(5,7))+'月 <small>（'+by[m].length+'日）</small></summary>';
+    by[m].forEach(([d,r],di)=>{const dd=document.createElement('details');dd.className='dfold';dd.dataset.fk='d:'+d;const od=FOLD['d:'+d];dd.open=od===undefined?(mi===0&&di===0):od;
+      const ck=[...r.querySelectorAll('.atag')].map(t=>{const k=(t.firstChild&&t.firstChild.textContent||'').trim(),f=(t.querySelector('.fhtag')||{}).textContent||'';return '<span class="atag sm '+kCls(k)+'">'+esc(kAbbrFh(k,f))+'</span>';}).join('');
+      dd.innerHTML='<summary><b>'+mdw(d)+'</b><span class="cks">'+ck+'</span>'+(r.querySelector('.memo')?'<span class="dm">体調・メモ</span>':'')+'</summary>';
+      dd.appendChild(r);md.appendChild(dd);});
+    w.appendChild(md);});
+  list.replaceWith(w);}
+
 function renderStats(){ensureReports();ensureGrades();
   const [a,b]=statRange(),cut=b<TODAY?b:TODAY,ds=DAYS.filter(d=>d.d>=a&&d.d<=cut);
   const loading=ensureSess(a);
@@ -3468,6 +3521,7 @@ function renderStats(){ensureReports();ensureGrades();
     h+='<div class="czadd"><div class="lab" style="margin-top:0">パーソナルを受けた日を登録</div><div class="qrow" style="margin-top:4px"><input type="date" id="cz-d" value="'+TODAY+'" max="'+DAYS[DAYS.length-1].d+'" style="flex:1"><button class="btn" data-act="czAdd2" style="flex:0 0 auto;padding:0 12px">登録</button></div><input type="text" id="cz-m" placeholder="メモ（内容・コーチの指示など）" maxlength="300" style="margin-top:6px"></div>';
     if(!R.length){V.innerHTML=h+'<p class="empty">パーソナルを受けた日がまだ登録されていません。<br>上で日付を選んで登録すると、前回のパーソナルからの期間で実績とPDFを作れます。</p></main>';return;}
     const rp=(S.reports||[]).find(r=>r.name.indexOf(a+'〜'+b)>=0);h+='<p class="note">パーソナル（'+mdw(a)+'）から'+(b===TODAY?'今日まで':'次のパーソナルの前日（'+mdw(b)+'）まで')+'の実績です。</p><div class="qrow"><button class="btn pri qb" data-act="report" data-a="'+a+'" data-b="'+b+'">📄 この期間のコーチ報告PDFを'+(rp?'作り直す':'作成')+'</button></div>'+(rp?'<p class="note"><a href="'+esc(rp.url)+'" target="_blank" rel="noopener">▶ '+esc(rp.name)+' を開く</a></p>':'');}
+  if(statP==='year')h+=yearPdfBox(a);
   if(statP==='month'){const ym=a.slice(0,7),rp=(S.reports||[]).find(r=>r.name.indexOf(ym)>=0);h+='<div class="qrow"><button class="btn pri qb" data-act="report" data-ym="'+ym+'">📄 この月のコーチ報告PDFを'+(rp?'作り直す':'作成')+'</button></div>'+(rp?'<p class="note"><a href="'+esc(rp.url)+'" target="_blank" rel="noopener">▶ '+esc(rp.name)+' を開く</a></p>':'');}
   const kk=S.opt.kinds.concat(['大会']).filter(k=>K[k]).concat(Object.keys(K).filter(k=>S.opt.kinds.indexOf(k)<0&&k!=='大会'));
   const P=kk.reduce((t,k)=>t+(k==='大会'?0:K[k].p),0),D=kk.reduce((t,k)=>t+(k==='大会'?0:K[k].d),0),X=kk.reduce((t,k)=>t+(k==='大会'?0:(K[k].x||0)),0);
@@ -3520,8 +3574,9 @@ function renderStats(){ensureReports();ensureGrades();
         h+='<p class="note">明細はスプレッドシートの「学業明細」シートに貼り付けて増やせます（写真を送っていただければ、貼り付け用の表を作ります）。</p>';}}}
   h+=salesSection();
   if(canEdit())h+='<h2>学校・スポンサーへの報告PDF</h2><p class="note">年間・半期・任意の期間で、遠征・合宿・大会の予定と実績（学校向けは公欠・欠席・ラーケーションの日付一覧つき）をPDFにします。</p><button class="btn" data-act="actRepOpen" style="width:100%">📄 活動報告PDFを作る</button>';
+  h+=menuHistHtml();
   h+='<button class="btn" data-act="reload" style="width:100%;margin-top:14px">最新の状態に更新</button></main>';
-  V.innerHTML=h;}
+  V.innerHTML=h;statFold();}
 
 // ---------- 使い方 ----------
 function renderHelp(){if(!S)return;
@@ -3546,7 +3601,7 @@ function renderHelp(){if(!S)return;
   '<h3>休養日（OFF）</h3><p>休養日は「その日の位置づけ」で、トレーニングの予定とは別に持っています。合宿中でも休養日にでき、休養日に軽く動く予定を入れることもできます。設定は、日を押して「予定を変更」→「休養日（OFF）」、複数日を選んで「休養日にする」、週の型の「OFF」の行、のいずれかです。カレンダーには上段に「OFF」（合宿中なら「合宿／OFF」）と出ます。</p>'+
   '<h3>3. 予定を変える</h3><ul class="hl"><li>1日だけ変える：日付を押して「予定を変更」</li><li>何日かを選んで変える：「予定」画面の「複数日を選ぶ」（またはカレンダーの日を長押し）→ 日を押して選ぶ →「選んだ日の予定を変更」。入れ替える／足す／外す／休養日にする／休養日をやめる／予定を消す／学校の扱い から選べます</li><li>まとめて変える：「まとめて変更」で、この週をくり返す／前の週と同じにする／期間を休養日にする／やめる／期間の予定を消す／期間に活動を追加／外す</li><li>学校予定やメモ：日付を押して「学校予定・メモを変更」</li></ul><p>コーチの方は予定を変更できません（記録と閲覧はできます）。</p>'+
   '<h3>4. 大会</h3><p>遠征・合宿と大会の一覧です。行かないものは「不参加」「不出場」にして「変更を保存」を押します（予定表には灰色で残ります）。大会・合宿の追加、日程を変える（初日と最終日を選ぶ）、帰宅日の登録もここで行います。大会が終わったら「結果を記録」で順位・得点などを残せます。</p>'+
-  '<h3>5. 実績とコーチ報告PDF</h3><p>週・月・年度・パーソナルごとに、活動の予定と実施の回数、ROMの回数、メニューの合計（セット数・最大重量、WJの本数）、大会結果、記録の一覧を見られます。「月」または「パーソナル」でPDFを作ると、コーチに渡す報告書ができます。パーソナルを受けた日は「パーソナル」の画面か、日付の画面から登録します。</p>'+
+  '<h3>5. 実績とコーチ報告PDF</h3><p>見出しを押すと、開いたりたたんだりできます（はじめは「この期間の回数」「活動の予定と実施」だけ開いています）。記録の一覧は月ごと・日ごとにたためます。「年度」では、その年度のPDFと月ごとのPDFを作れます。PDFには、その期間に使っていたメニューと「メニューの変遷」（いつ・何を・きっかけ）が載ります。重さを記録する種目（KB）は、「やった」でも前回の重さ（なければ標準の重さ）が入ります。</p><p>週・月・年度・パーソナルごとに、活動の予定と実施の回数、ROMの回数、メニューの合計（セット数・最大重量、WJの本数）、大会結果、記録の一覧を見られます。「月」または「パーソナル」でPDFを作ると、コーチに渡す報告書ができます。パーソナルを受けた日は「パーソナル」の画面か、日付の画面から登録します。</p>'+
   '<h3>6. メニュー</h3><p>ROMベーシック（フル／ハーフ）、ROMプラス、エクスプロッシブ、WJのメニューは、管理用スプレッドシートの「メニュー」シートにあります。種目、回数・秒数、セット数、インターバル、左右、やり方の説明を書き換えると、記録画面の目安と初期値が変わります。新しい活動の種類を作って、同じ種類名で種目を登録すれば、メニュー付きの活動を増やせます。</p>'+
   '<h3>7. 動画</h3><p>日付を押した画面の「動画を登録」から送れます。動画は、このアプリを使っている人なら誰でも見られます。</p>'+
   (canEdit()&&who!=='本人'?'<h3>最近のアクセス（家族だけ）</h3><div id="alog"><button class="btn" data-act="alogLoad">見る</button></div>'+'<h3>この端末（テスト用）</h3><p class="note">端末番号：'+esc(DEVID)+'。家族がテストで本人・コーチとして入る端末は「警告の対象外」にすると、記録はしたまま、警告メールを鳴らさず、その人の端末としても覚えません。</p><div id="tdev"><button class="btn" data-act="tdevLoad">今の状態を見る</button></div>':'')+(S.me&&S.me.auth?'<h3>この端末の利用者</h3><p>'+esc(S.me.name)+'（'+esc(S.me.role)+'）として使っています。</p><button class="btn" data-act="ukReset">利用者を変える（合言葉を入れ直す）</button>':'')+'<h3>記録者を変える</h3><p>画面上の「記録者」の「変更」から選び直せます。この端末に記憶されます。</p>'+
@@ -3714,7 +3769,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.mview){const [sl,k]=kp(ds.mview);openMenuView(ds.d,sl,k,ds.fh||'');return;}
   if(ds.mstd){const [sl,k]=kp(ds.mstd);openMenuStd(ds.d,sl,k,ds.fh||'');return;}
   if(ds.mst){const i=+ds.i,x=mstd.items[i];readMenuStd();x.sets=Math.max(0,Math.min(999,x.sets+(ds.mst==='+'?1:-1)));drawMenuStd();return;}
-  if(ds.act==='mstdSave'){readMenuStd();const c=mstd;closeSheet();sendPlan('saveMenuStd',{kind:c.kind,fh:c.fh,date:c.date,items:c.items.map(x=>({name:x.name,v:x.v,sets:x.sets}))},null,null);return;}
+  if(ds.act==='mstdSave'){readMenuStd();const c=mstd;closeSheet();sendPlan('saveMenuStd',{kind:c.kind,fh:c.fh,date:c.date,reason:c.reason||'',items:c.items.map(x=>({name:x.name,v:x.v,sets:x.sets}))},null,null);return;}
   if(ds.act==='aAsStd'){readAct();const c=act;if(!confirm(c.kind+(c.fh?'（'+c.fh+'）':'')+'の標準値を、いま入力している回数・セット数にします。よろしいですか？'))return;
     sendPlan('saveMenuStd',{kind:c.kind,fh:c.fh,date:c.date,items:c.items.map(x=>({name:x.name,v:x.v,sets:x.sets}))},null,null);return;}
   if(ds.adone){const [sl,k]=kp(ds.adone);quickDone(ds.d,sl,k);return;}
@@ -3872,7 +3927,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.act==='czAdd2'){const dt=val('cz-d');if(!dt){toast('日付を選んでください');return;}if(CZ[dt]){toast(md(dt)+'はすでに登録されています');return;}
     const memo=val('cz-m');statCz=-1;
     sendPlan('saveCoaching',{date:dt,memo,clear:false},md(dt)+'をパーソナルの日として登録しました',()=>{S.coachings=(S.coachings||[]).concat([{d:dt,kind:'パーソナル',memo,by:who}]).sort((a,b)=>a.d<b.d?-1:1);ingest(S);});return;}
-  if(ds.act==='report'){makeRep();return;}
+  if(ds.act==='report'){makeRep(b);return;}
   if(ds.act==='actRepOpen'){openActRep();return;}
   if(ds.act==='gradeOpen'){openGrade();return;}
   if(ds.gdt){GR.term=ds.gdt;render();return;}
@@ -3951,6 +4006,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.upall){const all=UP.want.every(Boolean);UP.want=UP.want.map(()=>!all);drawPick();return;}
   if(ds.act==='vselMode'){VSEL=VSEL?null:{};render();return;}
   if(ds.mzt!==undefined){const z=b.closest('.mz');MZ[ds.mzt]=!!(z&&z.classList.contains('closed'));renderHome();return;}
+  if(ds.fall!==undefined){const on=ds.fall==='1';V.querySelectorAll('.recfold details').forEach(x=>{x.open=on;FOLD[x.dataset.fk]=on;});return;}
   if(famClick(ds,b))return;
   if(salesClick(ds,b))return;
   if((ds.cs!==undefined||/^cs/.test(ds.act||''))&&csClick(ds,b))return;
