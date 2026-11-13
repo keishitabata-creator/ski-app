@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- こぶ日記（旧：スキー行動予定アプリ） 画面側 v4.61.0 -->
+<!-- こぶ日記（旧：スキー行動予定アプリ） 画面側 v4.62.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -938,6 +938,12 @@ details.cwf>.chn:first-of-type{border-top:1px solid var(--line)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sch-czy{background:#17403A;border-color:#4C8F7E;color:#CDEFE5}}
 :root[data-theme="dark"] .sch-czy{background:#17403A;border-color:#4C8F7E;color:#CDEFE5}
 .lab2{font-size:12px;color:var(--sub,#5A6B7D);margin:8px 0 2px}
+.sch-czk{background:#F6E8F3;border-color:#C994BC;color:#6A2A5C}
+.a-sk{background:#E2EEFB;color:#1D4C7A}.a-care,.czl.czk{background:#F6E8F3;color:#6A2A5C}
+.irrl{margin:3px 0 0;font-size:13.5px;line-height:1.5;text-align:left;font-weight:400}.irrl small{display:block;color:var(--sub,#5A6B7D);font-size:11.5px}
+.irr .irri{display:block;width:100%;text-align:left;background:transparent;border:0;border-top:1px solid var(--line,#D8DEE6);padding:9px 2px;color:inherit;font:inherit}.irr .irri b{margin-left:6px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sch-czk{background:#43233D;border-color:#9A6A8F;color:#F3D7EC}:root:not([data-theme="light"]) .a-sk{background:#1C3550;color:#CFE3F8}:root:not([data-theme="light"]) .a-care,:root:not([data-theme="light"]) .czl.czk{background:#43233D;color:#F3D7EC}}
+:root[data-theme="dark"] .sch-czk{background:#43233D;border-color:#9A6A8F;color:#F3D7EC}:root[data-theme="dark"] .a-sk{background:#1C3550;color:#CFE3F8}:root[data-theme="dark"] .a-care,:root[data-theme="dark"] .czl.czk{background:#43233D;color:#F3D7EC}
 </style>
 </head>
 <body>
@@ -945,7 +951,7 @@ details.cwf>.chn:first-of-type{border-top:1px solid var(--line)}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.61.0';
+const CLIENT_VERSION='4.62.0';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -978,7 +984,7 @@ const LS={get(k){try{return localStorage.getItem(k)||'';}catch(e){return '';}},s
 try{if(LS.get('big'))document.documentElement.classList.add('big');}catch(e){}
 const fy=x=>{const y=+x.slice(0,4),m=+x.slice(5,7);return m>=4?y:y-1;};
 
-let S=null, DAYS=[], DIDX={}, TRIPS=[], RACES=[], TD={}, TRIPN={}, RACEN={}, CZ={}, CZY={}, ROMN={}, ROMTOTAL=0, MENUK={};
+let S=null, DAYS=[], DIDX={}, TRIPS=[], RACES=[], TD={}, TRIPN={}, RACEN={}, CZ={}, CZY={}, CZK={}, ROMN={}, ROMTOTAL=0, MENUK={};
 let tab='home', mode='cal', year=null, month=null, filt='all', draftTrips=null, openDay=null, saving=false, sheetKind='', sheetCtx=null;
 let statP='week', statBase=TODAY, statCz=-1;
 let who=LS.get('who'), key=LS.get('key'), ekey=LS.get('ekey'), pending=null, upBusy=false;
@@ -996,10 +1002,10 @@ function ingest(d){
   if(d&&d.gurls&&d.gurlAt){d._gat={};Object.keys(d.gurls).forEach(k=>d._gat[k]=d.gurlAt);}   // 置き場のアドレスを受け取った時刻（動画ごと。期限が近ければ取り直す）
   if(d&&d.videos&&!d.videos._split){d.vArch=d.videos.filter(v=>v.arch);d.videos=d.videos.filter(v=>!v.arch);d.videos._split=true;}
   if(d&&d.today&&/^\d{4}-\d{2}-\d{2}$/.test(d.today))TODAY=d.today;
-  S=d; TRIPS=d.trips; RACES=d.races; TD=d.tdays; TRIPN={}; RACEN={}; DIDX={}; CZ={}; CZY={}; MENUK={};
+  S=d; TRIPS=d.trips; RACES=d.races; TD=d.tdays; TRIPN={}; RACEN={}; DIDX={}; CZ={}; CZY={}; CZK={}; MENUK={};
   expandSess(S.sess);
   TRIPS.forEach(t=>TRIPN[t.id]=t); RACES.forEach(r=>RACEN[r.id]=r);
-  (S.coachings||[]).forEach(x=>{if(x.kind==='雪上パーソナル')(CZY[x.d]=CZY[x.d]||[]).push(x);else CZ[x.d]=x;});Object.keys(CZY).forEach(k=>CZY[k].sort((a,b)=>czyOrd(a.slot)-czyOrd(b.slot))); S.menu.forEach(m=>{(MENUK[m.kind]=MENUK[m.kind]||[]).push(m);});
+  (S.coachings||[]).forEach(x=>{if(x.kind==='雪上パーソナル')(CZY[x.d]=CZY[x.d]||[]).push(x);else if(x.kind==='ケア')CZK[x.d]=x;else CZ[x.d]=x;});Object.keys(CZY).forEach(k=>CZY[k].sort((a,b)=>czyOrd(a.slot)-czyOrd(b.slot))); S.menu.forEach(m=>{(MENUK[m.kind]=MENUK[m.kind]||[]).push(m);});
   DAYS=d.days.map(r=>{const w=W[pdate(r[0]).getDay()];
     return {d:r[0],w,hol:r[1],sk:r[2],sy:r[3],h7:r[4],ha:r[5],gek:r[6],plan:r[7],src:r[8]||'',memo:r[9],off:!!r[10],h:(w==='日'||isNatHol(r[1]))?1:0,sat:w==='土'?1:0};});
   DAYS.forEach((x,i)=>DIDX[x.d]=i);
@@ -1205,8 +1211,8 @@ function schoolCount(y){const o={abs:[],miss:[],wark:[],pre:Number((S.warkPre||{
 /** ラーケーション：年度ごとの取得日 */
 const isProt=d=>(S.opt.markProtect||[]).indexOf(markOf(d))>=0;
 const isRace=v=>!v.skip&&v.kb.indexOf('大会')===0&&!has(v.kb,'大会翌日');
-const KC={'エクスプロッシブ':'a-ex','ROMベーシック':'a-rb','ROMプラス':'a-rp','雪上':'a-snow','フィジカル（ROM前）':'a-ph','WJ':'a-wj','TR':'a-tr','OFF':'a-off','休養':'a-off','大会':'a-race','移動':'a-move','部活':'a-club','探究':'a-inq'};
-const KA={'エクスプロッシブ':'EX','ROMベーシック':'R','ROMプラス':'R+','雪上':'SN','フィジカル（ROM前）':'PH','WJ':'WJ','TR':'TR','OFF':'OFF','休養':'休','大会':'大会','移動':'移動','部活':'部','探究':'探'};
+const KC={'エクスプロッシブ':'a-ex','ROMベーシック':'a-rb','ROMプラス':'a-rp','雪上':'a-snow','フィジカル（ROM前）':'a-ph','WJ':'a-wj','TR':'a-tr','スケート':'a-sk','OFF':'a-off','休養':'a-off','大会':'a-race','移動':'a-move','部活':'a-club','探究':'a-inq'};
+const KA={'エクスプロッシブ':'EX','ROMベーシック':'R','ROMプラス':'R+','雪上':'SN','フィジカル（ROM前）':'PH','WJ':'WJ','TR':'TR','スケート':'SK','OFF':'OFF','休養':'休','大会':'大会','移動':'移動','部活':'部','探究':'探'};
 const kCls=k=>KC[k]||'a-other';
 const kAbbr=k=>KA[k]||String(k).slice(0,2);
 function resTxt(r){if(!r)return'';return [r.round,r.rank?r.rank+'位'+(r.n?'／'+r.n+'人':''):'',r.score?r.score+'点':''].filter(Boolean).join('　');}
@@ -1332,7 +1338,8 @@ function renderHome(){
   {const L=(S.recentLogs||[]).filter(x=>x.by&&x.by!==who).slice(0,3);
    if(L.length)h+='<h2>最近の予定変更</h2><div class="list">'+L.map(x=>'<div><span class="s">'+esc(x.at.slice(5,16).replace('/','/'))+'　'+esc(x.by)+'</span><br>'+esc(x.text)+'</div>').join('')+'</div>';}
   {const ny=S.coachings.filter(x=>x.d>TODAY&&x.kind==='雪上パーソナル');if(ny.length)h+='<p class="note">次の雪上パーソナル：'+mdw(ny[0].d)+' '+czySlots(CZY[ny[0].d])+'（あと'+Math.round((pdate(ny[0].d)-pdate(TODAY))/86400000)+'日）</p>';}
-  const pz=S.coachings.filter(x=>x.d<=TODAY&&x.kind!=='雪上パーソナル');if(pz.length)h+='<p class="note">前回のフィジカルパーソナル：'+mdw(pz[pz.length-1].d)+'（'+Math.round((pdate(TODAY)-pdate(pz[pz.length-1].d))/86400000)+'日前）</p>';
+  {const pk=S.coachings.filter(x=>x.d<=TODAY&&x.kind==='ケア'),nk=S.coachings.filter(x=>x.d>TODAY&&x.kind==='ケア');if(nk.length)h+='<p class="note">次のケア：'+mdw(nk[0].d)+'（あと'+Math.round((pdate(nk[0].d)-pdate(TODAY))/86400000)+'日）</p>';else if(pk.length)h+='<p class="note">前回のケア：'+mdw(pk[pk.length-1].d)+'（'+Math.round((pdate(TODAY)-pdate(pk[pk.length-1].d))/86400000)+'日前）</p>';}
+  const pz=S.coachings.filter(x=>x.d<=TODAY&&x.kind==='フィジカルパーソナル');if(pz.length)h+='<p class="note">前回のフィジカルパーソナル：'+mdw(pz[pz.length-1].d)+'（'+Math.round((pdate(TODAY)-pdate(pz[pz.length-1].d))/86400000)+'日前）</p>';
   const ups=[];DAYS.forEach(d=>{if(d.d>TODAY&&ups.length<3&&isRace(view(d)))ups.push(d);});
   if(ups.length)h+='<h2>この先の大会</h2><div class="list">'+ups.map(d=>'<div>'+mdw(d.d)+'　'+esc(view(d).nm)+'<time>あと'+Math.round((pdate(d.d)-pdate(TODAY))/86400000)+'日</time></div>').join('')+'</div>';
   V.innerHTML=h+'</main>';homeMenus();}
@@ -1359,7 +1366,7 @@ function ensureYear(){if(year===null){const t=DIDX[TODAY]!==undefined?TODAY:(TOD
 function dayCard(d){const dc=d.h?'sun':(d.sat?'sat':''),v=view(d),m=schMark(v,d);
   return '<div class="day'+(d.d===TODAY?' today':'')+'"><button class="dhead" data-day="'+d.d+'"><span class="dn '+dc+'">'+md(d.d)+'（'+d.w+'）</span>'+
     (m?'<span class="sch '+((schState(d,v)||{}).c||'')+'">'+m+'</span>':'')+
-    (CZ[d.d]?'<span class="sch sch-cz">フィジカルパーソナル</span>':'')+(CZY[d.d]?'<span class="sch sch-czy">雪上パーソナル '+czySlots(CZY[d.d])+'</span>':'')+(d.d===TODAY?'<span class="tlabel">今日</span>':'')+'<span class="chev">›</span></button>'+
+    (CZ[d.d]?'<span class="sch sch-cz">フィジカルパーソナル</span>':'')+(CZY[d.d]?'<span class="sch sch-czy">雪上パーソナル '+czySlots(CZY[d.d])+'</span>':'')+(CZK[d.d]?'<span class="sch sch-czk">ケア</span>':'')+(d.d===TODAY?'<span class="tlabel">今日</span>':'')+'<span class="chev">›</span></button>'+
     '<div class="bd">'+dayBody(d,{compact:true})+'</div></div>';}
 function passFilter(d){const v=view(d);if(filt==='ev')return !!v.kb;if(filt==='abs')return isAbs(v.school);if(filt==='rec')return !!(S.acts[d.d]||[]).length;return true;}
 function monthTitle(){return month==='all'?year+'年度（全体）':month.slice(0,4)+'年'+(+month.slice(5))+'月';}
@@ -1462,10 +1469,31 @@ function drawDay(){const d=openDay,v=view(d);
     const has=cz||CZY[d.d];
     if(!future||has)h+='<div class="lab">パーソナル</div>'+one('フィジカルパーソナル','フィジカルパーソナル',cz)+ys.map(x=>one('雪上パーソナル','雪上パーソナル（'+(x.slot||'時間帯未定')+'）',x)).join('')+
       (!future&&canEdit()&&!(cz&&!yleft.length)?'<input type="text" id="cz-memo" placeholder="メモ（内容・コーチの指示など）" maxlength="300"><div class="qrow" style="margin-top:6px">'+(cz?'':'<button class="btn" data-act="czAdd" data-k="フィジカルパーソナル">フィジカルパーソナルを受けた</button>')+'</div>'+(yleft.length?'<div class="lab2">雪上パーソナルを受けた（時間帯）</div><div class="qrow" style="margin-top:4px">'+yleft.map(t=>'<button class="btn" data-act="czAdd" data-k="雪上パーソナル" data-s="'+t+'">'+t+'</button>').join('')+'</div>':''):'');}
+  {const k=CZK[d.d];if(!future||k)h+='<div class="lab">ケア</div>'+(k?careItem(k,future):'')+(canEdit()?'<button class="linkbtn2" data-act="careEdit" data-d="'+d.d+'">'+(k?'✎ 内容・コメントを書く':'＋ ケアを受けた日として記録')+'</button>':'');}
   const vs=S.videos.filter(x=>x.d===d.d&&!x.ref);
   if(!future||vs.length)h+='<div class="lab">動画</div>'+(vs.length?'<div class="exl">'+vs.map(vidItem).join('')+'</div>':'')+(!future&&canEdit()?'<button class="linkbtn2" data-act="vidAdd">＋ 動画を登録（この日あと '+vidLeft(d.d)+'本）</button><button class="linkbtn2" data-act="phAdd">＋ 写真を登録</button>':(vs.length?'':'<p class="note">動画はありません。</p>'));
   h+='<div class="acts"><button class="btn" data-act="close">閉じる</button></div>';
   SH.innerHTML=h;}
+
+/* v4.62：ケア（パーソナル）・スケート（不定期の活動）の記録と閲覧 */
+const IRRK=['スケート'];
+function careItem(k,future){const ln=(l,t)=>t?'<p class="irrl"><small>'+l+'</small>'+esc(t).replace(/\n/g,'<br>')+'</p>':'';
+  return '<div class="czl czk"><span>✓ ケア'+(future?'（予定）':'を受けた')+'</span>'+(canEdit()?'<button class="linkbtn2" data-act="careDel" data-d="'+k.d+'">取り消す</button>':'')+'</div>'+ln('内容',k.memo)+ln('コメント（本人）',k.c1)+ln('コメント（父・コーチ）',k.c2);}
+function openCare(date,back,memo0){const k=CZK[date]||{};sheetCtx={care:date,back:back||''};
+  let h='<div class="grab"></div><div class="acthead a-care"><small>パーソナル</small><b id="sh-title">ケアの記録</b></div>';
+  h+='<label class="lab">日付<input type="date" id="ca-d" value="'+date+'" max="'+DAYS[DAYS.length-1].d+'"></label>';
+  h+='<label class="lab" for="ca-m">内容（やったこと・体の状態など）</label><textarea id="ca-m" maxlength="1000" placeholder="例：股関節まわりのほぐし、左ハムの張りを見てもらった">'+esc(k.memo||memo0||'')+'</textarea>';
+  h+='<label class="lab" for="ca-1">コメント（本人）</label><textarea id="ca-1" maxlength="1000" placeholder="感じたこと・気づき">'+esc(k.c1||'')+'</textarea>';
+  h+='<label class="lab" for="ca-2">コメント（父・コーチ）</label><textarea id="ca-2" maxlength="1000" placeholder="コーチの話・家族から">'+esc(k.c2||'')+'</textarea>';
+  h+='<div class="acts">'+(CZK[date]?'<button class="btn del" data-act="careDel" data-d="'+date+'">消す</button>':'')+'<button class="btn" data-act="careBack">戻る</button><button class="btn pri" data-act="careSave">保存</button></div>';
+  SH.innerHTML=h;openS('care');}
+function irrList(a,b){const L=[];
+  (S.coachings||[]).forEach(x=>{if(x.kind==='ケア'&&x.d>=a&&x.d<=b&&x.d<=TODAY)L.push({d:x.d,k:'ケア',cls:'a-care',t:x.memo,c1:x.c1,c2:x.c2,care:1});});
+  Object.keys(S.acts||{}).forEach(d=>{if(d<a||d>b)return;(S.acts[d]||[]).forEach(x=>{if(IRRK.indexOf(x.kind)>=0&&x.st==='実施')L.push({d,k:x.kind,cls:kCls(x.kind),slot:x.slot,t:x.c,c1:x.memo,c2:x.cm,id:x.id});});});
+  if(!L.length)return '';L.sort((p,q)=>p.d<q.d?1:-1);
+  const ln=(l,t)=>t?'<p class="irrl"><small>'+l+'</small>'+esc(t).replace(/\n/g,'<br>')+'</p>':'';
+  return '<section class="card irr"><h3>ケア・スケートの記録 <small>（'+L.length+'件）</small></h3>'+L.map(x=>'<button class="irri" '+(x.care?'data-irrcare="'+x.d+'"':'data-irract="'+x.d+'|'+esc(x.slot)+'|'+esc(x.k)+'|'+esc(x.id)+'"')+'><span class="atag sm '+x.cls+'">'+esc(x.k)+'</span><b>'+mdw(x.d)+(x.slot?' '+esc(x.slot):'')+'</b>'+ln('内容',x.t)+ln('コメント（本人）',x.c1)+ln('コメント（父・コーチ）',x.c2)+(!x.t&&!x.c1&&!x.c2?'<p class="irrl"><small>まだ内容・コメントがありません（押して書く）</small></p>':'')+'</button>').join('')+'</section>';}
+
 
 // ---------- 活動の記録（メニュー式） ----------
 function lastSess(kind,before,exceptId){const ks=Object.keys(S.acts).filter(x=>x<=before).sort().reverse();
@@ -1486,14 +1514,14 @@ function recentSess(kind,date,exceptId,n){const out=[];Object.keys(S.acts).sort(
 function openAct(date,slot,kind,id){
   const a=id?(S.acts[date]||[]).find(x=>x.id===id):null;if(a){slot=a.slot;kind=a.kind;}
   const menu=isMenu(kind),fhOn=hasFH(kind);
-  act={date,id:a?a.id:'',slot,kind,st:a?a.st:'実施',memo:a?a.memo||'':'',sel:a&&!menu&&a.c?a.c.split('・'):[],fh:'',items:[],src:''};
+  act={date,id:a?a.id:'',slot,kind,st:a?a.st:'実施',memo:a?a.memo||'':'',sel:a&&!menu&&a.c&&IRRK.indexOf(kind)<0?a.c.split('・'):[],fh:'',items:[],src:'',ctext:a&&IRRK.indexOf(kind)>=0?a.c||'':'',cm:a?a.cm||'':''};
   if(menu){const s=a&&S.sess[a.id];
     if(s){act.fh=s.fh||'';const M=menuOf(kind,s.fh||'');
       act.items=M.map(m=>{const i=s.items.find(x=>x.name===m.name);return i?{name:i.name,v:i.v,unit:i.unit||m.unit,sets:+i.sets||0,w:i.w,m}:{name:m.name,v:m.unit==='本'?0:m.v,unit:m.unit,sets:0,w:'',m};})
         .concat(s.items.filter(i=>!M.some(m=>m.name===i.name)).map(i=>({name:i.name,v:i.v,unit:i.unit,sets:+i.sets||0,w:i.w,m:null})));act.src='記録した内容です';}
     else{act.fh=fhOn?(plannedFh(date,slot,kind)||(lastSess(kind,date)||{s:{}}).s.fh||'フル'):'';const f=fillItems(kind,act.fh,date);act.items=f.items;act.src=f.src+(plannedFh(date,slot,kind)?'（予定は'+plannedFh(date,slot,kind)+'）':'');}}
   drawAct();openS('act');}
-function readAct(){if(!act)return;act.memo=val('ac-memo');SH.querySelectorAll('[data-iv]').forEach(e=>{const x=act.items[+e.dataset.iv];if(x)x.v=e.value.trim();});SH.querySelectorAll('[data-iw]').forEach(e=>{const x=act.items[+e.dataset.iw];if(x)x.w=e.value.trim();});}
+function readAct(){if(!act)return;act.memo=val('ac-memo');if(document.getElementById('ac-c'))act.ctext=val('ac-c');if(document.getElementById('ac-cm'))act.cm=val('ac-cm');SH.querySelectorAll('[data-iv]').forEach(e=>{const x=act.items[+e.dataset.iv];if(x)x.v=e.value.trim();});SH.querySelectorAll('[data-iw]').forEach(e=>{const x=act.items[+e.dataset.iw];if(x)x.w=e.value.trim();});}
 function drawAct(){const c=act,menu=isMenu(c.kind),wj=menu&&(MENUK[c.kind]||[]).every(m=>m.unit==='本');
   const other=(S.acts[c.date]||[]).filter(a=>a.id!==c.id);
   let h='<div class="grab"></div><div class="acthead '+kCls(c.kind)+'"><small>'+mdw(c.date)+'</small><b id="sh-title">'+c.slot+'　'+esc(c.kind)+(c.fh?'（'+esc(c.fh)+'）':'')+'</b></div>';
@@ -1513,14 +1541,16 @@ function drawAct(){const c=act,menu=isMenu(c.kind),wj=menu&&(MENUK[c.kind]||[]).
           '<button class="stp" data-sst="-" data-i="'+i+'" aria-label="セットを減らす">−</button><span class="sv"><b>'+x.sets+'</b>セット</span><button class="stp" data-sst="+" data-i="'+i+'" aria-label="セットを増やす">＋</button>'+
           (m.wt||x.w?'<label class="vbox"><input type="number" inputmode="decimal" min="0" step="0.5" data-iw="'+i+'" value="'+esc(x.w)+'" placeholder="重さ"><span>kg</span></label>':'')+'</div></div>';}).join('')+'</div>';
       h+='<div class="qrow"><input type="text" id="ac-new" placeholder="種目を追加（メニューにないもの）" maxlength="50"><button class="btn sm2" data-act="aItem">追加</button></div>';
+    } else if(IRRK.indexOf(c.kind)>=0){h+='<label class="lab" for="ac-c">内容（やったこと）</label><textarea id="ac-c" maxlength="300" placeholder="例：リンクで基礎滑走・エッジの切り替え練習">'+esc(c.ctext||'')+'</textarea>';
     } else {const tc=S.opt.tc[c.kind]||[];if(tc.length)h+='<div class="lab">やった内容（いくつでも）</div><div class="wrap">'+tc.map(t=>'<button class="opt sm" data-asel="'+esc(t)+'" aria-pressed="'+(c.sel.indexOf(t)>=0)+'">'+esc(t)+'</button>').join('')+'</div>';}
   }
-  h+='<label class="lab" for="ac-memo">'+(c.st==='実施'?'メモ（気づき・コーチの指示など）':'やらなかった理由（なくてもよい）')+'</label><input type="text" id="ac-memo" maxlength="300" value="'+esc(c.memo)+'">';
+  if(IRRK.indexOf(c.kind)>=0&&c.st==='実施')h+='<label class="lab" for="ac-memo">コメント（本人）</label><textarea id="ac-memo" maxlength="500" placeholder="感じたこと・気づき">'+esc(c.memo)+'</textarea><label class="lab" for="ac-cm">コメント（父・コーチ）</label><textarea id="ac-cm" maxlength="500" placeholder="コーチの話・家族から">'+esc(c.cm||'')+'</textarea>';
+  else h+='<label class="lab" for="ac-memo">'+(c.st==='実施'?'メモ（気づき・コーチの指示など）':'やらなかった理由（なくてもよい）')+'</label><input type="text" id="ac-memo" maxlength="300" value="'+esc(c.memo)+'">';
   if(canEdit()&&menu&&!wj&&c.st==='実施')h+='<button class="linkbtn2" data-act="aAsStd">✎ この内容（回数・セット数）を標準値にする</button>';
   h+='<div class="acts">'+(c.id?'<button class="btn del" data-act="aDel">消す</button>':'')+'<button class="btn" data-act="aBack">戻る</button><button class="btn pri" data-act="aSave"'+(saving?' disabled':'')+'>'+(saving?'保存中…':'保存')+'</button></div>';
   SH.innerHTML=h;}
 function actPayload(c){const menu=isMenu(c.kind);
-  const p={date:c.date,id:c.id,slot:c.slot,kind:c.kind,st:c.st,memo:c.memo,c:!menu?c.sel.join('・'):''};
+  const irr=IRRK.indexOf(c.kind)>=0,p={date:c.date,id:c.id,slot:c.slot,kind:c.kind,st:c.st,memo:c.memo,c:irr?(c.ctext||''):!menu?c.sel.join('・'):''};if(irr)p.cm=c.cm||'';
   if(menu&&c.st==='実施')p.sess={fh:c.fh,items:c.items.map(x=>({name:x.name,v:x.v,unit:x.unit,sets:x.sets,w:x.w}))};
   p.log=md(c.date)+' '+c.slot+' '+c.kind+'：'+(c.st==='やらなかった'?'やらなかった':(p.sess?(c.fh?c.fh+'／':'')+p.sess.items.filter(x=>x.sets||(x.unit==='本'&&+x.v)).map(x=>x.name+(x.unit==='本'?x.v+'本':(x.v?x.v+x.unit+'×':'')+x.sets+'セット'+(x.w?'・'+x.w+'kg':''))).join('、'):(p.c||'実施')))+(c.memo?'／'+c.memo:'');
   return p;}
@@ -1566,7 +1596,7 @@ function openNote(date){const n=S.notes[date]||{};sheetCtx={date};
    '<div class="acts">'+(S.notes[date]?'<button class="btn del" data-act="noteDel">消す</button>':'')+'<button class="btn" data-act="close">キャンセル</button><button class="btn pri" data-act="noteSave">保存</button></div>';openS('note');}
 
 // ---------- 1日の予定を変更 ----------
-function openDayPlan(date){const d=DAYS[DIDX[date]],v=view(d);dplan={date,items:v.items.map(x=>({slot:x.slot,kind:x.kind,fh:x.kind==='ROMベーシック'?(x.fh||''):''})),manual:v.manual,trip:v.tripOn,off:!!v.off,cz:!!CZ[date],cz0:!!CZ[date],czy:CZYS.filter(t=>czyHas(date,t)),czy0:CZYS.filter(t=>czyHas(date,t)),czyU:czyHas(date,'')};drawDayPlan();openS('dplan');}
+function openDayPlan(date){const d=DAYS[DIDX[date]],v=view(d);dplan={date,items:v.items.map(x=>({slot:x.slot,kind:x.kind,fh:x.kind==='ROMベーシック'?(x.fh||''):''})),manual:v.manual,trip:v.tripOn,off:!!v.off,cz:!!CZ[date],cz0:!!CZ[date],czy:CZYS.filter(t=>czyHas(date,t)),czy0:CZYS.filter(t=>czyHas(date,t)),czyU:czyHas(date,''),czk:!!CZK[date],czk0:!!CZK[date]};drawDayPlan();openS('dplan');}
 function drawDayPlan(){const c=dplan,ks=PK(c.items).concat(c.trip?['大会','移動','休養']:[]);
   let h='<div class="grab"></div><h3 id="sh-title">'+mdw(c.date)+' の予定を変更</h3>'+
     '<div class="lab" style="margin-top:6px">この日の位置づけ</div><div class="wrap"><button class="opt sm sch-off" data-act="dpOffTgl" aria-pressed="'+c.off+'">休養日（OFF）</button></div>'+
@@ -1577,7 +1607,7 @@ function drawDayPlan(){const c=dplan,ks=PK(c.items).concat(c.trip?['大会','移
       return '<button class="opt sm kopt '+(on?kCls(k):'')+'" data-dpk="'+sl+'|'+esc(k)+'" aria-pressed="'+on+'">'+esc(k)+(on&&it.fh?'<small class="fhtag">'+esc(it.fh)+'</small>':'')+(on&&k==='ROMベーシック'&&it.fh===undefined?'<small class="fhtag need">区分？</small>':'')+'</button>';}).join('')+'</div>'+
       (rom?fhRow('dpfh',sl+'|ROMベーシック',rom.fh):'')+'</div>';});
   // パーソナル（コーチング）の予定
-  h+='<div class="lab">パーソナル</div><div class="wrap"><button class="opt sm '+(c.cz?'sch-cz':'')+'" data-act="dpCzTgl" aria-pressed="'+!!c.cz+'">フィジカルパーソナル</button></div><div class="lab2">雪上パーソナル（時間帯）</div><div class="wrap">'+CZYS.map(t=>{const on=c.czy.indexOf(t)>=0;return '<button class="opt sm '+(on?'sch-czy':'')+'" data-act="dpCzyTgl" data-s="'+t+'" aria-pressed="'+on+'">'+t+'</button>';}).join('')+'</div>'+(c.czyU?'<p class="note">この日は雪上パーソナル（時間帯未定）が登録されています。時間帯を選んで保存すると、その時間帯に置きかわります。</p>':'');
+  h+='<div class="lab">パーソナル</div><div class="wrap"><button class="opt sm '+(c.cz?'sch-cz':'')+'" data-act="dpCzTgl" aria-pressed="'+!!c.cz+'">フィジカルパーソナル</button><button class="opt sm '+(c.czk?'sch-czk':'')+'" data-act="dpCzkTgl" aria-pressed="'+!!c.czk+'">ケア</button></div><div class="lab2">雪上パーソナル（時間帯）</div><div class="wrap">'+CZYS.map(t=>{const on=c.czy.indexOf(t)>=0;return '<button class="opt sm '+(on?'sch-czy':'')+'" data-act="dpCzyTgl" data-s="'+t+'" aria-pressed="'+on+'">'+t+'</button>';}).join('')+'</div>'+(c.czyU?'<p class="note">この日は雪上パーソナル（時間帯未定）が登録されています。時間帯を選んで保存すると、その時間帯に置きかわります。</p>':'');
   h+='<div class="qrow"><button class="btn qb" data-act="dpClear">トレーニングの予定をなしにする</button></div>';
   if(c.manual)h+='<button class="linkbtn2" data-act="dpReset">手で変えた予定を取り消して、'+(c.trip?'遠征日程':'週の型')+'の予定に戻す</button>';
   const miss=fhMissing(c.items);
@@ -3449,7 +3479,7 @@ function wordReadyKind(){if(who!=='本人'||!WD.loaded)return '';const term=term
 function wordCard(){if(who!=='本人')return '';if(!WD.loaded){ensureWords();return '';}const k=wordReadyKind();if(!k)return '';
   return '<div class="qcard" data-wkind="'+esc(k)+'"><div class="qhead"><span class="qlab">まとまったよ</span></div><p class="qq">この学期の「'+esc(k)+'」、きみの言葉でまとまった。読んでみる？</p><div class="acts"><button class="btn sm2" data-act="wLater" data-k="'+esc(k)+'">あとで</button><button class="btn pri sm2" data-word="'+esc(k)+'">読む</button></div></div>';}
 // ---------- 実績 ----------
-function czRanges(){const L=S.coachings.filter(x=>x.d<=TODAY&&x.kind!=='雪上パーソナル');return L.map((x,i)=>[x.d,L[i+1]?addD(L[i+1].d,-1):TODAY]);}
+function czRanges(){const L=S.coachings.filter(x=>x.d<=TODAY&&x.kind==='フィジカルパーソナル');return L.map((x,i)=>[x.d,L[i+1]?addD(L[i+1].d,-1):TODAY]);}
 function statRange(){
   if(statP==='coach'){const R=czRanges();if(!R.length)return [TODAY,TODAY];const i=statCz<0||statCz>=R.length?R.length-1:statCz;return R[i];}
   if(statP==='week'){const a=monOf(statBase);return [a,addD(a,6)];}
@@ -3683,9 +3713,10 @@ function renderStats(){ensureReports();ensureGrades();
     (statP==='coach'?(R.length?'<div class="row">'+R.map((r,i)=>[r,i]).reverse().map(([r,i])=>'<button class="chip sm" data-cz="'+i+'" aria-pressed="'+((statCz<0?R.length-1:statCz)===i)+'">'+md(r[0])+'〜'+md(r[1])+'</button>').join('')+'</div>':''):
     '<div class="pnav"><button class="chip" data-sn="-1" aria-label="前へ">◀</button><b>'+esc(statLabel(a,b))+'</b><button class="chip" data-sn="1" aria-label="次へ">▶</button></div>')+'</div><main>'+cwLinks();
   if(statP==='coach'){
-    h+='<div class="czadd"><div class="lab" style="margin-top:0">パーソナルを受けた日を登録</div><select id="cz-k" style="margin-top:4px;width:100%"><option value="フィジカルパーソナル">フィジカルパーソナル</option><option value="雪上パーソナル|朝">雪上パーソナル（朝）</option><option value="雪上パーソナル|昼">雪上パーソナル（昼）</option><option value="雪上パーソナル|ナイター">雪上パーソナル（ナイター）</option></select><div class="qrow" style="margin-top:4px"><input type="date" id="cz-d" value="'+TODAY+'" max="'+DAYS[DAYS.length-1].d+'" style="flex:1"><button class="btn" data-act="czAdd2" style="flex:0 0 auto;padding:0 12px">登録</button></div><input type="text" id="cz-m" placeholder="メモ（内容・コーチの指示など）" maxlength="300" style="margin-top:6px"></div>';
+    h+='<div class="czadd"><div class="lab" style="margin-top:0">パーソナルを受けた日を登録</div><select id="cz-k" style="margin-top:4px;width:100%"><option value="フィジカルパーソナル">フィジカルパーソナル</option><option value="雪上パーソナル|朝">雪上パーソナル（朝）</option><option value="雪上パーソナル|昼">雪上パーソナル（昼）</option><option value="雪上パーソナル|ナイター">雪上パーソナル（ナイター）</option><option value="ケア">ケア（内容・コメントも書く）</option></select><div class="qrow" style="margin-top:4px"><input type="date" id="cz-d" value="'+TODAY+'" max="'+DAYS[DAYS.length-1].d+'" style="flex:1"><button class="btn" data-act="czAdd2" style="flex:0 0 auto;padding:0 12px">登録</button></div><input type="text" id="cz-m" placeholder="メモ（内容・コーチの指示など）" maxlength="300" style="margin-top:6px"></div>';
     if(!R.length){V.innerHTML=h+'<p class="empty">パーソナルを受けた日がまだ登録されていません。<br>上で日付を選んで登録すると、前回のパーソナルからの期間で実績とPDFを作れます。</p></main>';return;}
     const rp=(S.reports||[]).find(r=>r.name.indexOf(a+'〜'+b)>=0);h+='<p class="note">パーソナル（'+mdw(a)+'）から'+(b===TODAY?'今日まで':'次のパーソナルの前日（'+mdw(b)+'）まで')+'の実績です。</p><div class="qrow"><button class="btn pri qb" data-act="report" data-a="'+a+'" data-b="'+b+'">📄 この期間のコーチ報告PDFを'+(rp?'作り直す':'作成')+'</button></div>'+(rp?'<p class="note"><a href="'+esc(rp.url)+'" target="_blank" rel="noopener">▶ '+esc(rp.name)+' を開く</a></p>':'');}
+  h+=irrList(a,b);
   if(statP==='year')h+=yearPdfBox(a);
   if(statP==='month'){const ym=a.slice(0,7),rp=(S.reports||[]).find(r=>r.name.indexOf(ym)>=0);h+='<div class="qrow"><button class="btn pri qb" data-act="report" data-ym="'+ym+'">📄 この月のコーチ報告PDFを'+(rp?'作り直す':'作成')+'</button></div>'+(rp?'<p class="note"><a href="'+esc(rp.url)+'" target="_blank" rel="noopener">▶ '+esc(rp.name)+' を開く</a></p>':'');}
   const kk=S.opt.kinds.concat(['大会']).filter(k=>K[k]).concat(Object.keys(K).filter(k=>S.opt.kinds.indexOf(k)<0&&k!=='大会'));
@@ -3914,6 +3945,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.pk){const h=document.getElementById(ds.pk);if(h){h.value=(h.value===ds.v&&!/^(a-|s-n|e-kubun|t-ek|c-t)/.test(ds.pk))?'':ds.v;SH.querySelectorAll('[data-pk="'+ds.pk+'"]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===h.value));}return;}
   if(ds.act==='close'){closeSheet();return;}
   if(ds.act==='reload'){load(false);return;}
+  if(ds.irrcare){openCare(ds.irrcare,'');return;}
+  if(ds.irract){const [d,sl,k,id]=ds.irract.split('|');openAct(d,sl,k,id);return;}
   if(ds.day){if(noClick){noClick=false;return;}
     if(selMode&&tab==='plan'){pickDay(ds.day);return;}
     openDaySheet(ds.day);return;}
@@ -4018,11 +4051,13 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
   if(ds.act==='dpOffTgl'){dplan.off=!dplan.off;drawDayPlan();return;}
   if(ds.dpfh){const [sl,k,f]=ds.dpfh.split('|');const it=dplan.items.find(x=>x.slot===sl&&x.kind===k);if(it)it.fh=f||'';drawDayPlan();return;}
   if(ds.act==='dpCzTgl'){dplan.cz=!dplan.cz;drawDayPlan();return;}
+  if(ds.act==='dpCzkTgl'){dplan.czk=!dplan.czk;drawDayPlan();return;}
   if(ds.act==='dpCzyTgl'){const t=ds.s,L=dplan.czy;dplan.czy=L.indexOf(t)>=0?L.filter(x=>x!==t):CZYS.filter(x=>x===t||L.indexOf(x)>=0);drawDayPlan();return;}
   if(ds.act==='dpClear'){dplan.items=[];drawDayPlan();toast('「保存」を押すと確定します');return;}
   if(ds.act==='dpBack'){const x=dplan.back;closeSheet();if(x)openDaySheet(x);return;}
   if(ds.act==='dpSave'||ds.act==='dpReset'){const c=dplan,reset=ds.act==='dpReset';if(!reset&&fhMissing(c.items)){toast('ROMベーシックの区分（フル／ハーフ／当日決める）を選んでください');return;}
     const items=c.items.map(x=>({slot:x.slot,kind:x.kind,fh:x.fh||''})),off=!!c.off;closeSheet();if(c.back)openDaySheet(c.back);
+    if(!reset&&c.czk!==c.czk0){if(!c.czk&&CZK[c.date]&&(CZK[c.date].memo||CZK[c.date].c1||CZK[c.date].c2)&&!confirm(md(c.date)+'のケアには内容・コメントがあります。ケアを外すと消えます。外しますか？'))c.czk=true;else sendPlan('saveCoaching',{date:c.date,kind:'ケア',memo:'',clear:!c.czk},c.czk?md(c.date)+'にケアを入れました':md(c.date)+'のケアを外しました',null);}
     if(!reset&&c.cz!==c.cz0)sendPlan('saveCoaching',{date:c.date,kind:'フィジカルパーソナル',memo:'',clear:!c.cz},c.cz?md(c.date)+'にフィジカルパーソナルを入れました':md(c.date)+'のフィジカルパーソナルを外しました',null);
     if(!reset)CZYS.forEach(t=>{const on=c.czy.indexOf(t)>=0;if(on!==(c.czy0.indexOf(t)>=0))sendPlan('saveCoaching',{date:c.date,kind:'雪上パーソナル',slot:t,memo:'',clear:!on},on?md(c.date)+'に雪上パーソナル（'+t+'）を入れました':md(c.date)+'の雪上パーソナル（'+t+'）を外しました',null);});
     sendPlan('saveDayItems',{date:c.date,items,off,reset},reset?'元の予定に戻しました':md(c.date)+'の予定を変更しました',reset?null:()=>planLocal([c.date],()=>({items,off}),'手動'));return;}
@@ -4088,11 +4123,18 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-mvi
       if(!m){toast('帰宅日を選んでください');return;}
       const lbl=m==='same'?'大会当日（'+md(last)+'）':m==='none'?'未定':md(dt);send('setReturn',{id:c.id,mode:m,date:dt,far:document.getElementById('rt-far').checked},closeSheet,'帰宅日を「'+lbl+'」に登録しました');}
     return;}
+  if(ds.act==='careEdit'){const x=ds.d;closeSheet();openCare(x,x);return;}
+  if(ds.act==='careBack'){const x=sheetCtx&&sheetCtx.back;closeSheet();if(x)openDaySheet(x);return;}
+  if(ds.act==='careSave'){const c=sheetCtx||{},dt=val('ca-d'),back=c.back,old=c.care;if(!dt){toast('日付を選んでください');return;}const memo=val('ca-m'),c1=val('ca-1'),c2=val('ca-2');
+    if(old&&old!==dt&&CZK[old])sendPlan('saveCoaching',{date:old,kind:'ケア',memo:'',clear:true},'',null);
+    closeSheet();sendPlan('saveCoaching',{date:dt,kind:'ケア',memo,c1,c2,full:true,clear:false},md(dt)+'のケアを記録しました',()=>{S.coachings=(S.coachings||[]).filter(x=>!(x.kind==='ケア'&&(x.d===dt||x.d===old))).concat([{d:dt,kind:'ケア',slot:'',memo,c1,c2,by:who}]).sort((a,b)=>a.d<b.d?-1:1);ingest(S);});if(back)openDaySheet(back===old?dt:back);return;}
+  if(ds.act==='careDel'){const dt=ds.d;if(!confirm(md(dt)+'のケアの記録を消しますか？（内容・コメントも消えます）'))return;const back=openDay?openDay.d:(sheetCtx&&sheetCtx.back);closeSheet();
+    sendPlan('saveCoaching',{date:dt,kind:'ケア',memo:'',clear:true},'消しました',()=>{S.coachings=(S.coachings||[]).filter(x=>!(x.kind==='ケア'&&x.d===dt));ingest(S);});if(back)openDaySheet(back);return;}
   if(ds.act==='czAdd'||ds.act==='czDel'){const dt=openDay.d,del=ds.act==='czDel',kd=ds.k||'フィジカルパーソナル',sl=kd==='雪上パーソナル'?(ds.s||''):'',kl=kd+(kd==='雪上パーソナル'?'（'+(sl||'時間帯未定')+'）':'');if(del&&!confirm('この日の'+kl+'の登録を取り消しますか？'))return;
     const memo=del?'':val('cz-memo');
     sendPlan('saveCoaching',{date:dt,kind:kd,slot:sl,memo,clear:del},del?'取り消しました':kl+'を受けた日として登録しました',()=>{
       S.coachings=(S.coachings||[]).filter(x=>!(x.d===dt&&x.kind===kd&&(kd!=='雪上パーソナル'||(x.slot||'')===sl||(!del&&sl&&!x.slot))));if(!del)S.coachings.push({d:dt,kind:kd,slot:sl,memo,by:who});S.coachings.sort((a,b)=>a.d<b.d?-1:1);ingest(S);});return;}
-  if(ds.act==='czAdd2'){const kv=(val('cz-k')||'フィジカルパーソナル').split('|'),dt=val('cz-d'),kd=kv[0],sl=kv[1]||'',kl=kd+(sl?'（'+sl+'）':'');if(!dt){toast('日付を選んでください');return;}if(kd==='雪上パーソナル'?czyHas(dt,sl):CZ[dt]){toast(md(dt)+'の'+kl+'はすでに登録されています');return;}
+  if(ds.act==='czAdd2'){const kv=(val('cz-k')||'フィジカルパーソナル').split('|'),dt=val('cz-d'),kd=kv[0],sl=kv[1]||'',kl=kd+(sl?'（'+sl+'）':'');if(!dt){toast('日付を選んでください');return;}if(kd==='ケア'){openCare(dt,'',val('cz-m'));return;}if(kd==='雪上パーソナル'?czyHas(dt,sl):CZ[dt]){toast(md(dt)+'の'+kl+'はすでに登録されています');return;}
     const memo=val('cz-m');statCz=-1;
     sendPlan('saveCoaching',{date:dt,kind:kd,slot:sl,memo,clear:false},md(dt)+'を'+kl+'の日として登録しました',()=>{S.coachings=(S.coachings||[]).filter(x=>!(sl&&x.d===dt&&x.kind===kd&&!x.slot)).concat([{d:dt,kind:kd,slot:sl,memo,by:who}]).sort((a,b)=>a.d<b.d?-1:1);ingest(S);});return;}
   if(ds.act==='report'){makeRep(b);return;}
