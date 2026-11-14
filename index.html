@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- こぶ日記（旧：スキー行動予定アプリ） 画面側 v4.63.0 -->
+<!-- こぶ日記（旧：スキー行動予定アプリ） 画面側 v4.64.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -939,11 +939,11 @@ details.cwf>.chn:first-of-type{border-top:1px solid var(--line)}
 :root[data-theme="dark"] .sch-czy{background:#17403A;border-color:#4C8F7E;color:#CDEFE5}
 .lab2{font-size:12px;color:var(--sub,#5A6B7D);margin:8px 0 2px}
 .sch-czk{background:#F6E8F3;border-color:#C994BC;color:#6A2A5C}
-.a-sk{background:#E2EEFB;color:#1D4C7A}.a-pz{background:#E9F1FF;color:#1E3F7A}.a-pzy{background:#E3F3EE;color:#14523F}.a-care,.czl.czk{background:#F6E8F3;color:#6A2A5C}
+.a-sk{background:#E2EEFB;color:#1D4C7A}.a-sc{background:#FFF0E0;color:#7A3E00}.irr.body .bth{border-top:1px solid var(--line,#D8DEE6);padding:8px 2px}.irr.body .bth>b{font-size:13.5px}.a-pz{background:#E9F1FF;color:#1E3F7A}.a-pzy{background:#E3F3EE;color:#14523F}.a-care,.czl.czk{background:#F6E8F3;color:#6A2A5C}
 .irrl{margin:3px 0 0;font-size:13.5px;line-height:1.5;text-align:left;font-weight:400}.irrl small{display:block;color:var(--sub,#5A6B7D);font-size:11.5px}
 .irr .irri{display:block;width:100%;text-align:left;background:transparent;border:0;border-top:1px solid var(--line,#D8DEE6);padding:9px 2px;color:inherit;font:inherit}.irr .irri b{margin-left:6px}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sch-czk{background:#43233D;border-color:#9A6A8F;color:#F3D7EC}:root:not([data-theme="light"]) .a-sk{background:#1C3550;color:#CFE3F8}:root:not([data-theme="light"]) .a-pz{background:#1F3358;color:#D6E4FF}:root:not([data-theme="light"]) .a-pzy{background:#17403A;color:#CDEFE5}:root:not([data-theme="light"]) .a-care,:root:not([data-theme="light"]) .czl.czk{background:#43233D;color:#F3D7EC}}
-:root[data-theme="dark"] .sch-czk{background:#43233D;border-color:#9A6A8F;color:#F3D7EC}:root[data-theme="dark"] .a-sk{background:#1C3550;color:#CFE3F8}:root[data-theme="dark"] .a-pz{background:#1F3358;color:#D6E4FF}:root[data-theme="dark"] .a-pzy{background:#17403A;color:#CDEFE5}:root[data-theme="dark"] .a-care,:root[data-theme="dark"] .czl.czk{background:#43233D;color:#F3D7EC}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sch-czk{background:#43233D;border-color:#9A6A8F;color:#F3D7EC}:root:not([data-theme="light"]) .a-sk{background:#1C3550;color:#CFE3F8}:root:not([data-theme="light"]) .a-sc{background:#4A2E12;color:#FFDDB8}:root:not([data-theme="light"]) .a-pz{background:#1F3358;color:#D6E4FF}:root:not([data-theme="light"]) .a-pzy{background:#17403A;color:#CDEFE5}:root:not([data-theme="light"]) .a-care,:root:not([data-theme="light"]) .czl.czk{background:#43233D;color:#F3D7EC}}
+:root[data-theme="dark"] .sch-czk{background:#43233D;border-color:#9A6A8F;color:#F3D7EC}:root[data-theme="dark"] .a-sk{background:#1C3550;color:#CFE3F8}:root[data-theme="dark"] .a-sc{background:#4A2E12;color:#FFDDB8}:root[data-theme="dark"] .a-pz{background:#1F3358;color:#D6E4FF}:root[data-theme="dark"] .a-pzy{background:#17403A;color:#CDEFE5}:root[data-theme="dark"] .a-care,:root[data-theme="dark"] .czl.czk{background:#43233D;color:#F3D7EC}
 </style>
 </head>
 <body>
@@ -951,7 +951,7 @@ details.cwf>.chn:first-of-type{border-top:1px solid var(--line)}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.63.0';
+const CLIENT_VERSION='4.64.0';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -1211,8 +1211,8 @@ function schoolCount(y){const o={abs:[],miss:[],wark:[],pre:Number((S.warkPre||{
 /** ラーケーション：年度ごとの取得日 */
 const isProt=d=>(S.opt.markProtect||[]).indexOf(markOf(d))>=0;
 const isRace=v=>!v.skip&&v.kb.indexOf('大会')===0&&!has(v.kb,'大会翌日');
-const KC={'エクスプロッシブ':'a-ex','ROMベーシック':'a-rb','ROMプラス':'a-rp','雪上':'a-snow','フィジカル（ROM前）':'a-ph','WJ':'a-wj','TR':'a-tr','スケート':'a-sk','OFF':'a-off','休養':'a-off','大会':'a-race','移動':'a-move','部活':'a-club','探究':'a-inq'};
-const KA={'エクスプロッシブ':'EX','ROMベーシック':'R','ROMプラス':'R+','雪上':'SN','フィジカル（ROM前）':'PH','WJ':'WJ','TR':'TR','スケート':'SK','OFF':'OFF','休養':'休','大会':'大会','移動':'移動','部活':'部','探究':'探'};
+const KC={'エクスプロッシブ':'a-ex','ROMベーシック':'a-rb','ROMプラス':'a-rp','雪上':'a-snow','フィジカル（ROM前）':'a-ph','WJ':'a-wj','TR':'a-tr','スケート':'a-sk','セルフケア':'a-sc','OFF':'a-off','休養':'a-off','大会':'a-race','移動':'a-move','部活':'a-club','探究':'a-inq'};
+const KA={'エクスプロッシブ':'EX','ROMベーシック':'R','ROMプラス':'R+','雪上':'SN','フィジカル（ROM前）':'PH','WJ':'WJ','TR':'TR','スケート':'SK','セルフケア':'SC','OFF':'OFF','休養':'休','大会':'大会','移動':'移動','部活':'部','探究':'探'};
 const kCls=k=>KC[k]||'a-other';
 const kAbbr=k=>KA[k]||String(k).slice(0,2);
 function resTxt(r){if(!r)return'';return [r.round,r.rank?r.rank+'位'+(r.n?'／'+r.n+'人':''):'',r.score?r.score+'点':''].filter(Boolean).join('　');}
@@ -1477,7 +1477,7 @@ function drawDay(){const d=openDay,v=view(d);
   SH.innerHTML=h;}
 
 /* v4.62：ケア（パーソナル）・スケート（不定期の活動）の記録と閲覧 */
-const IRRK=['スケート'];
+const IRRK=['スケート','セルフケア'],IRRT=['スケート'];
 /* v4.63：パーソナル（フィジカル・雪上）とケアを、ほかの活動と同じように並べる */
 const PZK=[['フィジカルパーソナル','a-pz','P'],['雪上パーソナル','a-pzy','雪P'],['ケア','a-care','ケア']];
 function pzList(d){const o=[];if(CZ[d])o.push({k:'フィジカルパーソナル',cls:'a-pz',ab:'P',slot:'',e:CZ[d]});(CZY[d]||[]).forEach(e=>o.push({k:'雪上パーソナル',cls:'a-pzy',ab:'雪P',slot:e.slot||'',e}));if(CZK[d])o.push({k:'ケア',cls:'a-care',ab:'ケア',slot:'',e:CZK[d]});
@@ -1497,12 +1497,20 @@ function openCare(date,back,memo0){const k=CZK[date]||{};sheetCtx={care:date,bac
   h+='<label class="lab" for="ca-2">コメント（父・コーチ）</label><textarea id="ca-2" maxlength="1000" placeholder="コーチの話・家族から">'+esc(k.c2||'')+'</textarea>';
   h+='<div class="acts">'+(CZK[date]?'<button class="btn del" data-act="careDel" data-d="'+date+'">消す</button>':'')+'<button class="btn" data-act="careBack">戻る</button><button class="btn pri" data-act="careSave">保存</button></div>';
   SH.innerHTML=h;openS('care');}
-function irrList(a,b){const L=[];
-  (S.coachings||[]).forEach(x=>{if(x.kind==='ケア'&&x.d>=a&&x.d<=b&&x.d<=TODAY)L.push({d:x.d,k:'ケア',cls:'a-care',t:x.memo,c1:x.c1,c2:x.c2,care:1});});
-  Object.keys(S.acts||{}).forEach(d=>{if(d<a||d>b)return;(S.acts[d]||[]).forEach(x=>{if(IRRK.indexOf(x.kind)>=0&&x.st==='実施')L.push({d,k:x.kind,cls:kCls(x.kind),slot:x.slot,t:x.c,c1:x.memo,c2:x.cm,id:x.id});});});
-  if(!L.length)return '';L.sort((p,q)=>p.d<q.d?1:-1);
-  const ln=(l,t)=>t?'<p class="irrl"><small>'+l+'</small>'+esc(t).replace(/\n/g,'<br>')+'</p>':'';
-  return '<section class="card irr"><h3>ケア・スケートの記録 <small>（'+L.length+'件）</small></h3>'+L.map(x=>'<button class="irri" '+(x.care?'data-irrcare="'+x.d+'"':'data-irract="'+x.d+'|'+esc(x.slot)+'|'+esc(x.k)+'|'+esc(x.id)+'"')+'><span class="atag sm '+x.cls+'">'+esc(x.k)+'</span><b>'+mdw(x.d)+(x.slot?' '+esc(x.slot):'')+'</b>'+ln('内容',x.t)+ln('コメント（本人）',x.c1)+ln('コメント（父・コーチ）',x.c2)+(!x.t&&!x.c1&&!x.c2?'<p class="irrl"><small>まだ内容・コメントがありません（押して書く）</small></p>':'')+'</button>').join('')+'</section>';}
+function irrLn(l,t){return t?'<p class="irrl"><small>'+l+'</small>'+esc(t).replace(/\n/g,'<br>')+'</p>':'';}
+/* v4.64：実績の「パーソナル・ケアの記録」「スケート／セルフケアの記録」「体の状態」 */
+function irrList(a,b){let h='';
+  const P=(S.coachings||[]).filter(x=>x.d>=a&&x.d<=b).sort((p,q)=>p.d<q.d?1:-1);
+  if(P.length)h+='<section class="card irr"><h3>パーソナル・ケアの記録 <small>（'+P.length+'件）</small></h3>'+P.map(x=>{const c=PZK.find(z=>z[0]===x.kind)||['','a-pz'],care=x.kind==='ケア',fut=x.d>TODAY;
+      return '<button class="irri" '+(care?'data-irrcare="'+x.d+'"':'data-day="'+x.d+'"')+'><span class="atag sm '+c[1]+'">'+esc(x.kind)+'</span><b>'+mdw(x.d)+(x.slot?' '+esc(x.slot):'')+(fut?'（予定）':'')+'</b>'+irrLn('内容',x.memo)+irrLn('コメント（本人）',x.c1)+irrLn('コメント（父・コーチ）',x.c2)+(care&&!fut&&!x.memo&&!x.c1&&!x.c2?'<p class="irrl"><small>まだ内容・コメントがありません（押して書く）</small></p>':'')+'</button>';}).join('')+'</section>';
+  IRRK.forEach(k=>{const L=[];Object.keys(S.acts||{}).forEach(d=>{if(d<a||d>b)return;(S.acts[d]||[]).forEach(x=>{if(x.kind===k&&x.st==='実施')L.push({d,x});});});if(!L.length)return;L.sort((p,q)=>p.d<q.d?1:-1);
+    h+='<section class="card irr"><h3><span class="atag '+kCls(k)+'">'+esc(k)+'</span> の記録 <small>（'+L.length+'回）</small></h3>'+L.map(({d,x})=>'<button class="irri" data-irract="'+d+'|'+esc(x.slot)+'|'+esc(k)+'|'+esc(x.id)+'"><b>'+mdw(d)+' '+esc(x.slot)+'</b>'+irrLn(k==='セルフケア'?'やったこと':'内容',x.c)+irrLn('コメント（本人）',x.memo)+irrLn('コメント（父・コーチ）',x.cm)+(!x.c&&!x.memo&&!x.cm?'<p class="irrl"><small>まだ内容・コメントがありません（押して書く）</small></p>':'')+'</button>').join('')+'</section>';});
+  return h;}
+const BODY_TH=['硬さ','左右差','ケガ予防','背骨','腹圧','段階','セルフケア','ケアの頻度'];
+function bodyBox(){const W=(S.cwords||[]).filter(w=>(w.kind==='ケア'||w.scene==='ケア')&&w.cat!=='聞くこと');if(!W.length)return '';
+  const g={};W.forEach(w=>{const t=w.theme||'そのほか';(g[t]=g[t]||[]).push(w);});const ks=Object.keys(g).sort((x,y)=>{const i=BODY_TH.indexOf(x),j=BODY_TH.indexOf(y);return (i<0?99:i)-(j<0?99:j);});
+  const last=(S.coachings||[]).filter(x=>x.kind==='ケア'&&x.d<=TODAY).map(x=>x.d).sort().pop();
+  return '<section class="card irr body"><h3>体の状態 <small>（ケアでわかったこと'+(last?'・最新 '+md(last):'')+'）</small></h3>'+ks.map(t=>'<div class="bth"><b>'+esc(t)+'</b>'+g[t].sort((x,y)=>x.d<y.d?1:-1).map(w=>'<p class="irrl"><small>'+md(w.d)+'・'+esc(w.cat||'')+'</small>'+esc(w.text)+'</p>').join('')+'</div>').join('')+'<p class="note">今野コーチのケアで言われたことを、テーマごとに新しい順で並べています。次のケアで変わったことも、ここに足されます。</p></section>';}
 
 
 // ---------- 活動の記録（メニュー式） ----------
@@ -1524,7 +1532,7 @@ function recentSess(kind,date,exceptId,n){const out=[];Object.keys(S.acts).sort(
 function openAct(date,slot,kind,id){
   const a=id?(S.acts[date]||[]).find(x=>x.id===id):null;if(a){slot=a.slot;kind=a.kind;}
   const menu=isMenu(kind),fhOn=hasFH(kind);
-  act={date,id:a?a.id:'',slot,kind,st:a?a.st:'実施',memo:a?a.memo||'':'',sel:a&&!menu&&a.c&&IRRK.indexOf(kind)<0?a.c.split('・'):[],fh:'',items:[],src:'',ctext:a&&IRRK.indexOf(kind)>=0?a.c||'':'',cm:a?a.cm||'':''};
+  act={date,id:a?a.id:'',slot,kind,st:a?a.st:'実施',memo:a?a.memo||'':'',sel:a&&!menu&&a.c&&IRRT.indexOf(kind)<0?a.c.split('・'):[],fh:'',items:[],src:'',ctext:a&&IRRT.indexOf(kind)>=0?a.c||'':'',cm:a?a.cm||'':''};
   if(menu){const s=a&&S.sess[a.id];
     if(s){act.fh=s.fh||'';const M=menuOf(kind,s.fh||'');
       act.items=M.map(m=>{const i=s.items.find(x=>x.name===m.name);return i?{name:i.name,v:i.v,unit:i.unit||m.unit,sets:+i.sets||0,w:i.w,m}:{name:m.name,v:m.unit==='本'?0:m.v,unit:m.unit,sets:0,w:'',m};})
@@ -1551,7 +1559,7 @@ function drawAct(){const c=act,menu=isMenu(c.kind),wj=menu&&(MENUK[c.kind]||[]).
           '<button class="stp" data-sst="-" data-i="'+i+'" aria-label="セットを減らす">−</button><span class="sv"><b>'+x.sets+'</b>セット</span><button class="stp" data-sst="+" data-i="'+i+'" aria-label="セットを増やす">＋</button>'+
           (m.wt||x.w?'<label class="vbox"><input type="number" inputmode="decimal" min="0" step="0.5" data-iw="'+i+'" value="'+esc(x.w)+'" placeholder="重さ"><span>kg</span></label>':'')+'</div></div>';}).join('')+'</div>';
       h+='<div class="qrow"><input type="text" id="ac-new" placeholder="種目を追加（メニューにないもの）" maxlength="50"><button class="btn sm2" data-act="aItem">追加</button></div>';
-    } else if(IRRK.indexOf(c.kind)>=0){h+='<label class="lab" for="ac-c">内容（やったこと）</label><textarea id="ac-c" maxlength="300" placeholder="例：リンクで基礎滑走・エッジの切り替え練習">'+esc(c.ctext||'')+'</textarea>';
+    } else if(IRRT.indexOf(c.kind)>=0){h+='<label class="lab" for="ac-c">内容（やったこと）</label><textarea id="ac-c" maxlength="300" placeholder="例：リンクで基礎滑走・エッジの切り替え練習">'+esc(c.ctext||'')+'</textarea>';
     } else {const tc=S.opt.tc[c.kind]||[];if(tc.length)h+='<div class="lab">やった内容（いくつでも）</div><div class="wrap">'+tc.map(t=>'<button class="opt sm" data-asel="'+esc(t)+'" aria-pressed="'+(c.sel.indexOf(t)>=0)+'">'+esc(t)+'</button>').join('')+'</div>';}
   }
   if(IRRK.indexOf(c.kind)>=0&&c.st==='実施')h+='<label class="lab" for="ac-memo">コメント（本人）</label><textarea id="ac-memo" maxlength="500" placeholder="感じたこと・気づき">'+esc(c.memo)+'</textarea><label class="lab" for="ac-cm">コメント（父・コーチ）</label><textarea id="ac-cm" maxlength="500" placeholder="コーチの話・家族から">'+esc(c.cm||'')+'</textarea>';
@@ -1560,7 +1568,7 @@ function drawAct(){const c=act,menu=isMenu(c.kind),wj=menu&&(MENUK[c.kind]||[]).
   h+='<div class="acts">'+(c.id?'<button class="btn del" data-act="aDel">消す</button>':'')+'<button class="btn" data-act="aBack">戻る</button><button class="btn pri" data-act="aSave"'+(saving?' disabled':'')+'>'+(saving?'保存中…':'保存')+'</button></div>';
   SH.innerHTML=h;}
 function actPayload(c){const menu=isMenu(c.kind);
-  const irr=IRRK.indexOf(c.kind)>=0,p={date:c.date,id:c.id,slot:c.slot,kind:c.kind,st:c.st,memo:c.memo,c:irr?(c.ctext||''):!menu?c.sel.join('・'):''};if(irr)p.cm=c.cm||'';
+  const irr=IRRK.indexOf(c.kind)>=0,p={date:c.date,id:c.id,slot:c.slot,kind:c.kind,st:c.st,memo:c.memo,c:IRRT.indexOf(c.kind)>=0?(c.ctext||''):!menu?c.sel.join('・'):''};if(irr)p.cm=c.cm||'';
   if(menu&&c.st==='実施')p.sess={fh:c.fh,items:c.items.map(x=>({name:x.name,v:x.v,unit:x.unit,sets:x.sets,w:x.w}))};
   p.log=md(c.date)+' '+c.slot+' '+c.kind+'：'+(c.st==='やらなかった'?'やらなかった':(p.sess?(c.fh?c.fh+'／':'')+p.sess.items.filter(x=>x.sets||(x.unit==='本'&&+x.v)).map(x=>x.name+(x.unit==='本'?x.v+'本':(x.v?x.v+x.unit+'×':'')+x.sets+'セット'+(x.w?'・'+x.w+'kg':''))).join('、'):(p.c||'実施')))+(c.memo?'／'+c.memo:'');
   return p;}
@@ -3727,7 +3735,7 @@ function renderStats(){ensureReports();ensureGrades();
     h+='<div class="czadd"><div class="lab" style="margin-top:0">パーソナルを受けた日を登録</div><select id="cz-k" style="margin-top:4px;width:100%"><option value="フィジカルパーソナル">フィジカルパーソナル</option><option value="雪上パーソナル|朝">雪上パーソナル（朝）</option><option value="雪上パーソナル|昼">雪上パーソナル（昼）</option><option value="雪上パーソナル|ナイター">雪上パーソナル（ナイター）</option><option value="ケア">ケア（内容・コメントも書く）</option></select><div class="qrow" style="margin-top:4px"><input type="date" id="cz-d" value="'+TODAY+'" max="'+DAYS[DAYS.length-1].d+'" style="flex:1"><button class="btn" data-act="czAdd2" style="flex:0 0 auto;padding:0 12px">登録</button></div><input type="text" id="cz-m" placeholder="メモ（内容・コーチの指示など）" maxlength="300" style="margin-top:6px"></div>';
     if(!R.length){V.innerHTML=h+'<p class="empty">パーソナルを受けた日がまだ登録されていません。<br>上で日付を選んで登録すると、前回のパーソナルからの期間で実績とPDFを作れます。</p></main>';return;}
     const rp=(S.reports||[]).find(r=>r.name.indexOf(a+'〜'+b)>=0);h+='<p class="note">パーソナル（'+mdw(a)+'）から'+(b===TODAY?'今日まで':'次のパーソナルの前日（'+mdw(b)+'）まで')+'の実績です。</p><div class="qrow"><button class="btn pri qb" data-act="report" data-a="'+a+'" data-b="'+b+'">📄 この期間のコーチ報告PDFを'+(rp?'作り直す':'作成')+'</button></div>'+(rp?'<p class="note"><a href="'+esc(rp.url)+'" target="_blank" rel="noopener">▶ '+esc(rp.name)+' を開く</a></p>':'');}
-  h+=irrList(a,b);
+  h+=bodyBox()+irrList(a,b);
   if(statP==='year')h+=yearPdfBox(a);
   if(statP==='month'){const ym=a.slice(0,7),rp=(S.reports||[]).find(r=>r.name.indexOf(ym)>=0);h+='<div class="qrow"><button class="btn pri qb" data-act="report" data-ym="'+ym+'">📄 この月のコーチ報告PDFを'+(rp?'作り直す':'作成')+'</button></div>'+(rp?'<p class="note"><a href="'+esc(rp.url)+'" target="_blank" rel="noopener">▶ '+esc(rp.name)+' を開く</a></p>':'');}
   const kk=S.opt.kinds.concat(['大会']).filter(k=>K[k]).concat(Object.keys(K).filter(k=>S.opt.kinds.indexOf(k)<0&&k!=='大会'));
