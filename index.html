@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<!-- こぶ日記（旧：スキー行動予定アプリ） 画面側 v4.62.0 -->
+<!-- こぶ日記（旧：スキー行動予定アプリ） 画面側 v4.63.0 -->
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -939,11 +939,11 @@ details.cwf>.chn:first-of-type{border-top:1px solid var(--line)}
 :root[data-theme="dark"] .sch-czy{background:#17403A;border-color:#4C8F7E;color:#CDEFE5}
 .lab2{font-size:12px;color:var(--sub,#5A6B7D);margin:8px 0 2px}
 .sch-czk{background:#F6E8F3;border-color:#C994BC;color:#6A2A5C}
-.a-sk{background:#E2EEFB;color:#1D4C7A}.a-care,.czl.czk{background:#F6E8F3;color:#6A2A5C}
+.a-sk{background:#E2EEFB;color:#1D4C7A}.a-pz{background:#E9F1FF;color:#1E3F7A}.a-pzy{background:#E3F3EE;color:#14523F}.a-care,.czl.czk{background:#F6E8F3;color:#6A2A5C}
 .irrl{margin:3px 0 0;font-size:13.5px;line-height:1.5;text-align:left;font-weight:400}.irrl small{display:block;color:var(--sub,#5A6B7D);font-size:11.5px}
 .irr .irri{display:block;width:100%;text-align:left;background:transparent;border:0;border-top:1px solid var(--line,#D8DEE6);padding:9px 2px;color:inherit;font:inherit}.irr .irri b{margin-left:6px}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sch-czk{background:#43233D;border-color:#9A6A8F;color:#F3D7EC}:root:not([data-theme="light"]) .a-sk{background:#1C3550;color:#CFE3F8}:root:not([data-theme="light"]) .a-care,:root:not([data-theme="light"]) .czl.czk{background:#43233D;color:#F3D7EC}}
-:root[data-theme="dark"] .sch-czk{background:#43233D;border-color:#9A6A8F;color:#F3D7EC}:root[data-theme="dark"] .a-sk{background:#1C3550;color:#CFE3F8}:root[data-theme="dark"] .a-care,:root[data-theme="dark"] .czl.czk{background:#43233D;color:#F3D7EC}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sch-czk{background:#43233D;border-color:#9A6A8F;color:#F3D7EC}:root:not([data-theme="light"]) .a-sk{background:#1C3550;color:#CFE3F8}:root:not([data-theme="light"]) .a-pz{background:#1F3358;color:#D6E4FF}:root:not([data-theme="light"]) .a-pzy{background:#17403A;color:#CDEFE5}:root:not([data-theme="light"]) .a-care,:root:not([data-theme="light"]) .czl.czk{background:#43233D;color:#F3D7EC}}
+:root[data-theme="dark"] .sch-czk{background:#43233D;border-color:#9A6A8F;color:#F3D7EC}:root[data-theme="dark"] .a-sk{background:#1C3550;color:#CFE3F8}:root[data-theme="dark"] .a-pz{background:#1F3358;color:#D6E4FF}:root[data-theme="dark"] .a-pzy{background:#17403A;color:#CDEFE5}:root[data-theme="dark"] .a-care,:root[data-theme="dark"] .czl.czk{background:#43233D;color:#F3D7EC}
 </style>
 </head>
 <body>
@@ -951,7 +951,7 @@ details.cwf>.chn:first-of-type{border-top:1px solid var(--line)}
 <script>
 (function(){
 'use strict';
-const CLIENT_VERSION='4.62.0';
+const CLIENT_VERSION='4.63.0';
 /** 新しい画面が公開されていたら、自動で切り替える（GitHub Pagesの10分キャッシュを待たない） */
 const verNum=v=>String(v||'').split('.').map(x=>parseInt(x,10)||0);
 const verNewer=(a,b)=>{const x=verNum(a),y=verNum(b);for(let i=0;i<3;i++){if((x[i]||0)>(y[i]||0))return true;if((x[i]||0)<(y[i]||0))return false;}return false;};
@@ -1277,7 +1277,8 @@ function dayBody(d,opt){opt=opt||{};const v=view(d),rows=rowsOf(d,v),x=d.d,st=sc
   else if(v.off)h+='<div class="ln"><span class="sch sch-off">OFF</span><span class="tx">休養日</span></div>';
   if(v.note||d.memo)h+='<p class="note" style="margin:2px 0">'+esc([v.note,d.memo].filter(Boolean).join('／'))+'</p>';
   const future=x>TODAY;
-  h+='<div class="arows">'+(rows.length?rows.map(r=>actRow(d,r,opt.compact)).join(''):'<p class="note" style="margin:4px 0">'+(v.off?'トレーニングの予定はありません（休養日）':'予定はありません')+(canEdit()&&!opt.compact?'（「予定を変更」から追加できます）':'')+'</p>')+'</div>';
+  const pzr=opt.nopz?'':pzList(x).map(p=>pzRow(d,p,opt.compact)).join('');
+  h+='<div class="arows">'+pzr+(rows.length?rows.map(r=>actRow(d,r,opt.compact)).join(''):pzr?'':'<p class="note" style="margin:4px 0">'+(v.off?'トレーニングの予定はありません（休養日）':'予定はありません')+(canEdit()&&!opt.compact?'（「予定を変更」から追加できます）':'')+'</p>')+'</div>';
   if(!opt.compact){
     if(future){
       h+='<div class="qrow">'+(canEdit()?'<button class="btn qb" data-dplan="'+x+'">✎ 予定を変更</button>':'')+'</div>'+
@@ -1355,13 +1356,13 @@ function grid(k,mini){const ds=DAYS.filter(d=>d.d.slice(0,7)===k);if(!ds.length)
     if(prev){let x=addD(prev,1);while(x<d.d){h+='<div class="cell pad miss" title="この日はデータがありません"></div>';x=addD(x,1);}}
     prev=d.d;
     const v=view(d),rows=rowsOf(d,v),dc=d.h?'sun':(d.sat?'sat':'');
-    h+='<button class="cell '+cellCls(v)+(d.d===TODAY?' today':'')+(selMode?(SEL[d.d]?' picked':' pickable'):'')+'" data-day="'+d.d+'" aria-label="'+esc(md(d.d)+' '+v.school+' '+(v.nm||'')+' '+rows.map(r=>r.slot+kindLabel(r.kind,fhOf(r.act,r.fh))).join(' '))+'"><span class="cn '+dc+'">'+(+d.d.slice(8))+(()=>{const st=schState(d,v);return st?'<span class="sch '+st.c+'">'+(mini?st.l.slice(0,1):st.l)+'</span>':'';})()+'</span>'+(()=>{if(mini)return '';const L=(S.videos||[]).filter(x=>x.d===d.d&&!x.ref),nv=L.filter(x=>x.type!=='写真').length,np=L.length-nv;return (nv?'<span class="cvid">🎬'+nv+'</span>':'')+(np?'<span class="cvid">📷'+np+'</span>':'');})()+(CZ[d.d]?'<span class="czb'+(isAbs(v.school)?' two':'')+'">P</span>':'')+
+    h+='<button class="cell '+cellCls(v)+(d.d===TODAY?' today':'')+(selMode?(SEL[d.d]?' picked':' pickable'):'')+'" data-day="'+d.d+'" aria-label="'+esc(md(d.d)+' '+v.school+' '+(v.nm||'')+' '+rows.map(r=>r.slot+kindLabel(r.kind,fhOf(r.act,r.fh))).join(' '))+'"><span class="cn '+dc+'">'+(+d.d.slice(8))+(()=>{const st=schState(d,v);return st?'<span class="sch '+st.c+'">'+(mini?st.l.slice(0,1):st.l)+'</span>':'';})()+'</span>'+(()=>{if(mini)return '';const L=(S.videos||[]).filter(x=>x.d===d.d&&!x.ref),nv=L.filter(x=>x.type!=='写真').length,np=L.length-nv;return (nv?'<span class="cvid">🎬'+nv+'</span>':'')+(np?'<span class="cvid">📷'+np+'</span>':'');})()+
       (!mini&&!v.kb&&v.off?'<span class="cl off">OFF</span>':'')+(!mini&&v.kb?'<span class="cl">'+(v.skip?'<span class="skipb">'+v.skipTxt+'</span>':'')+esc(shortEv(v)+(v.off?'／OFF':''))+'</span>':'')+
       '<span class="cks">'+(()=>{const g=[];rows.forEach(r=>{let x=g.find(y=>y.kind===r.kind);if(!x){x={kind:r.kind,fh:r.fh||'',n:0,done:0,ng:0};g.push(x);}x.n++;
           if(r.act&&r.act.st==='実施'&&S.sess[r.act.id]&&S.sess[r.act.id].fh)x.fh=S.sess[r.act.id].fh;if(r.act&&r.act.st==='実施'){x.done++;x.wj=(x.wj||0)+wjN(r.act);}if(r.act&&r.act.st==='やらなかった')x.ng++;});
-        const lim=mini?3:4;return g.slice(0,lim).map(x=>'<i class="ck '+kCls(x.kind)+(x.done?' on':'')+(!x.done&&x.ng?' ng':'')+'">'+esc(x.fh?kAbbrFh(x.kind,x.fh):kAbbr(x.kind))+(x.wj?'<b>'+x.wj+'</b>':(x.n>1?'<b>'+x.n+'</b>':''))+'</i>').join('')+(g.length>lim?'<i class="ck more">…</i>':'');})()+'</span></button>';});
+        const pz=pzList(d.d),lim=Math.max(1,(mini?3:4)-pz.length);return pz.map(x=>'<i class="ck '+x.cls+(d.d<=TODAY?' on':'')+'">'+x.ab+'</i>').join('')+g.slice(0,lim).map(x=>'<i class="ck '+kCls(x.kind)+(x.done?' on':'')+(!x.done&&x.ng?' ng':'')+'">'+esc(x.fh?kAbbrFh(x.kind,x.fh):kAbbr(x.kind))+(x.wj?'<b>'+x.wj+'</b>':(x.n>1?'<b>'+x.n+'</b>':''))+'</i>').join('')+(g.length>lim?'<i class="ck more">…</i>':'');})()+'</span></button>';});
   return h+'</div>';}
-function legend(){return '<div class="legend"><span><i class="c-race"></i>大会</span><span><i class="c-move"></i>移動・公式練習</span><span><i class="c-camp"></i>合宿・滞在</span><span><i class="c-off"></i>学校なし</span><span><i class="c-skip"></i>不参加</span><span><b class="sch">登校</b>授業</span><span><b class="sch sch-ex">考査</b>試験</span><span><b class="sch sch-ev">行事</b>行事・面談</span><span><b class="sch sch-sb">短縮</b>短縮・自宅</span><span><b class="sch sch-off">冬休み</b>休み・振休・祝日</span><span><b class="sch sch-ab">公欠</b>公欠・欠席</span><span><b class="sch sch-wk">ワ</b>ラーケーション</span><span><b class="sch sch-un">未定</b>学校の予定が未登録</span><span>P＝パーソナル</span><span>下の印：EX＝エクスプロッシブ　R＝ROMベーシック（Rフ＝フル、Rハ＝ハーフ）　R+＝ROMプラス　雪＝雪上。色つき＝実施、斜線＝やらなかった</span></div>';}
+function legend(){return '<div class="legend"><span><i class="c-race"></i>大会</span><span><i class="c-move"></i>移動・公式練習</span><span><i class="c-camp"></i>合宿・滞在</span><span><i class="c-off"></i>学校なし</span><span><i class="c-skip"></i>不参加</span><span><b class="sch">登校</b>授業</span><span><b class="sch sch-ex">考査</b>試験</span><span><b class="sch sch-ev">行事</b>行事・面談</span><span><b class="sch sch-sb">短縮</b>短縮・自宅</span><span><b class="sch sch-off">冬休み</b>休み・振休・祝日</span><span><b class="sch sch-ab">公欠</b>公欠・欠席</span><span><b class="sch sch-wk">ワ</b>ラーケーション</span><span><b class="sch sch-un">未定</b>学校の予定が未登録</span><span>P＝フィジカルパーソナル　雪P＝雪上パーソナル　ケア＝ケア（色つき＝受けた、白抜き＝予定）</span><span>下の印：EX＝エクスプロッシブ　R＝ROMベーシック（Rフ＝フル、Rハ＝ハーフ）　R+＝ROMプラス　雪＝雪上。色つき＝実施、斜線＝やらなかった</span></div>';}
 function ensureYear(){if(year===null){const t=DIDX[TODAY]!==undefined?TODAY:(TODAY<DAYS[0].d?DAYS[0].d:DAYS[DAYS.length-1].d);year=fy(t);month=t.slice(0,7);}}
 function dayCard(d){const dc=d.h?'sun':(d.sat?'sat':''),v=view(d),m=schMark(v,d);
   return '<div class="day'+(d.d===TODAY?' today':'')+'"><button class="dhead" data-day="'+d.d+'"><span class="dn '+dc+'">'+md(d.d)+'（'+d.w+'）</span>'+
@@ -1460,7 +1461,7 @@ function askKey(kind){sheetCtx={kind:kind||'rec'};SH.innerHTML='<div class="grab
 // ---------- 1日の画面 ----------
 function openDaySheet(x){const d=DAYS[DIDX[x]];if(!d)return;openDay=d;drawDay();openS('day');}
 function drawDay(){const d=openDay,v=view(d);
-  let h='<div class="grab"></div><h3 id="sh-title">'+mdw(d.d)+(d.d===TODAY?'<span class="tlabel" style="margin-left:8px">今日</span>':'')+'</h3>'+dayBody(d);
+  let h='<div class="grab"></div><h3 id="sh-title">'+mdw(d.d)+(d.d===TODAY?'<span class="tlabel" style="margin-left:8px">今日</span>':'')+'</h3>'+dayBody(d,{nopz:true});
   {const src=v.tripOn&&!v.manual?'遠征・合宿の日程から':((d.src||'（予定なし）').replace('｜','／'));h+='<p class="note" style="margin:2px 0 0">この日の予定の出どころ：'+esc(src)+'</p>';}
   if(canEdit())h+='<button class="linkbtn2" data-act="editPlan" style="margin-top:6px">✎ 学校予定・メモ'+(v.td&&v.tripOn?'・遠征の内容':'')+'を変更</button>';
   const cz=CZ[d.d],future=d.d>TODAY;
@@ -1477,6 +1478,15 @@ function drawDay(){const d=openDay,v=view(d);
 
 /* v4.62：ケア（パーソナル）・スケート（不定期の活動）の記録と閲覧 */
 const IRRK=['スケート'];
+/* v4.63：パーソナル（フィジカル・雪上）とケアを、ほかの活動と同じように並べる */
+const PZK=[['フィジカルパーソナル','a-pz','P'],['雪上パーソナル','a-pzy','雪P'],['ケア','a-care','ケア']];
+function pzList(d){const o=[];if(CZ[d])o.push({k:'フィジカルパーソナル',cls:'a-pz',ab:'P',slot:'',e:CZ[d]});(CZY[d]||[]).forEach(e=>o.push({k:'雪上パーソナル',cls:'a-pzy',ab:'雪P',slot:e.slot||'',e}));if(CZK[d])o.push({k:'ケア',cls:'a-care',ab:'ケア',slot:'',e:CZK[d]});
+  const g={};return o.filter(x=>{if(x.k!=='雪上パーソナル')return true;if(g[x.k])return false;g[x.k]=1;x.slot=(CZY[d]||[]).map(e=>e.slot||'未定').join('・');return true;});}
+function pzRow(d,p,compact){const future=d.d>TODAY,e=p.e,care=p.k==='ケア',has=care&&(e.memo||e.c1||e.c2);
+  let h='<div class="arow'+(future?'':' done')+'">'+(future?'':'<span class="okmk">✓</span>')+'<span class="slot">'+esc(p.slot)+'</span><span class="atag '+p.cls+'">'+esc(p.k)+'</span><span class="asum">'+esc(future?'予定':(e.memo||(care?'内容・コメントはまだ':'受けた')))+'</span>';
+  if(!compact)h+='<span class="abtn">'+(care?(canEdit()||!future?'<button class="btn sm2" data-act="careEdit" data-d="'+d.d+'">'+(has?'直す':'書く')+'</button>':''):'<button class="btn sm2" data-day="'+d.d+'">開く</button>')+'</span>';
+  return h+'</div>';}
+function pzCount(a,b){const cut=b<TODAY?b:TODAY;return PZK.map(([k,cls])=>{const L=(S.coachings||[]).filter(x=>x.kind===k&&x.d>=a&&x.d<=b);return {k,cls,p:L.length,n:L.filter(x=>x.d<=cut).length};}).filter(x=>x.p);}
 function careItem(k,future){const ln=(l,t)=>t?'<p class="irrl"><small>'+l+'</small>'+esc(t).replace(/\n/g,'<br>')+'</p>':'';
   return '<div class="czl czk"><span>✓ ケア'+(future?'（予定）':'を受けた')+'</span>'+(canEdit()?'<button class="linkbtn2" data-act="careDel" data-d="'+k.d+'">取り消す</button>':'')+'</div>'+ln('内容',k.memo)+ln('コメント（本人）',k.c1)+ln('コメント（父・コーチ）',k.c2);}
 function openCare(date,back,memo0){const k=CZK[date]||{};sheetCtx={care:date,back:back||''};
@@ -3544,6 +3554,7 @@ function countBox(K,ds,a,b){const cut=b<TODAY?b:TODAY,fh={};
   let h='<h2>この期間の回数</h2><div class="tbl t3 cnt"><div class="tr th"><span>トレーニング</span><span>やった回数</span><span>予定</span></div>';
   CNT_KINDS.concat(Object.keys(K).filter(k=>CNT_KINDS.indexOf(k)<0&&!isSys(k)&&['部活','探究','大会'].indexOf(k)<0&&dn(k)>0)).forEach(k=>{if(k==='ROMベーシック'){h+=row('<span class="atag sm '+kCls(k)+'">ROMベーシック</span>',dn(k),pl(k));['フル','ハーフ','区分なし'].forEach(f=>{if(f==='区分なし'&&!fh[f])return;h+=row('└ '+f,fh[f]||0,'',true);});return;}
     h+=row('<span class="atag sm '+kCls(k)+'">'+esc(k)+'</span>',dn(k),pl(k),false,k==='WJ'&&wj?'（'+fmtN(wj)+'本）':'');});
+  pzCount(a,b).forEach(x=>{h+=row('<span class="atag sm '+x.cls+'">'+esc(x.k)+'</span>',x.n,x.p);});
   return h+'</div><p class="note">やった回数は、予定どおりの実施と予定外の実施の合計です（'+(b>TODAY?'今日まで':md(a)+'〜'+md(b))+'）。ROMベーシックのフル・ハーフは記録の区分から数えます。</p>';}
 
 /* v4.58：実績タブ（年度・月ごとのPDF／見出しごとにたたむ／記録の一覧を月・日でたたむ／メニューの変遷） */
@@ -3730,7 +3741,7 @@ function renderStats(){ensureReports();ensureGrades();
       '<div class="tr"><span><span class="sch sch-ab2">欠席</span></span><span>'+sc.miss.length+'日</span><span>'+(sc.miss.map(md).join('、')||'－')+'</span></div>'+
       '<div class="tr"><span><span class="sch sch-wk">ワ</span></span><span>'+sc.used+'日'+(left<0?'（上限超過）':'（残り'+left+'回）')+'</span><span>'+((sc.pre?'記録前 '+sc.pre+'回　':'')+(sc.wark.map(md).join('、')||(sc.pre?'':'－')))+'</span></div></div>'+
       '<p class="note">公欠は欠席日数に入りません。ラーケーションは1日＝1回として、年度'+lim+'回まで。アプリに登録していない分は「設定」シートの「ラーケーションの使用済み回数」に「2026:2」のように書きます。</p>';}
-  h+='<h2>活動の予定と実施</h2>'+(kk.length?'<div class="tbl t5"><div class="tr th"><span>活動</span><span>予定</span><span>実施</span><span>予定外</span><span>やらず</span></div>'+kk.map(k=>'<div class="tr"><span><span class="atag sm '+kCls(k)+'">'+esc(k)+'</span></span><span>'+K[k].p+'</span><span>'+K[k].d+'</span><span>'+(K[k].x||'')+'</span><span>'+(K[k].s||'')+'</span></div>').join('')+'</div><p class="note">実施＝予定どおりにやった数（時間帯が違っても同じ日・同じ活動なら数えます）。予定外＝予定になかった活動をやった数。達成率は 実施÷予定 です。</p>':'<p class="note">この期間の予定・記録はありません。</p>');
+  h+='<h2>活動の予定と実施</h2>'+(kk.length||pzCount(a,b).length?'<div class="tbl t5"><div class="tr th"><span>活動</span><span>予定</span><span>実施</span><span>予定外</span><span>やらず</span></div>'+kk.map(k=>'<div class="tr"><span><span class="atag sm '+kCls(k)+'">'+esc(k)+'</span></span><span>'+K[k].p+'</span><span>'+K[k].d+'</span><span>'+(K[k].x||'')+'</span><span>'+(K[k].s||'')+'</span></div>').join('')+pzCount(a,b).map(x=>'<div class="tr"><span><span class="atag sm '+x.cls+'">'+esc(x.k)+'</span></span><span>'+x.p+'</span><span>'+x.n+'</span><span></span><span></span></div>').join('')+'</div><p class="note">実施＝予定どおりにやった数（時間帯が違っても同じ日・同じ活動なら数えます）。予定外＝予定になかった活動をやった数。達成率は 実施÷予定 です。</p>':'<p class="note">この期間の予定・記録はありません。</p>');
   const fhN={};ds.forEach(d=>rowsOf(d).forEach(r=>{if(r.act&&r.act.st==='実施'){const s2=S.sess[r.act.id];if(s2&&s2.fh){(fhN[r.kind]=fhN[r.kind]||{})[s2.fh]=((fhN[r.kind]||{})[s2.fh]||0)+1;}}}));
   Object.keys(tot).forEach(k=>{const T=tot[k],ord=n=>{const i=(MENUK[k]||[]).findIndex(m=>m.name===n);return i<0?999:i;},names=Object.keys(T).sort((x,y)=>ord(x)-ord(y)),wj=names.every(n=>T[n].u==='本');
     h+='<h2><span class="atag '+kCls(k)+'">'+esc(k)+'</span> の合計（'+(K[k].d+(K[k].x||0))+'回'+(wj?'・<b>'+fmtN(names.reduce((t,n)=>t+(T[n].v||0),0))+'本</b>／今年度累計 '+fmtN(wjSum(fy(a)+'-04-01',b<TODAY?b:TODAY).n)+'本':'')+(fhN[k]?'：'+Object.keys(fhN[k]).map(x=>x+' '+fhN[k][x]+'回').join('／'):'')+'）</h2><div class="tbl"><div class="tr th"><span>種目</span><span>'+(wj?'合計本数':'回数・セット')+'</span><span>'+(wj?'実施回数':'最大重量')+'</span></div>'+
@@ -3741,9 +3752,9 @@ function renderStats(){ensureReports();ensureGrades();
   if(camps.length)h+='<h2>合宿</h2><div class="list">'+camps.map(t=>'<div'+(t.on?'':' class="skipline"')+'>'+esc(per(t))+'　'+(t.on?'':'<span class="skipb">不参加</span> ')+esc(t.name)+'</div>').join('')+'</div>';
   const vids=S.videos.filter(x=>x.d>=a&&x.d<=b).sort((x,y)=>x.d<y.d?1:-1);
   if(vids.length)h+='<h2>動画（'+vids.length+'本）</h2><div class="exl">'+vids.map(v=>'<div class="vid"><a href="'+esc(vidUrl(v))+'" target="_blank" rel="noopener">▶ '+mdw(v.d)+' '+esc(v.title)+'</a><span>'+esc([v.kind,v.memo,'登録：'+v.by].filter(Boolean).join('｜'))+'</span></div>').join('')+'</div>';
-  const byDay={};logs.forEach(([x,r])=>(byDay[x]=byDay[x]||[]).push(r));Object.keys(S.notes).filter(x=>x>=a&&x<=cut).forEach(x=>byDay[x]=byDay[x]||[]);
+  const byDay={};logs.forEach(([x,r])=>(byDay[x]=byDay[x]||[]).push(r));Object.keys(S.notes).filter(x=>x>=a&&x<=cut).forEach(x=>byDay[x]=byDay[x]||[]);(S.coachings||[]).forEach(z=>{if(z.d>=a&&z.d<=cut)byDay[z.d]=byDay[z.d]||[];});
   const dk=Object.keys(byDay).sort().reverse();
-  h+='<h2>記録の一覧</h2>'+(dk.length?'<div class="list">'+dk.map(x=>{const n=S.notes[x];return '<div class="rl"><button class="linkbtn2" data-day="'+x+'" style="min-height:auto;padding:0">'+mdw(x)+'</button>'+byDay[x].map(r=>'<div class="arow mini"><span class="slot">'+r.slot+'</span><span class="atag sm '+kCls(r.kind)+'">'+esc(r.kind)+(fhOf(r.act,r.fh)?'<small class="fhtag">'+esc(fhOf(r.act,r.fh))+'</small>':'')+'</span><span class="asum">'+esc(actSum(r.act))+'</span></div>').join('')+(n?'<small class="memo">体調 '+esc(n.cond||'－')+'　'+esc(n.note||'')+'</small>':'')+'</div>';}).join('')+'</div>':'<p class="note">この期間の記録はありません。</p>');
+  h+='<h2>記録の一覧</h2>'+(dk.length?'<div class="list">'+dk.map(x=>{const n=S.notes[x];return '<div class="rl"><button class="linkbtn2" data-day="'+x+'" style="min-height:auto;padding:0">'+mdw(x)+'</button>'+pzList(x).map(p=>'<div class="arow mini"><span class="slot">'+esc(p.slot)+'</span><span class="atag sm '+p.cls+'">'+esc(p.k)+'</span><span class="asum">'+esc(p.e.memo||'')+'</span></div>').join('')+byDay[x].map(r=>'<div class="arow mini"><span class="slot">'+r.slot+'</span><span class="atag sm '+kCls(r.kind)+'">'+esc(r.kind)+(fhOf(r.act,r.fh)?'<small class="fhtag">'+esc(fhOf(r.act,r.fh))+'</small>':'')+'</span><span class="asum">'+esc(actSum(r.act))+'</span></div>').join('')+(n?'<small class="memo">体調 '+esc(n.cond||'－')+'　'+esc(n.note||'')+'</small>':'')+'</div>';}).join('')+'</div>':'<p class="note">この期間の記録はありません。</p>');
   if(loading)h+='<p class="note">古い期間の内容を読み込んでいます…</p>';
   {const vd={};(S.videos||[]).forEach(v=>vd[v.id]=v.d);const span=Math.round((pdate(b)-pdate(a))/864e5)+1,pa=addD(a,-span),pb=addD(a,-1);
    const cnt=(x,y)=>{const o={};(S.vcoms||[]).forEach(c=>{const d=vd[c.vid];if(d&&d>=x&&d<=y&&c.part)o[c.part]=(o[c.part]||0)+1;});return o;};
